@@ -3,7 +3,7 @@ import streamlit as st
 # 페이지 설정
 st.set_page_config(page_title="서울 2033 스타일 어드벤처", layout="centered")
 
-# 1. 서울 2033 스타일 다크/아포칼립스 CSS 적용
+# 1. 다크 톤 CSS 스타일 적용
 st.markdown(
     """
     <style>
@@ -12,12 +12,15 @@ st.markdown(
         background-color: #121212;
         color: #E0E0E0;
     }
-    /* 사이드바 스타일링 */
-    div[data-testid="stSidebar"] {
+    /* 상단 스탯 컨테이너 카드 */
+    .status-container {
         background-color: #1A1A1A;
-        border-right: 1px solid #333333;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #333333;
+        margin-bottom: 15px;
     }
-    /* 선택지 버튼 스타일링 (서울 2033 특유의 차분한 카드형 버튼) */
+    /* 선택지 버튼 스타일링 */
     .stButton > button {
         width: 100%;
         background-color: #242424;
@@ -45,9 +48,8 @@ st.markdown(
         padding: 2px 8px;
         font-size: 0.8rem;
         margin-right: 4px;
-        margin-bottom: 4px;
     }
-    /* 이벤트 카드 상자 */
+    /* 메인 이벤트 카드 */
     .event-card {
         background-color: #1E1E1E;
         padding: 24px;
@@ -60,7 +62,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 2. 세션 상태 초기화 (스탯 & 가젯 시스템)
+# 2. 세션 상태 초기화
 if "scene" not in st.session_state:
     st.session_state.scene = "start"
     st.session_state.hp = 3
@@ -71,7 +73,6 @@ if "scene" not in st.session_state:
 
 def change_scene(next_scene, hp=0, mentality=0, money=0, add_trait=None):
     st.session_state.hp = max(0, min(5, st.session_state.hp + hp))
-    st.session_state.mentality = max
     st.session_state.mentality = max(
         0, min(5, st.session_state.mentality + mentality)
     )
@@ -91,15 +92,21 @@ def reset_game():
     st.session_state.traits = ["권총", "날렵함"]
 
 
-# 3. 사이드바 UI (서울 2033의 스탯 및 보유 능력 표시)
-st.sidebar.markdown("### 👤 생존자 상태")
-col1, col2, col3 = st.sidebar.columns(3)
+# 3. 상단 타이틀 및 스탯 대시보드
+st.title("📜 서울 2033: 아포칼립스")
+
+# 상단 스탯 영역 (4개 컬럼)
+col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
 col1.metric("❤️ 체력", f"{st.session_state.hp}/5")
 col2.metric("🧠 멘탈", f"{st.session_state.mentality}/5")
 col3.metric("🪙 돈", f"{st.session_state.money}")
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 🧰 보유 가젯 & 특성")
+with col4:
+    if st.button("🔄 게임 재시작"):
+        reset_game()
+        st.rerun()
+
+# 상단 가젯/특성 영역
 if st.session_state.traits:
     traits_html = "".join(
         [
@@ -107,16 +114,12 @@ if st.session_state.traits:
             for t in st.session_state.traits
         ]
     )
-    st.sidebar.markdown(
-        f'<div style="margin-bottom: 15px;">{traits_html}</div>',
+    st.markdown(
+        f'<div style="margin-top: 10px; margin-bottom: 20px;"><b>🧰 보유 가젯:</b> {traits_html}</div>',
         unsafe_allow_html=True,
     )
-else:
-    st.sidebar.caption("보유한 특성이 없습니다.")
 
-if st.sidebar.button("🔄 게임 처음부터 다시하기"):
-    reset_game()
-    st.rerun()
+st.markdown("---")
 
 # 4. 게임 오버 / 승리 처리
 if st.session_state.hp <= 0:
@@ -148,7 +151,6 @@ if scene == "start":
         unsafe_allow_html=True,
     )
 
-    # 조건부 선택지 및 일반 선택지 (서울 2033 방식)
     if "권총" in st.session_state.traits:
         if st.button("🔫 [권총] 권총을 겨누어 위협한다"):
             change_scene("threaten", mentality=1)
@@ -200,7 +202,7 @@ elif scene == "fight":
         """
     <div class="event-card">
         <h2>🩸 처절한 육탄전</h2>
-        <p>약탈자와 뒹굴며 육탄전을 벌였습니다. 가깝사로 상대를 제압했지만 상처를 입고 정신이 아득해집니다.</p>
+        <p>약탈자와 뒹굴며 육탄전을 벌였습니다. 가까스로 상대를 제압했지만 상처를 입고 정신이 아득해집니다.</p>
     </div>
     """,
         unsafe_allow_html=True,
