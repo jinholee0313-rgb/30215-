@@ -1,152 +1,251 @@
 import streamlit as st
 
-# 1. 게임 상태 초기화
+# 페이지 설정
+st.set_page_config(page_title="서울 2033 스타일 어드벤처", layout="centered")
+
+# 1. 서울 2033 스타일 다크/아포칼립스 CSS 적용
+st.markdown(
+    """
+    <style>
+    /* 메인 배경 및 기본 폰트 색상 */
+    .stApp {
+        background-color: #121212;
+        color: #E0E0E0;
+    }
+    /* 사이드바 스타일링 */
+    div[data-testid="stSidebar"] {
+        background-color: #1A1A1A;
+        border-right: 1px solid #333333;
+    }
+    /* 선택지 버튼 스타일링 (서울 2033 특유의 차분한 카드형 버튼) */
+    .stButton > button {
+        width: 100%;
+        background-color: #242424;
+        color: #E0E0E0;
+        border: 1px solid #444444;
+        border-radius: 6px;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        text-align: left;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
+    }
+    .stButton > button:hover {
+        background-color: #333333;
+        border-color: #888888;
+        color: #FFFFFF;
+    }
+    /* 가젯/특성 태그 스타일 */
+    .trait-tag {
+        display: inline-block;
+        background-color: #2A2A2A;
+        color: #FFD700;
+        border: 1px solid #555555;
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 0.8rem;
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+    /* 이벤트 카드 상자 */
+    .event-card {
+        background-color: #1E1E1E;
+        padding: 24px;
+        border-radius: 8px;
+        border: 1px solid #333333;
+        margin-bottom: 20px;
+    }
+    </style>
+""",
+    unsafe_allow_html=True,
+)
+
+# 2. 세션 상태 초기화 (스탯 & 가젯 시스템)
 if "scene" not in st.session_state:
     st.session_state.scene = "start"
-    st.session_state.hp = 100
-    st.session_state.gold = 50
-    st.session_state.inventory = []
+    st.session_state.hp = 3
+    st.session_state.mentality = 3
+    st.session_state.money = 1
+    st.session_state.traits = ["권총", "날렵함"]
 
 
-def change_scene(next_scene, hp_diff=0, gold_diff=0, add_item=None):
-    st.session_state.hp += hp_diff
-    st.session_state.gold += gold_diff
-    if add_item and add_item not in st.session_state.inventory:
-        st.session_state.inventory.append(add_item)
+def change_scene(next_scene, hp=0, mentality=0, money=0, add_trait=None):
+    st.session_state.hp = max(0, min(5, st.session_state.hp + hp))
+    st.session_state.mentality = max
+    st.session_state.mentality = max(
+        0, min(5, st.session_state.mentality + mentality)
+    )
+    st.session_state.money = max(0, st.session_state.money + money)
+
+    if add_trait and add_trait not in st.session_state.traits:
+        st.session_state.traits.append(add_trait)
+
     st.session_state.scene = next_scene
 
 
 def reset_game():
     st.session_state.scene = "start"
-    st.session_state.hp = 100
-    st.session_state.gold = 50
-    st.session_state.inventory = []
+    st.session_state.hp = 3
+    st.session_state.mentality = 3
+    st.session_state.money = 1
+    st.session_state.traits = ["권총", "날렵함"]
 
 
-# 2. 사이버 대시보드 (스탯 및 소지품)
-st.sidebar.title("🕵️ 암행어사 신원 상태")
-st.sidebar.metric("체력 (HP)", f"{st.session_state.hp}/100")
-st.sidebar.metric("엽전", f"{st.session_state.gold} 냥")
+# 3. 사이드바 UI (서울 2033의 스탯 및 보유 능력 표시)
+st.sidebar.markdown("### 👤 생존자 상태")
+col1, col2, col3 = st.sidebar.columns(3)
+col1.metric("❤️ 체력", f"{st.session_state.hp}/5")
+col2.metric("🧠 멘탈", f"{st.session_state.mentality}/5")
+col3.metric("🪙 돈", f"{st.session_state.money}")
 
-st.sidebar.subheader("🎒 소지품")
-if st.session_state.inventory:
-    for item in st.session_state.inventory:
-        st.sidebar.write(f"- {item}")
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 🧰 보유 가젯 & 특성")
+if st.session_state.traits:
+    traits_html = "".join(
+        [
+            f'<span class="trait-tag">[{t}]</span>'
+            for t in st.session_state.traits
+        ]
+    )
+    st.sidebar.markdown(
+        f'<div style="margin-bottom: 15px;">{traits_html}</div>',
+        unsafe_allow_html=True,
+    )
 else:
-    st.sidebar.write("비어 있음")
+    st.sidebar.caption("보유한 특성이 없습니다.")
 
-if st.sidebar.button("🎮 게임 처음부터 다시하기"):
+if st.sidebar.button("🔄 게임 처음부터 다시하기"):
     reset_game()
     st.rerun()
 
-st.title("📜 조선 1592: 암행의 밤")
-
-# 3. 체력 0 미만 게임 오버 처리
+# 4. 게임 오버 / 승리 처리
 if st.session_state.hp <= 0:
-    st.error("💥 체력이 다 떨어져 임무 수행 중 쓰러졌습니다...")
-    if st.button("다시 도전하기"):
+    st.error("💀 체력이 다해 폐허 속에서 눈을 감았습니다...")
+    if st.button("다시 시작하기"):
         reset_game()
         st.rerun()
     st.stop()
 
-# 4. 시나리오 및 선택지 데이터
+if st.session_state.mentality <= 0:
+    st.error("🤯 정신적 충격을 이기지 못하고 미쳐버렸습니다...")
+    if st.button("다시 시작하기"):
+        reset_game()
+        st.rerun()
+    st.stop()
+
+# 5. 메인 스토리 이벤트 UI
 scene = st.session_state.scene
 
 if scene == "start":
-    st.subheader("🏙️ 한양 도성 입구")
-    st.write(
-        "탐관오리의 비리를 조사하기 위해 변복을 하고 한양 도성에 도착했습니다. "
-        "어스름한 저녁, 길은 주막과 비밀 정보상이 있는 어두운 골목으로 갈라집니다."
+    st.markdown(
+        """
+    <div class="event-card">
+        <h2>🌃 폐허가 된 영등포역</h2>
+        <p>잿빛 먼지가 날리는 영등포역 인근입니다. 버려진 수화물 사이에서 방치된 배낭을 발견했습니다. 
+        그때, 멀리서 철파이프를 든 약탈자가 당신을 발견하고 다가옵니다.</p>
+    </div>
+    """,
+        unsafe_allow_html=True,
     )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🍶 시끌벅적한 주막으로 들어간다"):
-            change_scene("tavern")
-            st.rerun()
-    with col2:
-        if st.button("🌑 어두운 골목길로 들어간다"):
-            change_scene("alley", hp_diff=-10)  # 자갈길에 넘어져 HP 감소
+    # 조건부 선택지 및 일반 선택지 (서울 2033 방식)
+    if "권총" in st.session_state.traits:
+        if st.button("🔫 [권총] 권총을 겨누어 위협한다"):
+            change_scene("threaten", mentality=1)
             st.rerun()
 
-elif scene == "tavern":
-    st.subheader("🍶 주막 안")
-    st.write(
-        "주막 안은 취객들로 붐빕니다. 주모가 당신을 바라보며 밥상을 권합니다. "
-        "구석 자리에서 수상한 보부상이 뭔가를 숨기듯 만작거리고 있습니다."
-    )
-
-    if st.button("🍲 국밥 한 그릇을 사 먹는다 (엽전 -10, HP +20)"):
-        if st.session_state.gold >= 10:
-            change_scene("tavern", hp_diff=20, gold_diff=-10)
-            st.success("따뜻한 국밥으로 체력을 회복했습니다!")
+    if "날렵함" in st.session_state.traits:
+        if st.button("🏃 [날렵함] 빠르게 건물 뒤로 숨는다"):
+            change_scene("hide", add_trait="은신")
             st.rerun()
-        else:
-            st.warning("엽전이 부족합니다!")
 
-    if st.button("🔍 보부상에게 접근하여 말을 건다"):
-        change_scene("merchant")
+    if st.button("👊 맨손으로 맞서 싸운다"):
+        change_scene("fight", hp=-1, mentality=-1)
         st.rerun()
 
-    if st.button("🚪 주막 밖으로 나간다"):
-        change_scene("start")
-        st.rerun()
-
-elif scene == "merchant":
-    st.subheader("💼 비밀 보부상과의 만남")
-    st.write(
-        "보부상은 당신의 범상치 않은 눈빛을 보더니 나지막한 목소리로 말합니다. "
-        "'관아의 비밀 문서를 풀 수 있는 만능 열쇠가 있는데... 엽전 30냥에 넘기겠소.'"
+elif scene == "threaten":
+    st.markdown(
+        """
+    <div class="event-card">
+        <h2>💥 도망치는 약탈자</h2>
+        <p>당신이 권총을 꺼내 들자 약탈자는 비명을 지르며 쥐고 있던 식량 자루를 떨어뜨리고 도망칩니다. 
+        위협에 성공하여 자신감이 생겼습니다.</p>
+    </div>
+    """,
+        unsafe_allow_html=True,
     )
 
-    if st.button("🔑 만능 열쇠를 구매한다 (엽전 -30냥)"):
-        if st.session_state.gold >= 30:
-            change_scene("merchant", gold_diff=-30, add_item="만능 열쇠")
-            st.success("소지품에 '만능 열쇠'가 추가되었습니다!")
-            st.rerun()
-        else:
-            st.warning("엽전이 부족합니다.")
-
-    if st.button("🏛️ 관아 후문으로 이동한다"):
-        change_scene("government_office")
+    if st.button("🎒 떨어진 식량을 챙겨 계속 이동한다"):
+        change_scene("shelter", money=2)
         st.rerun()
 
-elif scene == "alley":
-    st.subheader("🌑 어두운 골목길")
-    st.write(
-        "발을 잘못 디뎌 넘어지는 바람에 체력이 약간 깎였습니다. "
-        "앞을 가로막는 자객과 마주쳤습니다!"
+elif scene == "hide":
+    st.markdown(
+        """
+    <div class="event-card">
+        <h2>🥷 그림자 속으로</h2>
+        <p>민첩하게 무너진 벽 뒤로 몸을 숨겼습니다. 약탈자는 당신을 놓치고 투덜대며 지나쳐 갑니다. 
+        은신 기술을 체득했습니다.</p>
+    </div>
+    """,
+        unsafe_allow_html=True,
     )
 
-    if st.button("⚔️ 은밀히 피해서 도망친다"):
-        change_scene("start")
+    if st.button("🚶 조용히 방주 쉘터 방향으로 향한다"):
+        change_scene("shelter")
         st.rerun()
 
-elif scene == "government_office":
-    st.subheader("🏛️ 탐관오리의 관아 뒷문")
-    st.write(
-        "굳게 닫힌 관아 뒷문 앞에 도착했습니다. 굳게 잠긴 문이 보입니다."
+elif scene == "fight":
+    st.markdown(
+        """
+    <div class="event-card">
+        <h2>🩸 처절한 육탄전</h2>
+        <p>약탈자와 뒹굴며 육탄전을 벌였습니다. 가깝사로 상대를 제압했지만 상처를 입고 정신이 아득해집니다.</p>
+    </div>
+    """,
+        unsafe_allow_html=True,
     )
 
-    # 특정 아이템 소지 시에만 활성화되는 선택지
-    if "만능 열쇠" in st.session_state.inventory:
-        if st.button("🔑 만능 열쇠로 잠금장치를 해제하고 침투한다"):
+    if st.button("🩹 상처를 쥐어짜며 걸음을 옮긴다"):
+        change_scene("shelter")
+        st.rerun()
+
+elif scene == "shelter":
+    st.markdown(
+        """
+    <div class="event-card">
+        <h2>🏰 지하 쉘터 입구</h2>
+        <p>생존자들이 모여 사는 지하 쉘터에 도착했습니다. 문지기가 통행료나 특이 능력을 요구합니다.</p>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    if st.session_state.money >= 2:
+        if st.button("🪙 [돈 2] 통행료를 내고 입장한다"):
             change_scene("win")
             st.rerun()
-    else:
-        st.info("💡 문을 열려면 '만능 열쇠'가 필요합니다.")
 
-    if st.button("🔙 주막으로 돌아간다"):
-        change_scene("tavern")
+    if "은신" in st.session_state.traits:
+        if st.button("🥷 [은신] 환기구를 통해 몰래 침투한다"):
+            change_scene("win")
+            st.rerun()
+
+    if st.button("🚪 무작정 문을 두드리며 애원한다"):
+        change_scene("shelter", mentality=-1)
         st.rerun()
 
 elif scene == "win":
     st.balloons()
-    st.title("🏆 암행복수 성공!")
-    st.write(
-        "관아 비밀 서고에 침투하여 탐관오리의 비리 장부를 확보하고 마패를 내보였습니다! "
-        "성공적으로 임무를 완수했습니다."
+    st.markdown(
+        """
+    <div class="event-card">
+        <h2>🎉 쉘터 정착 성공</h2>
+        <p>안전한 지하 쉘터 내부로 들어오는 데 성공했습니다! 이곳에서 당분간 추위와 위험을 피해 살아남을 수 있을 것입니다.</p>
+    </div>
+    """,
+        unsafe_allow_html=True,
     )
-    if st.button("새로운 임무 시작하기"):
+    if st.button("처음부터 다시 플레이하기"):
         reset_game()
         st.rerun()
