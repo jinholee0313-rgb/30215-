@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import random
 
 # 1. 페이지 설정 및 앱 제목
-st.set_page_config(page_title="가상화폐 모의투자 게임", page_icon="🪙", layout="wide")
+st.set_page_config(page_title="가상화폐 & 주식 모의투자 게임", page_icon="📈", layout="wide")
 
 # 2. 게임 상태(session_state) 초기화
 INITIAL_CASH = 10_000_000.0  # 초기 가상 현금 1,000만원
@@ -15,28 +15,35 @@ if 'cash' not in st.session_state:
 if 'day' not in st.session_state:
     st.session_state.day = 1
 if 'news_log' not in st.session_state:
-    st.session_state.news_log = ["1일차: 가상화폐 모의투자 시장이 오픈했습니다!"]
+    st.session_state.news_log = ["1일차: 글로벌 모의투자 시장이 오픈했습니다!"]
 
-# 수량 입력 초기값 0개 설정
 if 'buy_qty' not in st.session_state:
     st.session_state.buy_qty = 0.0
 if 'sell_qty' not in st.session_state:
     st.session_state.sell_qty = 0.0
 
-# 기본 종목 리스트
-DEFAULT_COINS = {
-    "BIT-FAKE": {"name": "비트페이크", "price": 50_000_000.0, "history": [50_000_000.0]},
-    "ETH-SIM": {"name": "이더심", "price": 3_500_000.0, "history": [3_500_000.0]},
-    "SOL-SIM": {"name": "솔라나심", "price": 200_000.0, "history": [200_000.0]},
-    "DOGE-SIM": {"name": "도지심", "price": 200.0, "history": [200.0]},
-    "SHIB-SIM": {"name": "시바심", "price": 0.03, "history": [0.03]},
-    "NVDA-MOCK": {"name": "엔비디아", "price": 180_000.0, "history": [180_000.0]},
-    "TSLA-MOCK": {"name": "테슬라", "price": 300_000.0, "history": [300_000.0]},
-    "LUNA-MINT": {"name": "루나민트", "price": 1_000.0, "history": [1_000.0]},
+# 국가 및 산업별 기본 종목 데이터베이스
+DEFAULT_MARKET = {
+    # 🇰🇷 한국 주식
+    "HYUNDAI": {"name": "현대차", "category": "🇰🇷 한국 - 자동차", "price": 240_000.0, "history": [240_000.0], "change": 0.0},
+    "SAMSUNG": {"name": "삼성전자", "category": "🇰🇷 한국 - 반도체/IT", "price": 75_000.0, "history": [75_000.0], "change": 0.0},
+    "KAI": {"name": "한국항공우주", "category": "🇰🇷 한국 - 방산/우주", "price": 55_000.0, "history": [55_000.0], "change": 0.0},
+    "BIO-LOGICS": {"name": "삼성바이오", "category": "🇰🇷 한국 - 바이오/제약", "price": 800_000.0, "history": [800_000.0], "change": 0.0},
+    
+    # 🇺🇸 미국 주식
+    "TSLA": {"name": "테슬라", "category": "🇺🇸 미국 - 자동차/전기차", "price": 320_000.0, "history": [320_000.0], "change": 0.0},
+    "NVDA": {"name": "엔비디아", "category": "🇺🇸 미국 - 반도체/AI", "price": 180_000.0, "history": [180_000.0], "change": 0.0},
+    "AAPL": {"name": "애플", "category": "🇺🇸 미국 - 빅테크", "price": 290_000.0, "history": [290_000.0], "change": 0.0},
+    "RIVN": {"name": "리비안", "category": "🇺🇸 미국 - 자동차/전기차", "price": 20_000.0, "history": [20_000.0], "change": 0.0},
+
+    # 🪙 가상화폐
+    "BTC": {"name": "비트코인", "category": "🪙 가상화폐", "price": 85_000_000.0, "history": [85_000_000.0], "change": 0.0},
+    "ETH": {"name": "이더리움", "category": "🪙 가상화폐", "price": 4_200_000.0, "history": [4_200_000.0], "change": 0.0},
+    "DOGE": {"name": "도지코인", "category": "🪙 가상화폐", "price": 200.0, "history": [200.0], "change": 0.0},
 }
 
 if 'coins' not in st.session_state:
-    st.session_state.coins = DEFAULT_COINS
+    st.session_state.coins = DEFAULT_MARKET
 if 'portfolio' not in st.session_state:
     st.session_state.portfolio = {ticker: 0.0 for ticker in st.session_state.coins}
 
@@ -45,7 +52,7 @@ def advance_day():
     st.session_state.day += 1
     current_day = st.session_state.day
     
-    event_occurred = random.random() < 0.35
+    event_occurred = random.random() < 0.40  # 40% 확률로 이벤트 발생
     event_target = random.choice(list(st.session_state.coins.keys()))
     event_coin_name = st.session_state.coins[event_target]["name"]
     
@@ -53,42 +60,43 @@ def advance_day():
     event_type = random.choice(event_types) if event_occurred else "NONE"
 
     if event_type == "SUPER_PUMP":
-        msg = f"[{current_day}일차 🚀🚀] **초대형 대박!** 일론 머스크가 '{event_coin_name}'에 올인했다는 소식이 전해졌습니다!"
+        msg = f"[{current_day}일차 🚀🚀] **초대형 대박!** '{event_coin_name}' 관련 혁신 기술 발표로 매수세가 폭발합니다!"
         st.session_state.news_log.insert(0, msg)
     elif event_type == "PUMP":
-        msg = f"[{current_day}일차 📈] **호재 발표!** '{event_coin_name}'이(가) 대형 거래소 상장 소식을 전했습니다."
+        msg = f"[{current_day}일차 📈] **호재 발표!** '{event_coin_name}'의 분기 실적 및 시장 점유율이 급증했습니다."
         st.session_state.news_log.insert(0, msg)
     elif event_type == "DUMP":
-        msg = f"[{current_day}일차 📉] **악재 발생!** '{event_coin_name}' 관련 규제 법안이 통과될 가능성이 커졌습니다."
+        msg = f"[{current_day}일차 📉] **악재 발생!** '{event_coin_name}' 관련 규제 강화로 투자 심리가 약화되었습니다."
         st.session_state.news_log.insert(0, msg)
     elif event_type == "SUPER_DUMP":
-        msg = f"[{current_day}일차 💀💀] **경악! 뱅크런 발생!** '{event_coin_name}' 개발팀 해킹으로 전액 유출되었습니다!"
+        msg = f"[{current_day}일차 💀💀] **경악! 초대형 악재!** '{event_coin_name}' 공급망 중단 및 주요 악재로 폭락 중입니다!"
         st.session_state.news_log.insert(0, msg)
     else:
-        st.session_state.news_log.insert(0, f"[{current_day}일차 ☀️] 잔잔하고 평온한 시장 흐름이 이어지고 있습니다.")
+        st.session_state.news_log.insert(0, f"[{current_day}일차 ☀️] 잔잔하고 안정적인 시장 흐름이 이어지고 있습니다.")
 
     for ticker, data in st.session_state.coins.items():
         if event_occurred and ticker == event_target:
             if event_type == "SUPER_PUMP":
-                change_rate = random.uniform(1.00, 2.50)   # +100% ~ +250%
+                change_rate = random.uniform(0.80, 2.00)   # +80% ~ +200%
             elif event_type == "PUMP":
-                change_rate = random.uniform(0.20, 0.50)    # +20% ~ +50%
+                change_rate = random.uniform(0.15, 0.40)    # +15% ~ +40%
             elif event_type == "DUMP":
-                change_rate = random.uniform(-0.40, -0.20)  # -20% ~ -40%
+                change_rate = random.uniform(-0.35, -0.15)  # -15% ~ -35%
             elif event_type == "SUPER_DUMP":
-                change_rate = random.uniform(-0.90, -0.70)  # -70% ~ -90%
+                change_rate = random.uniform(-0.80, -0.50)  # -50% ~ -80%
         else:
-            change_rate = random.uniform(-0.12, 0.12)
+            change_rate = random.uniform(-0.10, 0.10)
 
-        new_price = round(data["price"] * (1 + change_rate), 4)
-        if new_price < 0.0001:
-            new_price = 0.0001
+        new_price = round(data["price"] * (1 + change_rate), 2)
+        if new_price < 0.01:
+            new_price = 0.01
             
+        data["change"] = change_rate * 100  # 당일 변동률 기록
         data["price"] = new_price
         data["history"].append(new_price)
 
 # 4. 상단 헤더 & 대시보드
-st.title("🪙 가상화폐 모의투자 게임")
+st.title("📈 가상화폐 & 한국/미국 주식 모의투자 게임")
 
 total_coin_val = sum(st.session_state.portfolio.get(t, 0) * st.session_state.coins[t]["price"] for t in st.session_state.coins)
 total_assets = st.session_state.cash + total_coin_val
@@ -103,6 +111,19 @@ col5.metric("수익률 (ROI)", f"{roi:+.2f} %")
 
 st.divider()
 
+# 🔥 급상승 & 급락 종목 위젯
+sorted_stocks = sorted(st.session_state.coins.items(), key=lambda x: x[1]["change"], reverse=True)
+top_gainer_ticker, top_gainer_data = sorted_stocks[0]
+top_loser_ticker, top_loser_data = sorted_stocks[-1]
+
+rank_col1, rank_col2 = st.columns(2)
+with rank_col1:
+    st.info(f"🔥 **오늘의 급상승 1위:** {top_gainer_data['name']} ({top_gainer_ticker}) | **{top_gainer_data['change']:+.2f}%** (현재가: {top_gainer_data['price']:,.2f}원)")
+with rank_col2:
+    st.error(f"📉 **오늘의 급락 1위:** {top_loser_data['name']} ({top_loser_ticker}) | **{top_loser_data['change']:+.2f}%** (현재가: {top_loser_data['price']:,.2f}원)")
+
+st.divider()
+
 # 5. 사이드바 - 컨트롤
 st.sidebar.header("🎮 게임 컨트롤")
 if st.sidebar.button("⏩ 다음 날로 진행 (시세 변동)", type="primary", use_container_width=True):
@@ -113,24 +134,34 @@ if st.sidebar.button("🔄 게임 처음부터 다시 시작", use_container_wid
     st.session_state.cash = INITIAL_CASH
     st.session_state.day = 1
     st.session_state.news_log = ["1일차: 게임이 새로 리셋되었습니다."]
-    st.session_state.coins = DEFAULT_COINS
+    st.session_state.coins = DEFAULT_MARKET
     st.session_state.portfolio = {ticker: 0.0 for ticker in st.session_state.coins}
     st.session_state.buy_qty = 0.0
     st.session_state.sell_qty = 0.0
     st.rerun()
 
 # 6. 메인 탭
-tab1, tab2, tab3, tab4 = st.tabs(["📈 종목 거래소", "🛠️ 직접 코인 민팅", "💼 내 포트폴리오", "📰 찌라시 & 속보"])
+tab1, tab2, tab3, tab4 = st.tabs(["📈 종목 거래소", "🛠️ 직접 종목 민팅", "💼 내 포트폴리오", "📰 찌라시 & 속보"])
 
-# TAB 1: 코인 거래소
+# TAB 1: 종목 거래소 (카테고리 필터 포함)
 with tab1:
     st.subheader("📊 실시간 시세 차트 및 매매")
     
+    # 카테고리 필터
+    categories = ["전체"] + sorted(list(set(item["category"] for item in st.session_state.coins.values())))
+    selected_category = st.selectbox("📂 산업/국가별 카테고리 필터", categories)
+    
+    # 필터링된 종목 리스트
+    if selected_category == "전체":
+        filtered_tickers = list(st.session_state.coins.keys())
+    else:
+        filtered_tickers = [t for t, d in st.session_state.coins.items() if d["category"] == selected_category]
+    
     selected_ticker = st.selectbox(
         "거래할 종목을 선택하세요", 
-        list(st.session_state.coins.keys()),
+        filtered_tickers,
         key="selected_ticker",
-        format_func=lambda x: f"{st.session_state.coins[x]['name']} ({x}) - 현재가: {st.session_state.coins[x]['price']:,.2f}원"
+        format_func=lambda x: f"[{st.session_state.coins[x]['category']}] {st.session_state.coins[x]['name']} ({x}) - 현재가: {st.session_state.coins[x]['price']:,.2f}원 ({st.session_state.coins[x]['change']:+.2f}%)"
     )
     
     coin_data = st.session_state.coins[selected_ticker]
@@ -145,7 +176,7 @@ with tab1:
         line=dict(color='#00C805' if coin_data["history"][-1] >= coin_data["history"][0] else '#FF4B4B', width=3)
     ))
     fig.update_layout(
-        title=f"{coin_data['name']} ({selected_ticker}) 시세 변동 추이",
+        title=f"{coin_data['name']} ({selected_ticker}) 시세 변동 추이 - 카테고리: {coin_data['category']}",
         xaxis_title="일차 (Day)",
         yaxis_title="가격 (원)",
         height=380
@@ -188,7 +219,7 @@ with tab1:
             elif st.session_state.cash >= total_buy_price:
                 st.session_state.cash -= total_buy_price
                 st.session_state.portfolio[selected_ticker] = my_qty + buy_amount
-                st.session_state.buy_qty = 0.0  # 거래 완료 후 0개로 리셋
+                st.session_state.buy_qty = 0.0
                 st.success(f"{coin_data['name']} {buy_amount:,.2f}개를 매수했습니다!")
                 st.rerun()
             else:
@@ -227,22 +258,23 @@ with tab1:
             elif my_qty >= sell_amount:
                 st.session_state.cash += total_sell_price
                 st.session_state.portfolio[selected_ticker] = my_qty - sell_amount
-                st.session_state.sell_qty = 0.0  # 거래 완료 후 0개로 리셋
+                st.session_state.sell_qty = 0.0
                 st.success(f"{coin_data['name']} {sell_amount:,.2f}개를 매도했습니다!")
                 st.rerun()
             else:
                 st.error("매도 수량이 부족합니다!")
 
-# TAB 2: 직접 코인 생성
+# TAB 2: 직접 종목 상장
 with tab2:
-    st.subheader("🚀 나만의 알트코인 직접 발행하기")
+    st.subheader("🚀 나만의 신규 종목 직접 발행/상장하기")
     
     with st.form("mint_form"):
-        new_coin_name = st.text_input("코인 이름 (예: 한강코인, 떡상코인)", "내 코인")
-        new_ticker = st.text_input("티커 심볼 (예: HANRIVER, TTOKSANG)", "MY-COIN").upper().strip()
+        new_coin_name = st.text_input("종목 이름 (예: 한강엔터, 우주항공코인)", "신규 종목")
+        new_ticker = st.text_input("티커 심볼 (예: HAN-ENT, SPACE-X)", "NEW-STOCK").upper().strip()
+        new_category = st.selectbox("카테고리 선택", ["🇰🇷 한국 - 자동차", "🇰🇷 한국 - 반도체/IT", "🇺🇸 미국 - 빅테크", "🇺🇸 미국 - 자동차/전기차", "🪙 가상화폐", "✨ 커스텀/기타"])
         start_price = st.number_input("초기 상장가 (원)", min_value=1.0, value=1000.0, step=100.0)
         
-        submitted = st.form_submit_button("🪙 신규 코인 상장하기")
+        submitted = st.form_submit_button("🪙 신규 종목 상장하기")
         
         if submitted:
             if not new_ticker or not new_coin_name:
@@ -252,12 +284,14 @@ with tab2:
             else:
                 st.session_state.coins[new_ticker] = {
                     "name": new_coin_name,
+                    "category": new_category,
                     "price": float(start_price),
-                    "history": [float(start_price)]
+                    "history": [float(start_price)],
+                    "change": 0.0
                 }
                 st.session_state.portfolio[new_ticker] = 0.0
-                st.session_state.news_log.insert(0, f"[{st.session_state.day}일차 🎉] 신규 코인 '{new_coin_name}({new_ticker})'이(가) 상장되었습니다!")
-                st.success(f"🎉 '{new_coin_name}({new_ticker})' 코인이 상장되었습니다!")
+                st.session_state.news_log.insert(0, f"[{st.session_state.day}일차 🎉] 신규 종목 '{new_coin_name}({new_ticker})'이(가) 상장되었습니다!")
+                st.success(f"🎉 [{new_category}] '{new_coin_name}({new_ticker})'이(가) 상장되었습니다!")
                 st.rerun()
 
 # TAB 3: 내 포트폴리오
@@ -272,6 +306,7 @@ with tab3:
             portfolio_data.append({
                 "티커": ticker,
                 "종목명": st.session_state.coins[ticker]["name"],
+                "카테고리": st.session_state.coins[ticker]["category"],
                 "보유 수량": f"{qty:,.2f} 개",
                 "현재가": f"{current_p:,.2f} 원",
                 "평가금액": f"{total_val:,.0f} 원"
@@ -280,7 +315,7 @@ with tab3:
     if portfolio_data:
         st.dataframe(pd.DataFrame(portfolio_data), use_container_width=True)
     else:
-        st.info("현재 보유 중인 코인이 없습니다.")
+        st.info("현재 보유 중인 종목이 없습니다.")
 
 # TAB 4: 찌라시 & 뉴스 로그
 with tab4:
