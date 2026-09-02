@@ -54,7 +54,7 @@ period = st.sidebar.selectbox("조회 기간", ["1d", "5d", "1mo", "3mo", "6mo",
 chart_type = st.sidebar.radio("차트 형태", ["캔들스틱 (Candlestick)", "라인 (Line)"])
 
 # 3. 데이터 수집
-@st.cache_data(ttl=60)  # 1분 단위 캐싱
+@st.cache_data(ttl=60)
 def fetch_data(symbol, p):
     try:
         data = yf.Ticker(symbol).history(period=p)
@@ -88,7 +88,7 @@ else:
 
     st.divider()
 
-    # Plotly 서브플롯 생성 (위: 가격 차트, 아래: 거래량)
+    # Plotly 서브플롯 생성
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
                         vertical_spacing=0.05, row_heights=[0.7, 0.3])
 
@@ -106,14 +106,14 @@ else:
             line=dict(color='#1f77b4', width=2)
         ), row=1, col=1)
 
-    # 거래량 차트
-    colors = ['#red' if c < o else '#green' for c, o in zip(df['Close'], df['Open'])]
+    # 올바른 헥사 코드 색상 적용
+    colors = ['#FF4B4B' if c < o else '#00C805' for c, o in zip(df['Close'], df['Open'])]
     fig.add_trace(go.Bar(
         x=df.index, y=df['Volume'],
         name="거래량", marker_color=colors
     ), row=2, col=1)
 
-    # 레이아웃 정돈
+    # 레이아웃 정리
     fig.update_layout(
         title=f"{ticker_symbol} 시세 및 거래량 차트",
         yaxis_title="가격",
