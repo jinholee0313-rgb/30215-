@@ -33,9 +33,8 @@ if "sell_qty" not in st.session_state:
 if "trade_msg" not in st.session_state:
     st.session_state.trade_msg = None
 
-# 현실에 없는 가상 종목 데이터베이스
+# 가상 종목 데이터베이스
 DEFAULT_MARKET = {
-    # 🇰🇷 가상 한국 주식
     "GLX-AUTO": {
         "name": "은하모터스",
         "category": "🇰🇷 한국 - 자동차",
@@ -64,7 +63,6 @@ DEFAULT_MARKET = {
         "history": [800_000.0],
         "change": 0.0,
     },
-    # 🇺🇸 가상 미국 주식
     "CYBER-DRV": {
         "name": "사이버드라이브",
         "category": "🇺🇸 미국 - 전기차",
@@ -93,7 +91,6 @@ DEFAULT_MARKET = {
         "history": [20_000.0],
         "change": 0.0,
     },
-    # 🪙 가상화폐
     "STAR-COIN": {
         "name": "스타코인",
         "category": "🪙 가상화폐",
@@ -125,7 +122,7 @@ if "portfolio" not in st.session_state:
     }
 
 
-# 3. 콜백 함수 정의 (에러 방지 핵심)
+# 3. 콜백 함수
 def add_buy_qty(amount):
     st.session_state.buy_qty += amount
 
@@ -290,23 +287,6 @@ with btn_col2:
 
 st.divider()
 
-# 대시보드 메트릭
-total_coin_val = sum(
-    st.session_state.portfolio.get(t, 0) * st.session_state.coins[t]["price"]
-    for t in st.session_state.coins
-)
-total_assets = st.session_state.cash + total_coin_val
-roi = ((total_assets - INITIAL_CASH) / INITIAL_CASH) * 100
-
-col1, col2, col3, col4, col5 = st.columns(5)
-col1.metric("현재 진행 일수", f"{st.session_state.day} 일차")
-col2.metric("보유 가상 현금", f"{st.session_state.cash:,.0f} 원")
-col3.metric("자산 평가액", f"{total_coin_val:,.0f} 원")
-col4.metric("총 자산", f"{total_assets:,.0f} 원")
-col5.metric("수익률 (ROI)", f"{roi:+.2f} %")
-
-st.divider()
-
 # 🔥 급상승 & 급락 종목 위젯
 sorted_stocks = sorted(
     st.session_state.coins.items(), key=lambda x: x[1]["change"], reverse=True
@@ -338,12 +318,15 @@ tab1, tab2, tab3, tab4 = st.tabs(
 
 # TAB 1: 종목 거래소
 with tab1:
-    st.subheader("📊 실시간 시세 차트 및 매매")
+    # 📌 [수정 위치] 차트 및 종목 선택을 자산 현금 표시보다 위로 배치
+    st.subheader("📊 실시간 시세 차트")
 
     categories = ["전체"] + sorted(
         list(set(item["category"] for item in st.session_state.coins.values()))
     )
-    selected_category = st.selectbox("📂 산업/국가별 카테고리 필터", categories)
+    f_col1, f_col2 = st.columns([1, 2])
+    with f_col1:
+        selected_category = st.selectbox("📂 산업/국가별 필터", categories)
 
     if selected_category == "전체":
         filtered_tickers = list(st.session_state.coins.keys())
@@ -354,16 +337,18 @@ with tab1:
             if d["category"] == selected_category
         ]
 
-    selected_ticker = st.selectbox(
-        "거래할 종목을 선택하세요",
-        filtered_tickers,
-        key="selected_ticker",
-        format_func=lambda x: f"[{st.session_state.coins[x]['category']}] {st.session_state.coins[x]['name']} ({x}) - 현재가: {st.session_state.coins[x]['price']:,.2f}원 ({st.session_state.coins[x]['change']:+.2f}%)",
-    )
+    with f_col2:
+        selected_ticker = st.selectbox(
+            "거래할 종목을 선택하세요",
+            filtered_tickers,
+            key="selected_ticker",
+            format_func=lambda x: f"[{st.session_state.coins[x]['category']}] {st.session_state.coins[x]['name']} ({x}) - 현재가: {st.session_state.coins[x]['price']:,.2f}원 ({st.session_state.coins[x]['change']:+.2f}%)",
+        )
 
     coin_data = st.session_state.coins[selected_ticker]
     my_qty = st.session_state.portfolio.get(selected_ticker, 0.0)
 
+    # 📈 실시간 그래프 상단 배치
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -381,12 +366,34 @@ with tab1:
         )
     )
     fig.update_layout(
-        title=f"{coin_data['name']} ({selected_ticker}) 시세 변동 추이 - 카테고리: {coin_data['category']}",
+        title=f"{coin_data['name']} ({selected_ticker}) 시세 변동 추이",
         xaxis_title="일차 (Day)",
         yaxis_title="가격 (원)",
         height=380,
     )
     st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+    # 💰 그래프 바로 아래에 보유 자산 및 현금 현황 표시
+    st.subheader("💰 현재 자산 및 보유 현황")
+
+    total_coin_val = sum(
+        st.session_state.portfolio.get(t, 0)
+        * st.session_state.coins[t]["price"]
+        for t in st.session_state.coins
+    )
+    total_assets = st.session_state.cash + total_coin_val
+    roi = ((total_assets - INITIAL_CASH) / INITIAL_CASH) * 100
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.metric("현재 진행 일수", f"{st.session_state.day} 일차")
+    col2.metric("보유 가상 현금", f"{st.session_state.cash:,.0f} 원")
+    col3.metric("자산 평가액", f"{total_coin_val:,.0f} 원")
+    col4.metric("총 자산", f"{total_assets:,.0f} 원")
+    col5.metric("수익률 (ROI)", f"{roi:+.2f} %")
+
+    st.divider()
 
     # 거래 결과 알림 메시지 출력
     if st.session_state.trade_msg:
