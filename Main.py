@@ -109,8 +109,17 @@ if "custom_text" not in st.session_state:
 if "custom_card" not in st.session_state:
     st.session_state.custom_card = "#1E222B"
 
+# 📊 차트 설정 초기화
+if "chart_type" not in st.session_state:
+    st.session_state.chart_type = "선 그래프 (Line)"
+if "up_color" not in st.session_state:
+    st.session_state.up_color = "#FF5252"  # 상승: 빨강
+if "down_color" not in st.session_state:
+    st.session_state.down_color = "#4285F4"  # 하락: 파랑
+
 # 🎨 테마 색상 동적 계산
-theme = st.session_state.theme
+theme = st.session_state.get("theme", "소프트 다크 (기본)")
+
 if theme == "소프트 다크 (기본)":
     bg_color, text_color, card_bg, border_color = (
         "#2D323E",
@@ -175,7 +184,7 @@ if not st.session_state.game_started:
         unsafe_allow_html=True,
     )
     st.markdown(
-        "<p style='text-align: center; opacity:0.8;'>게임 시작 전 언어, 난이도 및 테마 설정을 완료해 주세요.</p>",
+        "<p style='text-align: center; opacity:0.8;'>게임 시작 전 언어, 난이도 및 그래픽 설정을 완료해 주세요.</p>",
         unsafe_allow_html=True,
     )
     st.divider()
@@ -186,17 +195,19 @@ if not st.session_state.game_started:
         st.subheader("🌐 언어 및 난이도 설정")
 
         # 언어 선택
-        st.session_state.language = st.selectbox(
-            "🌐 언어 선택 (Language)", ["한국어", "English"]
+        st.selectbox(
+            "🌐 언어 선택 (Language)",
+            ["한국어", "English"],
+            key="language",
         )
 
         st.write("")
 
         # 난이도 선택 (시작 시에만 설정 가능)
-        st.session_state.difficulty = st.selectbox(
+        st.selectbox(
             "🎯 게임 난이도 선택 (시작 후 변경 불가)",
             list(DIFFICULTY_SETTINGS.keys()),
-            index=1,
+            key="difficulty",
         )
 
         diff_info = DIFFICULTY_SETTINGS[st.session_state.difficulty]
@@ -208,9 +219,10 @@ if not st.session_state.game_started:
         st.info(f"💡 **난이도 정보:** {desc}")
 
     with col2:
-        st.subheader("⚙️ 테마 & 화면 설정")
+        st.subheader("⚙️ 테마 & 차트 설정")
 
-        st.session_state.theme = st.selectbox(
+        # 테마 선택
+        st.selectbox(
             "🎨 테마 선택",
             [
                 "소프트 다크 (기본)",
@@ -219,23 +231,31 @@ if not st.session_state.game_started:
                 "미드나잇 블루",
                 "🎨 직접 색상 선택",
             ],
+            key="theme",
         )
 
         if st.session_state.theme == "🎨 직접 색상 선택":
-            st.session_state.custom_bg = st.color_picker(
-                "배경 색상", st.session_state.custom_bg
+            st.color_picker("배경 색상", key="custom_bg")
+            st.color_picker("글자 색상", key="custom_text")
+            st.color_picker("카드 배경색", key="custom_card")
+
+        st.write("")
+        st.markdown("#### 📊 차트 그래프 설정")
+        c_col1, c_col2, c_col3 = st.columns([2, 1, 1])
+        with c_col1:
+            st.selectbox(
+                "차트 종류",
+                ["선 그래프 (Line)", "막대 그래프 (Bar)"],
+                key="chart_type",
             )
-            st.session_state.custom_text = st.color_picker(
-                "글자 색상", st.session_state.custom_text
-            )
-            st.session_state.custom_card = st.color_picker(
-                "카드 배경색", st.session_state.custom_card
-            )
+        with c_col2:
+            st.color_picker("상승 색상", key="up_color")
+        with c_col3:
+            st.color_picker("하락 색상", key="down_color")
 
     st.divider()
 
     # 게임 시작 버튼
-    st.write("")
     start_btn_label = (
         "🚀 게임 시작하기"
         if st.session_state.language == "한국어"
@@ -243,7 +263,6 @@ if not st.session_state.game_started:
     )
 
     if st.button(start_btn_label, type="primary", use_container_width=True):
-        # 게임 데이터 데이터 세팅
         selected_diff = st.session_state.difficulty
         st.session_state.cash = DIFFICULTY_SETTINGS[selected_diff]["cash"]
         st.session_state.day = 1
@@ -263,9 +282,11 @@ if not st.session_state.game_started:
         )
         st.session_state.news_log = [
             {
-                "time": f"1일차 [1회차]"
-                if st.session_state.language == "한국어"
-                else "Day 1 [Turn 1]",
+                "time": (
+                    "1일차 [1회차]"
+                    if st.session_state.language == "한국어"
+                    else "Day 1 [Turn 1]"
+                ),
                 "ticker": None,
                 "msg": init_msg,
             }
@@ -274,34 +295,33 @@ if not st.session_state.game_started:
         st.session_state.game_started = True
         st.rerun()
 
-    st.stop()  # 시작 화면에서는 아래 코드 실행 중단
+    st.stop()
 
 
 # -----------------------------------------------------------------------------
 # 🎮 화면 2: 게임 플레이 화면 (game_started == True)
 # -----------------------------------------------------------------------------
 
-# 🎨 게임 중 사이드바 (언어 설정 및 테마 설정만 표시)
+# 🎨 게임 중 사이드바
 with st.sidebar:
     st.header("⚙️ 게임 설정")
 
-    # 고정된 난이도 표시 (변경 불가)
     st.caption(
         f"🎯 **현재 난이도:** {st.session_state.difficulty} (중도 변경 불가)"
     )
     st.divider()
 
     # 언어 변경
-    st.session_state.language = st.selectbox(
+    st.selectbox(
         "🌐 언어 설정 (Language)",
         ["한국어", "English"],
-        index=0 if st.session_state.language == "한국어" else 1,
+        key="language",
     )
 
     st.divider()
 
     # 테마 변경
-    st.session_state.theme = st.selectbox(
+    st.selectbox(
         "🎨 테마 선택",
         [
             "소프트 다크 (기본)",
@@ -310,25 +330,28 @@ with st.sidebar:
             "미드나잇 블루",
             "🎨 직접 색상 선택",
         ],
-        index=[
-            "소프트 다크 (기본)",
-            "라이트 모드",
-            "딥 블랙",
-            "미드나잇 블루",
-            "🎨 직접 색상 선택",
-        ].index(st.session_state.theme),
+        key="theme",
     )
 
     if st.session_state.theme == "🎨 직접 색상 선택":
-        st.session_state.custom_bg = st.color_picker(
-            "배경 색상", st.session_state.custom_bg
-        )
-        st.session_state.custom_text = st.color_picker(
-            "글자 색상", st.session_state.custom_text
-        )
-        st.session_state.custom_card = st.color_picker(
-            "카드 배경색", st.session_state.custom_card
-        )
+        st.color_picker("배경 색상", key="custom_bg")
+        st.color_picker("글자 색상", key="custom_text")
+        st.color_picker("카드 배경색", key="custom_card")
+
+    st.divider()
+
+    # 📊 차트 그래프 설정
+    st.subheader("📊 차트 그래프 설정")
+    st.selectbox(
+        "차트 종류",
+        ["선 그래프 (Line)", "막대 그래프 (Bar)"],
+        key="chart_type",
+    )
+    col_u, col_d = st.columns(2)
+    with col_u:
+        st.color_picker("상승 색상", key="up_color")
+    with col_d:
+        st.color_picker("하락 색상", key="down_color")
 
     st.divider()
 
@@ -578,24 +601,41 @@ with tab1:
 
     st.divider()
 
-    # 실시간 시세 차트
+    # 📊 동적 실시간 시세 차트 생성 (선 / 막대 그래프 선택 및 색상 반영)
     st.subheader("📊 실시간 시세 차트")
     fig = go.Figure()
-    fig.add_trace(
-        go.Scatter(
-            y=coin_data["history"],
-            mode="lines+markers",
-            name=selected_ticker,
-            line=dict(
-                color=(
-                    "#00FF87"
-                    if coin_data["history"][-1] >= coin_data["history"][0]
-                    else "#FF5252"
-                ),
-                width=3,
-            ),
+
+    history = coin_data["history"]
+    up_c = st.session_state.up_color
+    down_c = st.session_state.down_color
+
+    if st.session_state.chart_type == "막대 그래프 (Bar)":
+        # 막대 그래프 색상 동적 결정 (이전 회차 대비 상승/하락)
+        bar_colors = [up_c]  # 첫 회차는 기본 상승 색상
+        for i in range(1, len(history)):
+            if history[i] >= history[i - 1]:
+                bar_colors.append(up_c)
+            else:
+                bar_colors.append(down_c)
+
+        fig.add_trace(
+            go.Bar(
+                y=history,
+                name=selected_ticker,
+                marker_color=bar_colors,
+            )
         )
-    )
+    else:
+        # 선 그래프 (전체 추세에 따라 상승/하락 대표 색상 지정)
+        line_color = up_c if history[-1] >= history[0] else down_c
+        fig.add_trace(
+            go.Scatter(
+                y=history,
+                mode="lines+markers",
+                name=selected_ticker,
+                line=dict(color=line_color, width=3),
+            )
+        )
 
     fig.update_layout(
         template=(
