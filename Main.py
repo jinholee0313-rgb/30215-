@@ -4,41 +4,89 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-# 1. 페이지 설정 및 앱 제목
+# 1. 페이지 설정
 st.set_page_config(
     page_title="가상 시뮬레이션 모의투자 게임", page_icon="📈", layout="wide"
 )
 
-# 🎨 약간 어두운 톤의 차콜 배경 스타일 적용 (Soft Dark Theme CSS)
+# 🎨 사이드바 - 설정 창 (테마 및 배경/글자 색상 변경)
+with st.sidebar:
+    st.header("⚙️ 화면 & 테마 설정")
+    theme = st.selectbox(
+        "🎨 테마 선택",
+        ["소프트 다크 (기본)", "라이트 모드", "딥 블랙", "미드나잇 블루", "🎨 직접 색상 선택"],
+    )
+
+    if theme == "소프트 다크 (기본)":
+        bg_color = "#2D323E"
+        text_color = "#FFFFFF"
+        card_bg = "#1E222B"
+        border_color = "#4A5162"
+    elif theme == "라이트 모드":
+        bg_color = "#F4F6F9"
+        text_color = "#1A1D24"
+        card_bg = "#FFFFFF"
+        border_color = "#D1D5DB"
+    elif theme == "딥 블랙":
+        bg_color = "#0F1115"
+        text_color = "#FFFFFF"
+        card_bg = "#1A1D24"
+        border_color = "#2D323E"
+    elif theme == "미드나잇 블루":
+        bg_color = "#0F172A"
+        text_color = "#F8FAFC"
+        card_bg = "#1E293B"
+        border_color = "#334155"
+    else:  # 커스텀 색상
+        st.caption("원하는 배경색과 글자색을 지정하세요.")
+        bg_color = st.color_picker("배경 색상", "#2D323E")
+        text_color = st.color_picker("글자 색상", "#FFFFFF")
+        card_bg = st.color_picker("카드/박스 배경색", "#1E222B")
+        border_color = "#4A5162"
+
+# 🎨 동적 CSS 적용 (설정된 배경색 및 글자색 연동)
 st.markdown(
-    """
+    f"""
     <style>
-    /* 메인 배경 (약간 어두운 차콜/슬레이트 톤) */
-    .stApp {
-        background-color: #1A1D24;
-        color: #E0E0E0;
-    }
-    /* 메트릭 박스 및 카드 배경 */
-    [data-testid="stMetricValue"] {
-        color: #00E676 !important;
-    }
-    div[data-testid="stMetric"] {
-        background-color: #262A33;
+    /* 메인 앱 배경 및 기본 글자색 */
+    .stApp {{
+        background-color: {bg_color};
+        color: {text_color};
+    }}
+    /* 본문, 라벨, 헤더 등 모든 텍스트 색상 일괄 변경 */
+    .stApp p, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {{
+        color: {text_color} !important;
+    }}
+    /* 메트릭 박스 카드 디자인 */
+    div[data-testid="stMetric"] {{
+        background-color: {card_bg};
         padding: 15px;
         border-radius: 10px;
-        border: 1px solid #3A3F4D;
-    }
-    /* 구분선 디자인 */
-    hr {
-        border-color: #3A3F4D;
-    }
+        border: 1px solid {border_color};
+    }}
+    div[data-testid="stMetricLabel"] p {{
+        color: {text_color} !important;
+        opacity: 0.8;
+    }}
+    div[data-testid="stMetricValue"] div {{
+        color: #00FF87 !important;
+    }}
+    /* 드롭다운 박스 배경 및 글자색 */
+    div[data-baseweb="select"] > div {{
+        background-color: {card_bg} !important;
+        color: {text_color} !important;
+    }}
+    /* 구분선 컬러 */
+    hr {{
+        border-color: {border_color};
+    }}
     </style>
 """,
     unsafe_allow_html=True,
 )
 
 # 2. 게임 상태(session_state) 초기화
-INITIAL_CASH = 10_000_000.0  # 초기 가상 현금 1,000만원
+INITIAL_CASH = 10_000_000.0
 
 if "cash" not in st.session_state:
     st.session_state.cash = INITIAL_CASH
@@ -360,7 +408,7 @@ with tab1:
 
     st.divider()
 
-    # 📌 2. 최상단: 주식 실시간 시세 차트 (그래프)
+    # 📌 2. 최상단: 주식 실시간 시세 차트 (설정된 테마 색상 동적 적용)
     st.subheader("📊 실시간 시세 차트")
     fig = go.Figure()
     fig.add_trace(
@@ -370,7 +418,7 @@ with tab1:
             name=selected_ticker,
             line=dict(
                 color=(
-                    "#00E676"
+                    "#00FF87"
                     if coin_data["history"][-1] >= coin_data["history"][0]
                     else "#FF5252"
                 ),
@@ -378,21 +426,36 @@ with tab1:
             ),
         )
     )
-    # 차콜 배경에 맞춘 차트 레이아웃
+
+    # 🎨 선택된 테마 색상에 맞춰 그래프 반응형 적용
     fig.update_layout(
-        template="plotly_dark",
-        paper_bgcolor="#262A33",
-        plot_bgcolor="#262A33",
-        title=f"{coin_data['name']} ({selected_ticker}) 시세 변동 추이",
-        xaxis_title="일차 (Day)",
-        yaxis_title="가격 (원)",
+        template="plotly_white" if theme == "라이트 모드" else "plotly_dark",
+        paper_bgcolor=card_bg,
+        plot_bgcolor=card_bg,
+        font=dict(color=text_color),
+        title=dict(
+            text=f"{coin_data['name']} ({selected_ticker}) 시세 변동 추이",
+            font=dict(color=text_color, size=16),
+        ),
+        xaxis=dict(
+            title="일차 (Day)",
+            title_font=dict(color=text_color),
+            tickfont=dict(color=text_color),
+            gridcolor=border_color,
+        ),
+        yaxis=dict(
+            title="가격 (원)",
+            title_font=dict(color=text_color),
+            tickfont=dict(color=text_color),
+            gridcolor=border_color,
+        ),
         height=380,
     )
     st.plotly_chart(fig, use_container_width=True)
 
     st.divider()
 
-    # 📌 3. 위치 변경: 주식 그래프와 보유 자산 사이 조작 버튼 (다음날로 진행 / 리셋)
+    # 📌 3. 주식 그래프와 보유 자산 사이 조작 버튼 (다음날로 진행 / 리셋)
     btn_col1, btn_col2 = st.columns(2)
     with btn_col1:
         if st.button(
