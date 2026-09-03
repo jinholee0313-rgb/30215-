@@ -318,8 +318,8 @@ tab1, tab2, tab3, tab4 = st.tabs(
 
 # TAB 1: 종목 거래소
 with tab1:
-    # 📌 [수정 위치] 차트 및 종목 선택을 자산 현금 표시보다 위로 배치
-    st.subheader("📊 실시간 시세 차트")
+    # 📌 1. 필터 및 종목 선택 영역 (최상단 배치)
+    st.subheader("📂 종목 선택 및 필터")
 
     categories = ["전체"] + sorted(
         list(set(item["category"] for item in st.session_state.coins.values()))
@@ -348,54 +348,9 @@ with tab1:
     coin_data = st.session_state.coins[selected_ticker]
     my_qty = st.session_state.portfolio.get(selected_ticker, 0.0)
 
-    # 📈 실시간 그래프 상단 배치
-    fig = go.Figure()
-    fig.add_trace(
-        go.Scatter(
-            y=coin_data["history"],
-            mode="lines+markers",
-            name=selected_ticker,
-            line=dict(
-                color=(
-                    "#00C805"
-                    if coin_data["history"][-1] >= coin_data["history"][0]
-                    else "#FF4B4B"
-                ),
-                width=3,
-            ),
-        )
-    )
-    fig.update_layout(
-        title=f"{coin_data['name']} ({selected_ticker}) 시세 변동 추이",
-        xaxis_title="일차 (Day)",
-        yaxis_title="가격 (원)",
-        height=380,
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
     st.divider()
 
-    # 💰 그래프 바로 아래에 보유 자산 및 현금 현황 표시
-    st.subheader("💰 현재 자산 및 보유 현황")
-
-    total_coin_val = sum(
-        st.session_state.portfolio.get(t, 0)
-        * st.session_state.coins[t]["price"]
-        for t in st.session_state.coins
-    )
-    total_assets = st.session_state.cash + total_coin_val
-    roi = ((total_assets - INITIAL_CASH) / INITIAL_CASH) * 100
-
-    col1, col2, col3, col4, col5 = st.columns(5)
-    col1.metric("현재 진행 일수", f"{st.session_state.day} 일차")
-    col2.metric("보유 가상 현금", f"{st.session_state.cash:,.0f} 원")
-    col3.metric("자산 평가액", f"{total_coin_val:,.0f} 원")
-    col4.metric("총 자산", f"{total_assets:,.0f} 원")
-    col5.metric("수익률 (ROI)", f"{roi:+.2f} %")
-
-    st.divider()
-
-    # 거래 결과 알림 메시지 출력
+    # 📌 2. 매수 / 매도 영역 (필터 바로 아래 배치)
     if st.session_state.trade_msg:
         msg_type, msg_text = st.session_state.trade_msg
         if msg_type == "warning":
@@ -480,6 +435,53 @@ with tab1:
             on_click=execute_sell,
             args=(selected_ticker,),
         )
+
+    st.divider()
+
+    # 📌 3. 실시간 차트
+    st.subheader("📊 실시간 시세 차트")
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            y=coin_data["history"],
+            mode="lines+markers",
+            name=selected_ticker,
+            line=dict(
+                color=(
+                    "#00C805"
+                    if coin_data["history"][-1] >= coin_data["history"][0]
+                    else "#FF4B4B"
+                ),
+                width=3,
+            ),
+        )
+    )
+    fig.update_layout(
+        title=f"{coin_data['name']} ({selected_ticker}) 시세 변동 추이",
+        xaxis_title="일차 (Day)",
+        yaxis_title="가격 (원)",
+        height=380,
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+    # 📌 4. 현재 자산 현황
+    st.subheader("💰 현재 자산 및 보유 현황")
+    total_coin_val = sum(
+        st.session_state.portfolio.get(t, 0)
+        * st.session_state.coins[t]["price"]
+        for t in st.session_state.coins
+    )
+    total_assets = st.session_state.cash + total_coin_val
+    roi = ((total_assets - INITIAL_CASH) / INITIAL_CASH) * 100
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.metric("현재 진행 일수", f"{st.session_state.day} 일차")
+    col2.metric("보유 가상 현금", f"{st.session_state.cash:,.0f} 원")
+    col3.metric("자산 평가액", f"{total_coin_val:,.0f} 원")
+    col4.metric("총 자산", f"{total_assets:,.0f} 원")
+    col5.metric("수익률 (ROI)", f"{roi:+.2f} %")
 
     # 📰 선택된 종목 전용 뉴스 표시
     st.divider()
