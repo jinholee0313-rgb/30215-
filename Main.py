@@ -9,28 +9,28 @@ st.set_page_config(
     page_title="가상 시뮬레이션 모의투자 게임", page_icon="📈", layout="wide"
 )
 
-# 🎨 어두운 배경 스타일 적용 (Dark Theme CSS)
+# 🎨 약간 어두운 톤의 차콜 배경 스타일 적용 (Soft Dark Theme CSS)
 st.markdown(
     """
     <style>
-    /* 메인 배경 및 글자색 설정 */
+    /* 메인 배경 (약간 어두운 차콜/슬레이트 톤) */
     .stApp {
-        background-color: #0E1117;
+        background-color: #1A1D24;
         color: #E0E0E0;
     }
-    /* 카드 및 메트릭 배경 설정 */
+    /* 메트릭 박스 및 카드 배경 */
     [data-testid="stMetricValue"] {
         color: #00E676 !important;
     }
     div[data-testid="stMetric"] {
-        background-color: #161B22;
+        background-color: #262A33;
         padding: 15px;
         border-radius: 10px;
-        border: 1px solid #30363D;
+        border: 1px solid #3A3F4D;
     }
-    /* 구분선 색상 */
+    /* 구분선 디자인 */
     hr {
-        border-color: #30363D;
+        border-color: #3A3F4D;
     }
     </style>
 """,
@@ -295,25 +295,8 @@ def advance_day():
         data["history"].append(new_price)
 
 
-# 5. 상단 헤더 & 컨트롤
+# 5. 상단 헤더
 st.title("📈 가상화폐 & 주식 모의투자 게임")
-
-btn_col1, btn_col2 = st.columns(2)
-with btn_col1:
-    if st.button(
-        "⏩ 다음 날로 진행 (시세 변동)", type="primary", use_container_width=True
-    ):
-        advance_day()
-        st.rerun()
-
-with btn_col2:
-    st.button(
-        "🔄 게임 처음부터 다시 시작",
-        use_container_width=True,
-        on_click=reset_game,
-    )
-
-st.divider()
 
 # 🔥 급상승 & 급락 종목 위젯
 sorted_stocks = sorted(
@@ -377,7 +360,7 @@ with tab1:
 
     st.divider()
 
-    # 📌 2. 최상단 배치: 주식 실시간 시세 차트 (그래프)
+    # 📌 2. 최상단: 주식 실시간 시세 차트 (그래프)
     st.subheader("📊 실시간 시세 차트")
     fig = go.Figure()
     fig.add_trace(
@@ -395,11 +378,11 @@ with tab1:
             ),
         )
     )
-    # 어두운 테마에 맞춘 plotly 차트 레이아웃
+    # 차콜 배경에 맞춘 차트 레이아웃
     fig.update_layout(
         template="plotly_dark",
-        paper_bgcolor="#161B22",
-        plot_bgcolor="#161B22",
+        paper_bgcolor="#262A33",
+        plot_bgcolor="#262A33",
         title=f"{coin_data['name']} ({selected_ticker}) 시세 변동 추이",
         xaxis_title="일차 (Day)",
         yaxis_title="가격 (원)",
@@ -409,7 +392,27 @@ with tab1:
 
     st.divider()
 
-    # 📌 3. 그래프 바로 아래 배치: 소유 자금 현황
+    # 📌 3. 위치 변경: 주식 그래프와 보유 자산 사이 조작 버튼 (다음날로 진행 / 리셋)
+    btn_col1, btn_col2 = st.columns(2)
+    with btn_col1:
+        if st.button(
+            "⏩ 다음 날로 진행 (시세 변동)",
+            type="primary",
+            use_container_width=True,
+        ):
+            advance_day()
+            st.rerun()
+
+    with btn_col2:
+        st.button(
+            "🔄 게임 처음부터 다시 시작",
+            use_container_width=True,
+            on_click=reset_game,
+        )
+
+    st.divider()
+
+    # 📌 4. 보유 자금 현황
     st.subheader("💰 현재 자산 및 보유 현황")
     total_coin_val = sum(
         st.session_state.portfolio.get(t, 0)
@@ -428,7 +431,7 @@ with tab1:
 
     st.divider()
 
-    # 📌 4. 최하단 배치: 매수 / 매도 거래 영역
+    # 📌 5. 하단: 매수 / 매도 거래 영역
     st.subheader("🛒 주식 거래 (매수 / 매도)")
 
     if st.session_state.trade_msg:
