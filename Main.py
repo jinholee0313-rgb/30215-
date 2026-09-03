@@ -9,6 +9,34 @@ st.set_page_config(
     page_title="가상 시뮬레이션 모의투자 게임", page_icon="📈", layout="wide"
 )
 
+# 🎨 어두운 배경 스타일 적용 (Dark Theme CSS)
+st.markdown(
+    """
+    <style>
+    /* 메인 배경 및 글자색 설정 */
+    .stApp {
+        background-color: #0E1117;
+        color: #E0E0E0;
+    }
+    /* 카드 및 메트릭 배경 설정 */
+    [data-testid="stMetricValue"] {
+        color: #00E676 !important;
+    }
+    div[data-testid="stMetric"] {
+        background-color: #161B22;
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #30363D;
+    }
+    /* 구분선 색상 */
+    hr {
+        border-color: #30363D;
+    }
+    </style>
+""",
+    unsafe_allow_html=True,
+)
+
 # 2. 게임 상태(session_state) 초기화
 INITIAL_CASH = 10_000_000.0  # 초기 가상 현금 1,000만원
 
@@ -319,6 +347,7 @@ tab1, tab2, tab3, tab4 = st.tabs(
 # TAB 1: 종목 거래소
 with tab1:
     # 📌 1. 필터 및 종목 선택 영역
+    st.subheader("📂 종목 선택 및 필터")
     categories = ["전체"] + sorted(
         list(set(item["category"] for item in st.session_state.coins.values()))
     )
@@ -348,7 +377,39 @@ with tab1:
 
     st.divider()
 
-    # 📌 2. 최상단: 현재 보유 자금 현황
+    # 📌 2. 최상단 배치: 주식 실시간 시세 차트 (그래프)
+    st.subheader("📊 실시간 시세 차트")
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            y=coin_data["history"],
+            mode="lines+markers",
+            name=selected_ticker,
+            line=dict(
+                color=(
+                    "#00E676"
+                    if coin_data["history"][-1] >= coin_data["history"][0]
+                    else "#FF5252"
+                ),
+                width=3,
+            ),
+        )
+    )
+    # 어두운 테마에 맞춘 plotly 차트 레이아웃
+    fig.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="#161B22",
+        plot_bgcolor="#161B22",
+        title=f"{coin_data['name']} ({selected_ticker}) 시세 변동 추이",
+        xaxis_title="일차 (Day)",
+        yaxis_title="가격 (원)",
+        height=380,
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+    # 📌 3. 그래프 바로 아래 배치: 소유 자금 현황
     st.subheader("💰 현재 자산 및 보유 현황")
     total_coin_val = sum(
         st.session_state.portfolio.get(t, 0)
@@ -367,35 +428,7 @@ with tab1:
 
     st.divider()
 
-    # 📌 3. 상단: 실시간 시세 차트 (주식 그래프)
-    st.subheader("📊 실시간 시세 차트")
-    fig = go.Figure()
-    fig.add_trace(
-        go.Scatter(
-            y=coin_data["history"],
-            mode="lines+markers",
-            name=selected_ticker,
-            line=dict(
-                color=(
-                    "#00C805"
-                    if coin_data["history"][-1] >= coin_data["history"][0]
-                    else "#FF4B4B"
-                ),
-                width=3,
-            ),
-        )
-    )
-    fig.update_layout(
-        title=f"{coin_data['name']} ({selected_ticker}) 시세 변동 추이",
-        xaxis_title="일차 (Day)",
-        yaxis_title="가격 (원)",
-        height=380,
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.divider()
-
-    # 📌 4. 하단: 매수 / 매도 거래 영역
+    # 📌 4. 최하단 배치: 매수 / 매도 거래 영역
     st.subheader("🛒 주식 거래 (매수 / 매도)")
 
     if st.session_state.trade_msg:
