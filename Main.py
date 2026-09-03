@@ -17,7 +17,6 @@ if "cash" not in st.session_state:
 if "day" not in st.session_state:
     st.session_state.day = 1
 
-# 뉴스 로그를 객체 구조로 관리 (종목별 필터링용)
 if "news_log" not in st.session_state:
     st.session_state.news_log = [
         {
@@ -31,6 +30,8 @@ if "buy_qty" not in st.session_state:
     st.session_state.buy_qty = 0.0
 if "sell_qty" not in st.session_state:
     st.session_state.sell_qty = 0.0
+if "trade_msg" not in st.session_state:
+    st.session_state.trade_msg = None
 
 # 현실에 없는 가상 종목 데이터베이스
 DEFAULT_MARKET = {
@@ -124,12 +125,102 @@ if "portfolio" not in st.session_state:
     }
 
 
-# 3. 시세 변동 및 이벤트 엔진
+# 3. 콜백 함수 정의 (에러 방지 핵심)
+def add_buy_qty(amount):
+    st.session_state.buy_qty += amount
+
+
+def set_buy_max(price):
+    if price > 0:
+        st.session_state.buy_qty = float(st.session_state.cash / price)
+
+
+def reset_buy_qty():
+    st.session_state.buy_qty = 0.0
+
+
+def execute_buy(ticker):
+    price = st.session_state.coins[ticker]["price"]
+    buy_amount = st.session_state.buy_qty
+    total_buy_price = buy_amount * price
+
+    if buy_amount < 1.0:
+        st.session_state.trade_msg = (
+            "warning",
+            "최소 1개 이상부터 매수할 수 있습니다.",
+        )
+    elif st.session_state.cash >= total_buy_price:
+        st.session_state.cash -= total_buy_price
+        st.session_state.portfolio[ticker] = (
+            st.session_state.portfolio.get(ticker, 0.0) + buy_amount
+        )
+        st.session_state.buy_qty = 0.0
+        st.session_state.trade_msg = (
+            "success",
+            f"{st.session_state.coins[ticker]['name']} {buy_amount:,.2f}개를 매수했습니다!",
+        )
+    else:
+        st.session_state.trade_msg = ("error", "현금이 부족합니다!")
+
+
+def add_sell_qty(amount, max_qty):
+    st.session_state.sell_qty = float(
+        min(max_qty, st.session_state.sell_qty + amount)
+    )
+
+
+def set_sell_max(max_qty):
+    st.session_state.sell_qty = float(max_qty)
+
+
+def reset_sell_qty():
+    st.session_state.sell_qty = 0.0
+
+
+def execute_sell(ticker):
+    price = st.session_state.coins[ticker]["price"]
+    sell_amount = st.session_state.sell_qty
+    my_qty = st.session_state.portfolio.get(ticker, 0.0)
+    total_sell_price = sell_amount * price
+
+    if sell_amount < 1.0:
+        st.session_state.trade_msg = (
+            "warning",
+            "최소 1개 이상부터 매도할 수 있습니다.",
+        )
+    elif my_qty >= sell_amount:
+        st.session_state.cash += total_sell_price
+        st.session_state.portfolio[ticker] = my_qty - sell_amount
+        st.session_state.sell_qty = 0.0
+        st.session_state.trade_msg = (
+            "success",
+            f"{st.session_state.coins[ticker]['name']} {sell_amount:,.2f}개를 매도했습니다!",
+        )
+    else:
+        st.session_state.trade_msg = ("error", "매도 수량이 부족합니다!")
+
+
+def reset_game():
+    st.session_state.cash = INITIAL_CASH
+    st.session_state.day = 1
+    st.session_state.news_log = [
+        {"day": 1, "ticker": None, "msg": "1일차: 게임이 새로 리셋되었습니다."}
+    ]
+    st.session_state.coins = DEFAULT_MARKET
+    st.session_state.portfolio = {
+        ticker: 0.0 for ticker in st.session_state.coins
+    }
+    st.session_state.buy_qty = 0.0
+    st.session_state.sell_qty = 0.0
+    st.session_state.trade_msg = None
+
+
+# 4. 시세 변동 및 이벤트 엔진
 def advance_day():
     st.session_state.day += 1
     current_day = st.session_state.day
 
-    event_occurred = random.random() < 0.40  # 40% 확률로 이벤트 발생
+    event_occurred = random.random() < 0.40
     event_target = random.choice(list(st.session_state.coins.keys()))
     event_coin_name = st.session_state.coins[event_target]["name"]
 
@@ -146,9 +237,8 @@ def advance_day():
         msg = f"[{current_day}일차 💀💀] **경악! 초대형 악재!** '{event_coin_name}' 공급망 중단 및 주요 악재로 폭락 중입니다!"
     else:
         msg = f"[{current_day}일차 ☀️] 잔잔하고 안정적인 시장 흐름이 이어지고 있습니다."
-        event_target = None  # 특정 종목 이슈 없음
+        event_target = None
 
-    # 뉴스 기록 추가
     st.session_state.news_log.insert(
         0,
         {
@@ -180,10 +270,9 @@ def advance_day():
         data["history"].append(new_price)
 
 
-# 4. 상단 헤더 & 상단 메인 컨트롤 버튼
+# 5. 상단 헤더 & 컨트롤
 st.title("📈 가상화폐 & 주식 모의투자 게임")
 
-# 🎮 상단 게임 컨트롤 버튼 (요구사항 반영)
 btn_col1, btn_col2 = st.columns(2)
 with btn_col1:
     if st.button(
@@ -193,23 +282,11 @@ with btn_col1:
         st.rerun()
 
 with btn_col2:
-    if st.button("🔄 게임 처음부터 다시 시작", use_container_width=True):
-        st.session_state.cash = INITIAL_CASH
-        st.session_state.day = 1
-        st.session_state.news_log = [
-            {
-                "day": 1,
-                "ticker": None,
-                "msg": "1일차: 게임이 새로 리셋되었습니다.",
-            }
-        ]
-        st.session_state.coins = DEFAULT_MARKET
-        st.session_state.portfolio = {
-            ticker: 0.0 for ticker in st.session_state.coins
-        }
-        st.session_state.buy_qty = 0.0
-        st.session_state.sell_qty = 0.0
-        st.rerun()
+    st.button(
+        "🔄 게임 처음부터 다시 시작",
+        use_container_width=True,
+        on_click=reset_game,
+    )
 
 st.divider()
 
@@ -249,7 +326,7 @@ with rank_col2:
 
 st.divider()
 
-# 5. 메인 탭
+# 6. 메인 탭
 tab1, tab2, tab3, tab4 = st.tabs(
     [
         "📈 종목 거래소",
@@ -311,6 +388,17 @@ with tab1:
     )
     st.plotly_chart(fig, use_container_width=True)
 
+    # 거래 결과 알림 메시지 출력
+    if st.session_state.trade_msg:
+        msg_type, msg_text = st.session_state.trade_msg
+        if msg_type == "warning":
+            st.warning(msg_text)
+        elif msg_type == "success":
+            st.success(msg_text)
+        elif msg_type == "error":
+            st.error(msg_text)
+        st.session_state.trade_msg = None
+
     t_col1, t_col2 = st.columns(2)
 
     # 🟢 매수 시스템
@@ -319,26 +407,18 @@ with tab1:
         st.caption("누적 수량 추가 버튼 (최소 거래 단위: 1개)")
 
         b_btn1, b_btn2, b_btn3, b_btn4, b_btn5 = st.columns(5)
-        if b_btn1.button("+10개", key="b_10"):
-            st.session_state.buy_qty += 10.0
-            st.rerun()
-        if b_btn2.button("+50개", key="b_50"):
-            st.session_state.buy_qty += 50.0
-            st.rerun()
-        if b_btn3.button("+100개", key="b_100"):
-            st.session_state.buy_qty += 100.0
-            st.rerun()
-        if b_btn4.button("🚀 풀매수", key="b_max"):
-            max_buy = (
-                st.session_state.cash / coin_data["price"]
-                if coin_data["price"] > 0
-                else 0.0
-            )
-            st.session_state.buy_qty = float(max_buy)
-            st.rerun()
-        if b_btn5.button("🔄 0개", key="b_reset"):
-            st.session_state.buy_qty = 0.0
-            st.rerun()
+        b_btn1.button("+10개", key="b_10", on_click=add_buy_qty, args=(10.0,))
+        b_btn2.button("+50개", key="b_50", on_click=add_buy_qty, args=(50.0,))
+        b_btn3.button(
+            "+100개", key="b_100", on_click=add_buy_qty, args=(100.0,)
+        )
+        b_btn4.button(
+            "🚀 풀매수",
+            key="b_max",
+            on_click=set_buy_max,
+            args=(coin_data["price"],),
+        )
+        b_btn5.button("🔄 0개", key="b_reset", on_click=reset_buy_qty)
 
         buy_amount = st.number_input(
             "매수 수량 (기본값: 0개, 최소 1개 이상 구매 가능)",
@@ -348,21 +428,13 @@ with tab1:
         total_buy_price = buy_amount * coin_data["price"]
         st.write(f"필요 금액: **{total_buy_price:,.2f} 원**")
 
-        if st.button("매수 완료", type="primary", use_container_width=True):
-            if buy_amount < 1.0:
-                st.warning("최소 1개 이상부터 매수할 수 있습니다.")
-            elif st.session_state.cash >= total_buy_price:
-                st.session_state.cash -= total_buy_price
-                st.session_state.portfolio[selected_ticker] = (
-                    my_qty + buy_amount
-                )
-                st.session_state.buy_qty = 0.0
-                st.success(
-                    f"{coin_data['name']} {buy_amount:,.2f}개를 매수했습니다!"
-                )
-                st.rerun()
-            else:
-                st.error("현금이 부족합니다!")
+        st.button(
+            "매수 완료",
+            type="primary",
+            use_container_width=True,
+            on_click=execute_buy,
+            args=(selected_ticker,),
+        )
 
     # 🔴 매도 시스템
     with t_col2:
@@ -371,27 +443,19 @@ with tab1:
         st.caption("누적 수량 추가 버튼 (최소 거래 단위: 1개)")
 
         s_btn1, s_btn2, s_btn3, s_btn4, s_btn5 = st.columns(5)
-        if s_btn1.button("+10개", key="s_10"):
-            st.session_state.sell_qty = float(
-                min(my_qty, st.session_state.sell_qty + 10.0)
-            )
-            st.rerun()
-        if s_btn2.button("+50개", key="s_50"):
-            st.session_state.sell_qty = float(
-                min(my_qty, st.session_state.sell_qty + 50.0)
-            )
-            st.rerun()
-        if s_btn3.button("+100개", key="s_100"):
-            st.session_state.sell_qty = float(
-                min(my_qty, st.session_state.sell_qty + 100.0)
-            )
-            st.rerun()
-        if s_btn4.button("🔥 전량매도", key="s_max"):
-            st.session_state.sell_qty = float(my_qty)
-            st.rerun()
-        if s_btn5.button("🔄 0개", key="s_reset"):
-            st.session_state.sell_qty = 0.0
-            st.rerun()
+        s_btn1.button(
+            "+10개", key="s_10", on_click=add_sell_qty, args=(10.0, my_qty)
+        )
+        s_btn2.button(
+            "+50개", key="s_50", on_click=add_sell_qty, args=(50.0, my_qty)
+        )
+        s_btn3.button(
+            "+100개", key="s_100", on_click=add_sell_qty, args=(100.0, my_qty)
+        )
+        s_btn4.button(
+            "🔥 전량매도", key="s_max", on_click=set_sell_max, args=(my_qty,)
+        )
+        s_btn5.button("🔄 0개", key="s_reset", on_click=reset_sell_qty)
 
         sell_amount = st.number_input(
             "매도 수량 (기본값: 0개, 최소 1개 이상 판매 가능)",
@@ -402,23 +466,15 @@ with tab1:
         total_sell_price = sell_amount * coin_data["price"]
         st.write(f"획득 예정 금액: **{total_sell_price:,.2f} 원**")
 
-        if st.button("매도 완료", type="primary", use_container_width=True):
-            if sell_amount < 1.0:
-                st.warning("최소 1개 이상부터 매도할 수 있습니다.")
-            elif my_qty >= sell_amount:
-                st.session_state.cash += total_sell_price
-                st.session_state.portfolio[selected_ticker] = (
-                    my_qty - sell_amount
-                )
-                st.session_state.sell_qty = 0.0
-                st.success(
-                    f"{coin_data['name']} {sell_amount:,.2f}개를 매도했습니다!"
-                )
-                st.rerun()
-            else:
-                st.error("매도 수량이 부족합니다!")
+        st.button(
+            "매도 완료",
+            type="primary",
+            use_container_width=True,
+            on_click=execute_sell,
+            args=(selected_ticker,),
+        )
 
-    # 📰 선택된 종목 전용 뉴스 표시 (요구사항 반영)
+    # 📰 선택된 종목 전용 뉴스 표시
     st.divider()
     st.markdown(f"### 📰 [{coin_data['name']}] 관련 이슈 & 뉴스 속보")
     stock_related_news = [
