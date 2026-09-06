@@ -142,8 +142,8 @@ TEXT_PACK = {
         "category_filter": "카테고리 선택",
         "all": "전체 보기",
         "select_stock": "종목 선택",
-        "chart_title": "📈 실시간 시세 차트 & 속보",
-        "news_box_title": "📰 관련 종목 속보",
+        "chart_title": "📈 선택 종목 실시간 차트 & 속보",
+        "news_box_title": "📰 관련 종목 전용 속보",
         "won": "원",
         "next_day": "🌙 다음 날로 ➔ (시세 변동)",
         "progress": "진행 상황",
@@ -161,10 +161,11 @@ TEXT_PACK = {
         "expected_amount": "예상 수령액",
         "btn_buy": "🟢 매수하기",
         "btn_sell": "🔴 매도하기",
-        "my_qty": "보유 수량",
+        "my_qty": "내 보유 수량",
         "avg_price": "매수 평단가",
-        "stock_val": "평가 금액",
-        "stock_roi": "종목 수익률",
+        "stock_val": "내 평가 금액",
+        "stock_roi": "내 투자 수익률",
+        "stock_price_change": "종목 누적 상승률 (상장가 대비)",
         "unit": "주/개",
         "mint_header": "✨ 신규 종목 상장 신청",
         "stock_name": "종목명",
@@ -215,7 +216,7 @@ TEXT_PACK = {
         "category_filter": "Category",
         "all": "All",
         "select_stock": "Select Asset",
-        "chart_title": "📈 Real-Time Chart & News",
+        "chart_title": "📈 Selected Asset Chart & News",
         "news_box_title": "📰 Asset Breaking News",
         "won": "KRW",
         "next_day": "🌙 Next Day ➔ (Update Market)",
@@ -237,7 +238,8 @@ TEXT_PACK = {
         "my_qty": "Owned Quantity",
         "avg_price": "Avg Buy Price",
         "stock_val": "Asset Value",
-        "stock_roi": "Asset ROI",
+        "stock_roi": "My ROI",
+        "stock_price_change": "Asset Cumulative Gain",
         "unit": "Units",
         "mint_header": "✨ Listing Request",
         "stock_name": "Asset Name",
@@ -299,7 +301,6 @@ def init_game_session(selected_diff="보통"):
     st.session_state.day = 1
     st.session_state.coins = pd.Series(DEFAULT_COINS).to_dict()
 
-    # 포트폴리오 수량 및 평단가 저장 구조 개편
     st.session_state.portfolio = {
         ticker: {"qty": 0.0, "avg_price": 0.0} for ticker in DEFAULT_COINS
     }
@@ -376,7 +377,6 @@ def execute_buy(ticker):
         show_trade_dialog("보유 현금이 부족합니다!", "error")
         return
 
-    # 매수 평단가 자동 계산 로직
     curr_data = st.session_state.portfolio.get(
         ticker, {"qty": 0.0, "avg_price": 0.0}
     )
@@ -706,7 +706,13 @@ else:
         my_qty = my_asset_data["qty"]
         my_avg = my_asset_data["avg_price"]
 
-        # 개별 종목 수익률 계산
+        # 종목 상장가 대비 누적 상승률 계산
+        initial_price = coin_data["history"][0]
+        cumulative_change = (
+            (coin_data["price"] - initial_price) / initial_price
+        ) * 100
+
+        # 개별 종목 내 투자 수익률 계산
         stock_val = my_qty * coin_data["price"]
         stock_cost = my_qty * my_avg
         stock_roi = (
@@ -726,7 +732,6 @@ else:
             up_c = st.session_state.up_color
             down_c = st.session_state.down_color
 
-            # 차트 변동 색상 판정 로직 보완 (전일 대비 변동으로 색상 부여)
             if st.session_state.chart_type in [
                 "막대 그래프 (Bar)",
                 "Bar Chart",
@@ -769,7 +774,9 @@ else:
             st.plotly_chart(fig, use_container_width=True)
 
         with col_news:
-            st.markdown(f"**{txt['news_box_title']}**")
+            st.markdown(
+                f"**{txt['news_box_title']} ({coin_data['name']})**"
+            )
             stock_news = [
                 n
                 for n in st.session_state.news_log
@@ -782,20 +789,38 @@ else:
                     f"**[{latest['time']}] {latest['tag']}**\n\n{latest['msg']}"
                 )
             else:
-                st.caption("아직 발생한 종목 속보가 없습니다.")
+                st.caption(
+                    f"[{coin_data['name']}] 종목에 대한 최신 속보가 없습니다."
+                )
 
             with st.expander("이전 속보 기록 보기"):
-                for n in stock_news[1:5]:
-                    st.write(f"- `{n['time']}` {n['tag']}: {n['msg']}")
+                if len(stock_news) > 1:
+                    for n in stock_news[1:5]:
+                        st.write(f"- `{n['time']}` {n['tag']}: {n['msg']}")
+                else:
+                    st.write("이전 속보 기록이 존재하지 않습니다.")
 
         st.divider()
 
-        # 선택 종목에 대한 보유 현황 실시간 요약
+        # [수정 포인트] 종목 자산 변동률과 내 투자 수익률을 직관적으로 보완
+        st.markdown(f"#### 📊 `{coin_data['name']}` 종목 및 투자 현황")
         p_col1, p_col2, p_col3, p_col4 = st.columns(4)
-        p_col1.metric(txt["my_qty"], f"{my_qty:,.2f} {txt['unit']}")
-        p_col2.metric(txt["avg_price"], f"{my_avg:,.2f} {txt['won']}")
-        p_col3.metric(txt["stock_val"], f"{stock_val:,.0f} {txt['won']}")
-        p_col4.metric(txt["stock_roi"], f"{stock_roi:+.2f} %")
+
+        p_col1.metric(
+            txt["stock_price_change"],
+            f"{cumulative_change:+.2f} %",
+            delta=f"{coin_data['change']:+.2f}% (전일 대비)",
+        )
+        p_col2.metric(txt["my_qty"], f"{my_qty:,.2f} {txt['unit']}")
+        p_col3.metric(
+            txt["avg_price"],
+            f"{my_avg:,.2f} {txt['won']}" if my_qty > 0 else "미보유 (0 원)",
+        )
+
+        roi_display = (
+            f"{stock_roi:+.2f} %" if my_qty > 0 else "미보유 (0.00 %)"
+        )
+        p_col4.metric(txt["stock_roi"], roi_display)
 
         st.divider()
 
@@ -849,7 +874,7 @@ else:
 
         st.divider()
 
-        st.subheader(txt["trade_header"])
+        st.subheader(f"🛒 {coin_data['name']} ({selected_ticker}) 매수 및 매도")
         t_col1, t_col2 = st.columns(2)
 
         with t_col1:
