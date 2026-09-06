@@ -5,1124 +5,528 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ==========================================
-# 1. 페이지 기본 설정 및 데이터
+# 1. 페이지 기본 설정 및 데이터 정의
 # ==========================================
 st.set_page_config(
-    page_title="주식 & 가상화폐 트레이딩 시뮬레이터",
+    page_title="글로벌 주식 & 가상자산 시뮬레이터",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-DIFFICULTY_SETTINGS = {
-    "쉬움": {
-        "cash": 10000000,
+GAME_MODES = {
+    "🌱 캐주얼 모드": {
+        "cash": 30000000,
         "volatility": 0.03,
-        "desc": "💰 시작 자금: 1,000만 원 | 📊 일일 변동성: ±3%",
+        "event_prob": 0.10,
+        "desc": "💰 시작 자금: 3,000만 원 | 📊 낮은 변동성 | 편안하게 적응하기 좋은 모드",
     },
-    "보통": {
-        "cash": 5000000,
+    "⚔️ 라이벌 경쟁 모드": {
+        "cash": 10000000,
         "volatility": 0.05,
-        "desc": "💰 시작 자금: 500만 원 | 📊 일일 변동성: ±5%",
+        "event_prob": 0.25,
+        "desc": "💰 시작 자금: 1,000만 원 | ⚔️ AI 트레이더들과 실시간 자산 순위 다툼",
     },
-    "어려움": {
-        "cash": 2000000,
-        "volatility": 0.08,
-        "desc": "💰 시작 자금: 200만 원 | 📊 일일 변동성: ±8%",
+    "🌪️ 핫불&하락장 (이벤트 모드)": {
+        "cash": 5000000,
+        "volatility": 0.09,
+        "event_prob": 0.45,
+        "desc": "💰 시작 자금: 500만 원 | 🚨 금리 변동, 코인 해킹 등 대형 시장 쇼크 빈발",
     },
 }
 
 DEFAULT_COINS = {
-    "K-NEON": {
-        "name": "네온체스트",
-        "category": "🇰🇷 한국 주식",
-        "sector": "반도체",
-        "price": 78500.0,
-        "history": [78500.0],
-        "change": 0.0,
-    },
-    "K-RAON": {
-        "name": "라온반도체",
-        "category": "🇰🇷 한국 주식",
-        "sector": "반도체",
-        "price": 52000.0,
-        "history": [52000.0],
-        "change": 0.0,
-    },
-    "K-HBM": {
-        "name": "넥스트HBM",
-        "category": "🇰🇷 한국 주식",
-        "sector": "반도체",
-        "price": 112000.0,
-        "history": [112000.0],
-        "change": 0.0,
-    },
-    "K-BIO": {
-        "name": "한신바이오",
-        "category": "🇰🇷 한국 주식",
-        "sector": "바이오",
-        "price": 42000.0,
-        "history": [42000.0],
-        "change": 0.0,
-    },
-    "K-CELL": {
-        "name": "셀리온제약",
-        "category": "🇰🇷 한국 주식",
-        "sector": "바이오",
-        "price": 28500.0,
-        "history": [28500.0],
-        "change": 0.0,
-    },
-    "K-BATTERY": {
-        "name": "네오 차세대 배터리",
-        "category": "🇰🇷 한국 주식",
-        "sector": "2차전지",
-        "price": 125000.0,
-        "history": [125000.0],
-        "change": 0.0,
-    },
-    "K-ECO": {
-        "name": "에코에너지소재",
-        "category": "🇰🇷 한국 주식",
-        "sector": "2차전지",
-        "price": 64000.0,
-        "history": [64000.0],
-        "change": 0.0,
-    },
-    "K-GAME": {
-        "name": "하이퍼 인터랙티브",
-        "category": "🇰🇷 한국 주식",
-        "sector": "엔터/게임",
-        "price": 34500.0,
-        "history": [34500.0],
-        "change": 0.0,
-    },
-    "K-STAR": {
-        "name": "스타더스트 엔터",
-        "category": "🇰🇷 한국 주식",
-        "sector": "엔터/게임",
-        "price": 19800.0,
-        "history": [19800.0],
-        "change": 0.0,
-    },
-    "US-AI": {
-        "name": "실리콘밸리 AI",
-        "category": "🇺🇸 미국 주식",
-        "sector": "AI / 빅테크",
-        "price": 185000.0,
-        "history": [185000.0],
-        "change": 0.0,
-    },
-    "US-MIND": {
-        "name": "퀀텀마인드",
-        "category": "🇺🇸 미국 주식",
-        "sector": "AI / 빅테크",
-        "price": 210000.0,
-        "history": [210000.0],
-        "change": 0.0,
-    },
-    "US-SPACE": {
-        "name": "네오에어로 스페이스",
-        "category": "🇺🇸 미국 주식",
-        "sector": "우주/항공",
-        "price": 310000.0,
-        "history": [310000.0],
-        "change": 0.0,
-    },
-    "US-ORBIT": {
-        "name": "오르빗 탐사선",
-        "category": "🇺🇸 미국 주식",
-        "sector": "우주/항공",
-        "price": 95000.0,
-        "history": [95000.0],
-        "change": 0.0,
-    },
-    "US-EV": {
-        "name": "글로벌 모빌리티 EV",
-        "category": "🇺🇸 미국 주식",
-        "sector": "친환경/전기차",
-        "price": 245000.0,
-        "history": [245000.0],
-        "change": 0.0,
-    },
-    "US-SOLAR": {
-        "name": "썬파워 그리드",
-        "category": "🇺🇸 미국 주식",
-        "sector": "친환경/전기차",
-        "price": 68000.0,
-        "history": [68000.0],
-        "change": 0.0,
-    },
-    "US-CLOUD": {
-        "name": "오로라 클라우드",
-        "category": "🇺🇸 미국 주식",
-        "sector": "클라우드/보안",
-        "price": 420000.0,
-        "history": [420000.0],
-        "change": 0.0,
-    },
-    "US-CYBER": {
-        "name": "센티널 사이버보안",
-        "category": "🇺🇸 미국 주식",
-        "sector": "클라우드/보안",
-        "price": 155000.0,
-        "history": [155000.0],
-        "change": 0.0,
-    },
-    "CRYPTO-X": {
-        "name": "하이퍼체인",
-        "category": "🪙 가상자산",
-        "sector": "메인넷",
-        "price": 48000000.0,
-        "history": [48000000.0],
-        "change": 0.0,
-    },
-    "CRYPTO-ETH": {
-        "name": "에테르 프로토콜",
-        "category": "🪙 가상자산",
-        "sector": "메인넷",
-        "price": 3500000.0,
-        "history": [3500000.0],
-        "change": 0.0,
-    },
-    "CRYPTO-SOL": {
-        "name": "솔라리스 체인",
-        "category": "🪙 가상자산",
-        "sector": "메인넷",
-        "price": 240000.0,
-        "history": [240000.0],
-        "change": 0.0,
-    },
-    "CRYPTO-Y": {
-        "name": "덱스파이 코인",
-        "category": "🪙 가상자산",
-        "sector": "디파이/RWA",
-        "price": 1250000.0,
-        "history": [1250000.0],
-        "change": 0.0,
-    },
-    "CRYPTO-RWA": {
-        "name": "리얼에셋 토큰",
-        "category": "🪙 가상자산",
-        "sector": "디파이/RWA",
-        "price": 450000.0,
-        "history": [450000.0],
-        "change": 0.0,
-    },
+    "K-NEON": {"name": "네온체스트", "category": "🇰🇷 한국 주식", "sector": "반도체", "price": 78500.0, "history": [78500.0], "change": 0.0},
+    "K-RAON": {"name": "라온반도체", "category": "🇰🇷 한국 주식", "sector": "반도체", "price": 52000.0, "history": [52000.0], "change": 0.0},
+    "K-HBM": {"name": "넥스트HBM", "category": "🇰🇷 한국 주식", "sector": "반도체", "price": 112000.0, "history": [112000.0], "change": 0.0},
+    "K-BIO": {"name": "한신바이오", "category": "🇰🇷 한국 주식", "sector": "바이오", "price": 42000.0, "history": [42000.0], "change": 0.0},
+    "K-BATTERY": {"name": "네오 차세대 배터리", "category": "🇰🇷 한국 주식", "sector": "2차전지", "price": 125000.0, "history": [125000.0], "change": 0.0},
+    "US-AI": {"name": "실리콘밸리 AI", "category": "🇺🇸 미국 주식", "sector": "AI / 빅테크", "price": 185000.0, "history": [185000.0], "change": 0.0},
+    "US-MIND": {"name": "퀀텀마인드", "category": "🇺🇸 미국 주식", "sector": "AI / 빅테크", "price": 210000.0, "history": [210000.0], "change": 0.0},
+    "US-SPACE": {"name": "네오에어로 스페이스", "category": "🇺🇸 미국 주식", "sector": "우주/항공", "price": 310000.0, "history": [310000.0], "change": 0.0},
+    "US-CLOUD": {"name": "오로라 클라우드", "category": "🇺🇸 미국 주식", "sector": "클라우드/보안", "price": 420000.0, "history": [420000.0], "change": 0.0},
+    "CRYPTO-X": {"name": "하이퍼체인", "category": "🪙 가상자산", "sector": "메인넷", "price": 48000000.0, "history": [48000000.0], "change": 0.0},
+    "CRYPTO-ETH": {"name": "에테르 프로토콜", "category": "🪙 가상자산", "sector": "메인넷", "price": 3500000.0, "history": [3500000.0], "change": 0.0},
+    "CRYPTO-Y": {"name": "덱스파이 코인", "category": "🪙 가상자산", "sector": "디파이/RWA", "price": 1250000.0, "history": [1250000.0], "change": 0.0},
 }
 
-# 💡 [다채로운 특수 효과를 지닌 10종 사치품 상점]
 LUXURY_SHOP = {
-    "ITEM_1": {
-        "name": "입문용 전기 자전거",
-        "price": 1500000,
-        "icon": "🚲",
-        "effect_type": "daily_cash",
-        "val": 50000,
-        "desc": "알바 기동력 확보 [매일 아침 부수입 +50,000원]",
-    },
-    "ITEM_2": {
-        "name": "최신 스마트 디바이스",
-        "price": 3500000,
-        "icon": "📱",
-        "effect_type": "buff_rate",
-        "val": 0.010,
-        "desc": "초고속 실시간 매매 [전 종목 상승률 +1.0%p]",
-    },
-    "ITEM_3": {
-        "name": "VIP 맞춤 수제 정장",
-        "price": 12000000,
-        "icon": "👔",
-        "effect_type": "daily_cash",
-        "val": 250000,
-        "desc": "고급 인맥 네트워킹 [매일 아침 부수입 +250,000원]",
-    },
-    "ITEM_4": {
-        "name": "신형 국산 세단",
-        "price": 45000000,
-        "icon": "🚗",
-        "effect_type": "buff_rate",
-        "val": 0.025,
-        "desc": "기업 정보 교류회 참여 [전 종목 상승률 +2.5%p]",
-    },
-    "ITEM_5": {
-        "name": "럭셔리 스포츠카",
-        "price": 150000000,
-        "icon": "🏎️",
-        "effect_type": "loss_cap",
-        "val": -0.03,
-        "desc": "위기 탈출 기동성 [종목별 하루 최대 하락폭 -3%로 제한]",
-    },
-    "ITEM_6": {
-        "name": "하이엔드 명품 시계",
-        "price": 350000000,
-        "icon": "⌚",
-        "effect_type": "bull_probability",
-        "val": 0.20,
-        "desc": "고위급 비밀 정보망 [급등 호재 발생 확률 +20%p 증가]",
-    },
-    "ITEM_7": {
-        "name": "초경량 프라이빗 요트",
-        "price": 800000000,
-        "icon": "🛥️",
-        "effect_type": "daily_dividend",
-        "val": 0.005,
-        "desc": "선상 클럽 회원권 [매일 보유 현금의 0.5% 배당금 수령]",
-    },
-    "ITEM_8": {
-        "name": "한강뷰 고급 펜트하우스",
-        "price": 2500000000,
-        "icon": "🏙️",
-        "effect_type": "combo_penth",
-        "val": (0.03, 3000000),
-        "desc": "자산가 프리미엄 [상승률 +3.0%p & 매일 현금 +3,000,000원]",
-    },
-    "ITEM_9": {
-        "name": "글로벌 사모펀드 지분",
-        "price": 5000000000,
-        "icon": "🏢",
-        "effect_type": "shield",
-        "val": 0.35,
-        "desc": "방어적 포트폴리오 [하락 종목 발생 시 35% 확률로 강제 반등]",
-    },
-    "ITEM_10": {
-        "name": "전용 리조트 & 비즈니스 제트기",
-        "price": 10000000000,
-        "icon": "🛩️",
-        "effect_type": "god_mode",
-        "val": (0.05, 0.40),
-        "desc": "시장 지배력 행사 [상승률 +5.0%p & 급등 호재 확률 +40%p 폭증]",
-    },
+    "ITEM_1": {"name": "입문용 전기 자전거", "price": 1500000, "icon": "🚲", "effect_type": "daily_cash", "val": 50000, "desc": "알바 기동력 확보 [매일 아침 부수입 +50,000원]"},
+    "ITEM_2": {"name": "최신 스마트 디바이스", "price": 3500000, "icon": "📱", "effect_type": "buff_rate", "val": 0.010, "desc": "초고속 실시간 매매 [전 종목 상승률 +1.0%p]"},
+    "ITEM_3": {"name": "VIP 맞춤 수제 정장", "price": 12000000, "icon": "👔", "effect_type": "daily_cash", "val": 250000, "desc": "고급 인맥 네트워킹 [매일 아침 부수입 +250,000원]"},
+    "ITEM_4": {"name": "신형 국산 세단", "price": 45000000, "icon": "🚗", "effect_type": "buff_rate", "val": 0.025, "desc": "기업 정보 교류회 참여 [전 종목 상승률 +2.5%p]"},
+    "ITEM_5": {"name": "럭셔리 스포츠카", "price": 150000000, "icon": "🏎️", "effect_type": "loss_cap", "val": -0.03, "desc": "위기 탈출 기동성 [종목별 하루 최대 하락폭 -3%로 제한]"},
+    "ITEM_6": {"name": "하이엔드 명품 시계", "price": 350000000, "icon": "⌚", "effect_type": "bull_probability", "val": 0.20, "desc": "고위급 비밀 정보망 [급등 호재 발생 확률 +20%p 증가]"},
+    "ITEM_7": {"name": "초경량 프라이빗 요트", "price": 800000000, "icon": "🛥️", "effect_type": "daily_dividend", "val": 0.005, "desc": "선상 클럽 회원권 [매일 보유 현금의 0.5% 배당금 수령]"},
+    "ITEM_8": {"name": "한강뷰 고급 펜트하우스", "price": 2500000000, "icon": "🏙️", "effect_type": "combo_penth", "val": (0.03, 3000000), "desc": "자산가 프리미엄 [상승률 +3.0%p & 매일 현금 +3,000,000원]"},
+    "ITEM_9": {"name": "글로벌 사모펀드 지분", "price": 5000000000, "icon": "🏢", "effect_type": "shield", "val": 0.35, "desc": "방어적 포트폴리오 [하락 종목 발생 시 35% 확률로 강제 반등]"},
+    "ITEM_10": {"name": "전용 리조트 & 비즈니스 제트기", "price": 10000000000, "icon": "🛩️", "effect_type": "god_mode", "val": (0.05, 0.40), "desc": "시장 지배력 행사 [상승률 +5.0%p & 급등 호재 확률 +40%p 폭증]"},
 }
 
-BULL_NEWS = [
-    "대규모 수주 계약 체결 발표로 강한 매수세 유입",
-    "혁신 기술 특허 등록 완료 소식에 주가 급등",
+ACHIEVEMENTS_MASTER = {
+    "FIRST_BUY": {"title": "🐣 첫 걸음마", "desc": "첫 주식/가상자산 매수 완료", "reward": 500000},
+    "HOLDING_50": {"title": "🗿 강철 멘탈 존버족", "desc": "50일 차 이상 생존 달성", "reward": 3000000},
+    "RIVAL_BEAT_ALL": {"title": "👑 월가 제패", "desc": "라이벌 경쟁에서 자산 1위 등극", "reward": 10000000},
+    "SURVIVED_CRASH": {"title": "🛡️ 위기 극복의 신", "desc": "시장 대형 악재 이벤트를 경험하고 생존", "reward": 2000000},
+    "LUXURY_3": {"title": "🛍️ 플렉스 입문", "desc": "사치품 3개 이상 보유", "reward": 5000000},
+}
+
+MARKET_EVENTS = [
+    {"type": "BEAR", "title": "🚨 연준, 기준금리 전격 빅스텝 인상!", "impact": -0.12, "msg": "증시 전체에 매도 폭풍이 몰아칩니다 (-12% 쇼크)"},
+    {"type": "BULL", "title": "🚀 글로벌 유동성 공급 재개 소식!", "impact": 0.15, "msg": "투자 심리가 극도로 회복됩니다 (+15% 랠리)"},
+    {"type": "BEAR_CRYPTO", "title": "☠️ 대형 가상자산 거래소 해킹 입출금 중단", "impact": -0.25, "category": "🪙 가상자산", "msg": "가상자산 시장이 대폭락합니다 (-25% 하락)"},
+    {"type": "BULL_TECH", "title": "💡 차세대 AI 기술 혁신 발표", "impact": 0.20, "sector": "AI / 빅테크", "msg": "빅테크 및 반도체 섹터에 대규모 수급 유입 (+20% 급등)"},
 ]
-BEAR_NEWS = [
-    "실적 발표 우려감 제기되며 매도 물량 쏟아짐",
-    "글로벌 공급망 차질 이슈 악재로 하방 압력 심화",
-]
+
+BULL_NEWS = ["대규모 수주 계약 체결 발표로 강한 매수세 유입", "혁신 기술 특허 등록 완료 소식에 주가 급등"]
+BEAR_NEWS = ["실적 발표 우려감 제기되며 매도 물량 쏟아짐", "글로벌 공급망 차질 이슈 악재로 하방 압력 심화"]
 
 # ==========================================
-# 2. 세션 상태 (Session State) 초기화
+# 2. 세션 상태 및 게임 데이터 초기화
 # ==========================================
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
 
-
 def init_game_session():
-    diff_config = DIFFICULTY_SETTINGS.get(
-        st.session_state.get("difficulty", "보통"), DIFFICULTY_SETTINGS["보통"]
-    )
-    st.session_state.initial_cash = float(diff_config["cash"])
-    st.session_state.cash = float(diff_config["cash"])
-    st.session_state.volatility = diff_config["volatility"]
+    mode_name = st.session_state.get("mode_select", "⚔️ 라이벌 경쟁 모드")
+    mode_config = GAME_MODES.get(mode_name, GAME_MODES["⚔️ 라이벌 경쟁 모드"])
+
+    st.session_state.cash = float(mode_config["cash"])
+    st.session_state.initial_cash = float(mode_config["cash"])
+    st.session_state.volatility = mode_config["volatility"]
+    st.session_state.event_prob = mode_config["event_prob"]
     st.session_state.day = 1
+    st.session_state.game_cleared = False
+    st.session_state.ending_type = None
+
     st.session_state.coins = pd.Series(DEFAULT_COINS).to_dict()
-    st.session_state.portfolio = {
-        ticker: {"qty": 0.0, "avg_price": 0.0} for ticker in DEFAULT_COINS
-    }
-    st.session_state.owned_items = {}  # 보유 사치품 관리
+    st.session_state.portfolio = {ticker: {"qty": 0.0, "avg_price": 0.0} for ticker in DEFAULT_COINS}
+    st.session_state.owned_items = {}
+    st.session_state.unlocked_achievements = {k: False for k in ACHIEVEMENTS_MASTER}
     st.session_state.news_log = []
+    st.session_state.current_event = None
     st.session_state.buy_qty = 0.0
     st.session_state.sell_qty = 0.0
+
+    st.session_state.rivals = {
+        "워렌 버핏 AI (가치투자)": {"cash": mode_config["cash"] * 1.2, "style": "safe"},
+        "단타 래빗 (초단타)": {"cash": mode_config["cash"] * 0.9, "style": "high_risk"},
+        "돈나무 언니 (혁신성장)": {"cash": mode_config["cash"] * 1.0, "style": "growth"},
+    }
 
     st.session_state.sb_language = st.session_state.get("language", "한국어")
-    st.session_state.sb_theme = st.session_state.get("theme", "라이트 모드 (기본)")
-    st.session_state.sb_chart_type = st.session_state.get("chart_type", "막대 그래프 (Bar)")
-    st.session_state.sb_up_color = st.session_state.get("up_color", "#E03131")
-    st.session_state.sb_down_color = st.session_state.get("down_color", "#1971C2")
+    st.session_state.sb_theme = st.session_state.get("theme", "다크 모드")
+    st.session_state.sb_chart_type = st.session_state.get("chart_type", "꺾은선 그래프 (Line)")
+    st.session_state.sb_up_color = st.session_state.get("up_color", "#10B981")
+    st.session_state.sb_down_color = st.session_state.get("down_color", "#EF4444")
 
+def check_achievement(key):
+    if key in ACHIEVEMENTS_MASTER and not st.session_state.unlocked_achievements.get(key, False):
+        st.session_state.unlocked_achievements[key] = True
+        reward = ACHIEVEMENTS_MASTER[key]["reward"]
+        st.session_state.cash += reward
+        st.toast(f"🏆 업적 달성! [{ACHIEVEMENTS_MASTER[key]['title']}] (+{reward:,.0f}원 수령)", icon="🎉")
 
-# ==========================================
-# 3. 사이드바
-# ==========================================
-with st.sidebar:
-    st.header("⚙️ 실시간 설정")
-    if st.session_state.game_started:
-        st.selectbox("🌐 언어 선택", ["한국어", "English"], key="sb_language")
-        st.selectbox(
-            "🎨 화면 테마 설정",
-            [
-                "라이트 모드 (기본)",
-                "다크 모드",
-                "올블랙 모드",
-                "블루 모드",
-            ],
-            key="sb_theme",
-        )
-        st.selectbox(
-            "📊 그래프 형태",
-            ["막대 그래프 (Bar)", "꺾은선 그래프 (Line)"],
-            key="sb_chart_type",
-        )
-        col_u, col_d = st.columns(2)
-        with col_u:
-            st.color_picker("🔴 상승 색상 (빨강)", key="sb_up_color")
-        with col_d:
-            st.color_picker("🔵 하락 색상 (파랑)", key="sb_down_color")
-
-        st.divider()
-        if st.button(
-            "🔄 설정 화면으로 돌아가기",
-            key="sidebar_reset_btn",
-            type="secondary",
-            use_container_width=True,
-        ):
-            st.session_state.game_started = False
-            st.rerun()
-    else:
-        st.info("💡 메인 화면에서 설정을 마친 뒤 시작하기 버튼을 누르세요.")
-
+def check_endings(tot_asset):
+    if len(st.session_state.owned_items) >= 10 and not st.session_state.game_cleared:
+        st.session_state.game_cleared = True
+        st.session_state.ending_type = "LUXURY_MASTER"
+    elif tot_asset >= 100000000000 and not st.session_state.game_cleared:
+        st.session_state.game_cleared = True
+        st.session_state.ending_type = "BILLIONAIRE"
 
 # ==========================================
-# 4. 트레이딩 & 시장 계산 콜백 함수
+# 3. 매매 및 시장 진행 함수
 # ==========================================
-def add_buy_qty(val):
-    st.session_state.buy_qty += val
-
+def add_buy_qty(val): st.session_state.buy_qty += val
 def set_buy_max(price):
-    if price > 0:
-        st.session_state.buy_qty = float(st.session_state.cash // price)
+    if price > 0: st.session_state.buy_qty = float(st.session_state.cash // price)
+def reset_buy_qty(): st.session_state.buy_qty = 0.0
 
-def reset_buy_qty():
-    st.session_state.buy_qty = 0.0
-
-def add_sell_qty(val, max_qty):
-    st.session_state.sell_qty = min(
-        st.session_state.sell_qty + val, float(max_qty)
-    )
-
-def set_sell_max(max_qty):
-    st.session_state.sell_qty = float(max_qty)
-
-def reset_sell_qty():
-    st.session_state.sell_qty = 0.0
+def add_sell_qty(val, max_qty): st.session_state.sell_qty = min(st.session_state.sell_qty + val, float(max_qty))
+def set_sell_max(max_qty): st.session_state.sell_qty = float(max_qty)
+def reset_sell_qty(): st.session_state.sell_qty = 0.0
 
 def execute_buy(ticker):
     qty = st.session_state.buy_qty
     curr_price = st.session_state.coins[ticker]["price"]
-
     if qty <= 0:
         st.toast("⚠️ 매수 수량을 입력해주세요.", icon="❌")
         return
-
     total_cost = qty * curr_price
     if total_cost > st.session_state.cash:
         st.toast("⚠️ 잔액이 부족합니다.", icon="❌")
         return
-
-    curr_data = st.session_state.portfolio.get(
-        ticker, {"qty": 0.0, "avg_price": 0.0}
-    )
+    curr_data = st.session_state.portfolio.get(ticker, {"qty": 0.0, "avg_price": 0.0})
     new_qty = curr_data["qty"] + qty
-    new_avg = (
-        ((curr_data["qty"] * curr_data["avg_price"]) + total_cost) / new_qty
-    )
-
+    new_avg = ((curr_data["qty"] * curr_data["avg_price"]) + total_cost) / new_qty
     st.session_state.cash -= total_cost
-    st.session_state.portfolio[ticker] = {
-        "qty": new_qty,
-        "avg_price": new_avg,
-    }
+    st.session_state.portfolio[ticker] = {"qty": new_qty, "avg_price": new_avg}
     st.session_state.buy_qty = 0.0
-    st.toast(
-        f"🟢 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매수 완료!",
-        icon="✅",
-    )
+    check_achievement("FIRST_BUY")
+    st.toast(f"🟢 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매수 완료!", icon="✅")
 
 def execute_sell(ticker):
     qty = st.session_state.sell_qty
     curr_price = st.session_state.coins[ticker]["price"]
-
-    curr_data = st.session_state.portfolio.get(
-        ticker, {"qty": 0.0, "avg_price": 0.0}
-    )
+    curr_data = st.session_state.portfolio.get(ticker, {"qty": 0.0, "avg_price": 0.0})
     if qty <= 0 or qty > curr_data["qty"]:
         st.toast("⚠️ 매도 가능 수량을 확인해주세요.", icon="❌")
         return
-
     st.session_state.cash += qty * curr_price
-    new_qty = curr_data["qty"] - qty
-    st.session_state.portfolio[ticker]["qty"] = max(0.0, new_qty)
+    st.session_state.portfolio[ticker]["qty"] = max(0.0, curr_data["qty"] - qty)
     st.session_state.sell_qty = 0.0
-    st.toast(
-        f"🔴 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료!",
-        icon="✅",
-    )
+    st.toast(f"🔴 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료!", icon="✅")
 
 def next_day_market():
     st.session_state.day += 1
-    volatility = st.session_state.volatility
     time_str = f"Day {st.session_state.day}"
 
-    # 💡 [사치품 다채로운 특수 효과 계산]
-    rate_buff = 0.0
-    daily_cash_bonus = 0.0
-    dividend_rate = 0.0
+    # 사치품 효과 계산
+    rate_buff, daily_cash_bonus, dividend_rate, bull_prob_bonus, shield_prob = 0.0, 0.0, 0.0, 0.0, 0.0
     loss_cap = None
-    bull_prob_bonus = 0.0
-    shield_prob = 0.0
 
     for item_key in st.session_state.owned_items:
         if item_key in LUXURY_SHOP:
             item = LUXURY_SHOP[item_key]
-            e_type = item["effect_type"]
-            val = item["val"]
+            e_type, val = item["effect_type"], item["val"]
+            if e_type == "daily_cash": daily_cash_bonus += val
+            elif e_type == "buff_rate": rate_buff += val
+            elif e_type == "loss_cap": loss_cap = val
+            elif e_type == "bull_probability": bull_prob_bonus += val
+            elif e_type == "daily_dividend": dividend_rate += val
+            elif e_type == "combo_penth": rate_buff += val[0]; daily_cash_bonus += val[1]
+            elif e_type == "shield": shield_prob += val
+            elif e_type == "god_mode": rate_buff += val[0]; bull_prob_bonus += val[1]
 
-            if e_type == "daily_cash":
-                daily_cash_bonus += val
-            elif e_type == "buff_rate":
-                rate_buff += val
-            elif e_type == "loss_cap":
-                loss_cap = val
-            elif e_type == "bull_probability":
-                bull_prob_bonus += val
-            elif e_type == "daily_dividend":
-                dividend_rate += val
-            elif e_type == "combo_penth":
-                rate_buff += val[0]
-                daily_cash_bonus += val[1]
-            elif e_type == "shield":
-                shield_prob += val
-            elif e_type == "god_mode":
-                rate_buff += val[0]
-                bull_prob_bonus += val[1]
+    if daily_cash_bonus > 0: st.session_state.cash += daily_cash_bonus
+    if dividend_rate > 0: st.session_state.cash += st.session_state.cash * dividend_rate
 
-    # 1. 일일 부수입 및 배당금 현금 지급
-    if daily_cash_bonus > 0:
-        st.session_state.cash += daily_cash_bonus
-    if dividend_rate > 0:
-        st.session_state.cash += st.session_state.cash * dividend_rate
+    # 돌발 시장 이벤트 발동
+    st.session_state.current_event = None
+    if random.random() < st.session_state.event_prob:
+        event = random.choice(MARKET_EVENTS)
+        st.session_state.current_event = event
+        st.session_state.news_log.insert(0, {"time": time_str, "name": "🚨 속보", "msg": f"{event['title']} - {event['msg']}"})
+        if event["impact"] < 0:
+            check_achievement("SURVIVED_CRASH")
 
+    # 라이벌 AI 자산 변동
+    for r_name, r_info in st.session_state.rivals.items():
+        r_rate = random.uniform(-0.02, 0.03) if r_info["style"] == "safe" else random.uniform(-0.10, 0.12)
+        r_info["cash"] = max(100000, round(r_info["cash"] * (1 + r_rate)))
+
+    # 종목 시세 변동
     has_news = False
-
-    # 2. 시장 변동 계산
     for ticker, data in st.session_state.coins.items():
-        change_rate = random.uniform(
-            -volatility + rate_buff, volatility + rate_buff
-        )
+        change_rate = random.uniform(-st.session_state.volatility + rate_buff, st.session_state.volatility + rate_buff)
 
-        # 급등 호재 발생 확률 계산
-        base_bull_prob = 0.15 + bull_prob_bonus
-        if random.random() < base_bull_prob:
+        if st.session_state.current_event:
+            ev = st.session_state.current_event
+            if "category" in ev and data.get("category") == ev["category"]: change_rate += ev["impact"]
+            elif "sector" in ev and data.get("sector") == ev["sector"]: change_rate += ev["impact"]
+            elif "category" not in ev and "sector" not in ev: change_rate += ev["impact"]
+
+        if random.random() < (0.15 + bull_prob_bonus):
             change_rate = random.choice([0.15, 0.25, 0.30]) + rate_buff
 
-        # 리스크 방어 1: 하락폭 제한 옵션 (스포츠카)
-        if loss_cap is not None and change_rate < loss_cap:
-            change_rate = loss_cap
-
-        # 리스크 방어 2: 반등 방패 옵션 (사모펀드)
-        if change_rate < 0 and shield_prob > 0:
-            if random.random() < shield_prob:
-                change_rate = abs(change_rate)  # 강제 양수 전환
+        if loss_cap is not None and change_rate < loss_cap: change_rate = loss_cap
+        if change_rate < 0 and shield_prob > 0 and random.random() < shield_prob: change_rate = abs(change_rate)
 
         new_price = max(1.0, round(data["price"] * (1 + change_rate), 2))
         data["change"] = change_rate * 100
         data["price"] = new_price
         data["history"].append(new_price)
 
-        if change_rate > 0.01:
-            st.session_state.news_log.insert(
-                0,
-                {
-                    "time": time_str,
-                    "name": data["name"],
-                    "msg": random.choice(BULL_NEWS) + f" (▲ {data['change']:+.2f}%)",
-                },
-            )
+        if change_rate > 0.02:
+            st.session_state.news_log.insert(0, {"time": time_str, "name": data["name"], "msg": random.choice(BULL_NEWS) + f" (▲ {data['change']:+.2f}%)"})
             has_news = True
-        elif change_rate < -0.01:
-            st.session_state.news_log.insert(
-                0,
-                {
-                    "time": time_str,
-                    "name": data["name"],
-                    "msg": random.choice(BEAR_NEWS) + f" (▼ {data['change']:+.2f}%)",
-                },
-            )
+        elif change_rate < -0.02:
+            st.session_state.news_log.insert(0, {"time": time_str, "name": data["name"], "msg": random.choice(BEAR_NEWS) + f" (▼ {data['change']:+.2f}%)"})
             has_news = True
 
-    if not has_news:
-        sample_ticker = random.choice(list(st.session_state.coins.keys()))
-        sample_data = st.session_state.coins[sample_ticker]
-        msg = random.choice(BULL_NEWS) if sample_data["change"] >= 0 else random.choice(BEAR_NEWS)
-        st.session_state.news_log.insert(
-            0,
-            {
-                "time": time_str,
-                "name": sample_data["name"],
-                "msg": msg + f" ({sample_data['change']:+.2f}%)",
-            },
-        )
-
+    if st.session_state.day >= 50:
+        check_achievement("HOLDING_50")
 
 # ==========================================
-# 5. 테마 연동 동적 CSS
+# 4. 사이드바 및 UI 테마
 # ==========================================
-active_theme = st.session_state.get(
-    "sb_theme", st.session_state.get("theme", "라이트 모드 (기본)")
-)
+with st.sidebar:
+    st.header("⚙️ 게임 설정")
+    if st.session_state.game_started:
+        st.selectbox("🌐 언어 선택", ["한국어", "English"], key="sb_language")
+        st.selectbox("🎨 화면 테마 설정", ["다크 모드", "라이트 모드 (기본)", "올블랙 모드", "블루 모드"], key="sb_theme")
+        st.selectbox("📊 그래프 형태", ["꺾은선 그래프 (Line)", "막대 그래프 (Bar)"], key="sb_chart_type")
+        col_u, col_d = st.columns(2)
+        with col_u: st.color_picker("🔴 상승 색상", key="sb_up_color")
+        with col_d: st.color_picker("🔵 하락 색상", key="sb_down_color")
+        st.divider()
+        if st.button("🔄 게임 초기화 (설정으로)", type="secondary", use_container_width=True):
+            st.session_state.game_started = False
+            st.rerun()
+    else:
+        st.info("💡 메인 화면에서 난이도 및 모드를 설정 후 시작하세요.")
 
-if "다크" in active_theme:
-    bg_color = "#121212"
-    sidebar_bg = "#1A1A1A"
-    text_color = "#E0E0E0"
-    card_bg = "#242424"
-    border_color = "#3A3A3A"
-    btn_primary_bg = "#2563EB"
-    btn_primary_text = "#FFFFFF"
-    btn_sec_bg = "#2D2D2D"
-    btn_sec_text = "#E0E0E0"
+active_theme = st.session_state.get("sb_theme", st.session_state.get("theme", "다크 모드"))
+if "라이트" in active_theme:
+    bg_color, sidebar_bg, text_color, card_bg, border_color = "#F8F9FA", "#FFFFFF", "#212529", "#FFFFFF", "#E9ECEF"
 elif "올블랙" in active_theme:
-    bg_color = "#000000"
-    sidebar_bg = "#0B0B0B"
-    text_color = "#FFFFFF"
-    card_bg = "#121212"
-    border_color = "#282828"
-    btn_primary_bg = "#333333"
-    btn_primary_text = "#FFFFFF"
-    btn_sec_bg = "#1A1A1A"
-    btn_sec_text = "#CCCCCC"
+    bg_color, sidebar_bg, text_color, card_bg, border_color = "#000000", "#0B0B0B", "#FFFFFF", "#121212", "#282828"
 elif "블루" in active_theme:
-    bg_color = "#0F172A"
-    sidebar_bg = "#1E293B"
-    text_color = "#F8FAFC"
-    card_bg = "#334155"
-    border_color = "#475569"
-    btn_primary_bg = "#0EA5E9"
-    btn_primary_text = "#FFFFFF"
-    btn_sec_bg = "#1E293B"
-    btn_sec_text = "#F8FAFC"
-else:  # 라이트 모드
-    bg_color = "#F8F9FA"
-    sidebar_bg = "#FFFFFF"
-    text_color = "#212529"
-    card_bg = "#FFFFFF"
-    border_color = "#E9ECEF"
-    btn_primary_bg = "#228BE6"
-    btn_primary_text = "#FFFFFF"
-    btn_sec_bg = "#F1F3F5"
-    btn_sec_text = "#212529"
-
-def render_badge(text, bg_c="#E03131", text_c="#FFFFFF"):
-    return f'<span style="background-color: {bg_c}; color: {text_c}; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-left: 6px; display: inline-block; vertical-align: middle; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">{text}</span>'
+    bg_color, sidebar_bg, text_color, card_bg, border_color = "#0F172A", "#1E293B", "#F8FAFC", "#334155", "#475569"
+else:
+    bg_color, sidebar_bg, text_color, card_bg, border_color = "#121212", "#1A1A1A", "#E0E0E0", "#242424", "#3A3A3A"
 
 st.markdown(
     f"""
     <style>
-        .stApp {{
-            background-color: {bg_color};
-            color: {text_color};
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-        }}
-        
-        section[data-testid="stSidebar"] {{
-            background-color: {sidebar_bg} !important;
-            border-right: 1px solid {border_color} !important;
-        }}
-        section[data-testid="stSidebar"] .stMarkdown, 
-        section[data-testid="stSidebar"] h1, 
-        section[data-testid="stSidebar"] h2, 
-        section[data-testid="stSidebar"] h3, 
-        section[data-testid="stSidebar"] label {{
-            color: {text_color} !important;
-        }}
-        
-        .stMarkdown, .stText, h1, h2, h3, h4, label {{
-            color: {text_color} !important;
-        }}
-        
+        .stApp {{ background-color: {bg_color}; color: {text_color}; font-family: 'Pretendard', sans-serif; }}
+        section[data-testid="stSidebar"] {{ background-color: {sidebar_bg} !important; border-right: 1px solid {border_color} !important; }}
+        .stMarkdown, .stText, h1, h2, h3, h4, label {{ color: {text_color} !important; }}
         div[data-testid="stMetric"] {{
-            background-color: {card_bg};
-            border: 1px solid {border_color};
-            border-radius: 16px !important;
-            padding: 16px !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background-color: {card_bg}; border: 1px solid {border_color}; border-radius: 12px !important; padding: 12px !important;
         }}
-        div[data-testid="stMetric"]:hover {{
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-        }}
-        
-        div.stButton > button {{
-            border-radius: 12px !important;
-            font-weight: 600 !important;
-            border: 1px solid {border_color} !important;
-            transition: all 0.2s ease !important;
-        }}
-        div.stButton > button[kind="primary"] {{
-            background-color: {btn_primary_bg} !important;
-            color: {btn_primary_text} !important;
-            border: none !important;
-        }}
-        div.stButton > button[kind="secondary"] {{
-            background-color: {btn_sec_bg} !important;
-            color: {btn_sec_text} !important;
-        }}
-        div.stButton > button:hover {{
-            transform: scale(1.02);
-            opacity: 0.9;
-        }}
-        
-        div[data-baseweb="input"], div[data-baseweb="select"] > div {{
-            background-color: {card_bg} !important;
-            border-color: {border_color} !important;
-            color: {text_color} !important;
-            border-radius: 12px !important;
-        }}
-        
-        button[data-baseweb="tab"] {{
-            font-size: 16px !important;
-            font-weight: 700 !important;
-            padding: 10px 18px !important;
-            color: {text_color} !important;
-        }}
+        div.stButton > button {{ border-radius: 10px !important; font-weight: 600 !important; border: 1px solid {border_color} !important; }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-
 # ==========================================
-# 6. 메인 화면
+# 5. 메인 레이아웃
 # ==========================================
-
 if not st.session_state.game_started:
-    st.title("📈 글로벌 모의 주식 & 가상자산 트레이딩 시뮬레이터")
+    st.title("📈 글로벌 모의 주식 & 가상자산 시뮬레이터")
     st.divider()
 
-    col_main1, col_main2 = st.columns(2)
-
-    with col_main1:
+    c1, c2 = st.columns(2)
+    with c1:
+        st.selectbox("🎯 게임 모드 선택", list(GAME_MODES.keys()), key="mode_select")
         st.selectbox("🌐 언어 선택", ["한국어", "English"], key="language")
-        st.selectbox(
-            "🎯 난이도 선택",
-            list(DIFFICULTY_SETTINGS.keys()),
-            index=1,
-            key="difficulty",
-        )
+    with c2:
+        st.selectbox("🎨 화면 테마 설정", ["다크 모드", "라이트 모드 (기본)", "올블랙 모드", "블루 모드"], key="theme")
+        st.selectbox("📊 그래프 형태", ["꺾은선 그래프 (Line)", "막대 그래프 (Bar)"], key="chart_type")
 
-    with col_main2:
-        st.selectbox(
-            "🎨 화면 테마 설정",
-            [
-                "라이트 모드 (기본)",
-                "다크 모드",
-                "올블랙 모드",
-                "블루 모드",
-            ],
-            key="theme",
-        )
-        st.selectbox(
-            "📊 그래프 형태",
-            ["막대 그래프 (Bar)", "꺾은선 그래프 (Line)"],
-            key="chart_type",
-        )
+    col_u, col_d = st.columns(2)
+    with col_u: st.color_picker("🔴 상승 색상", value="#10B981", key="up_color")
+    with col_d: st.color_picker("🔵 하락 색상", value="#EF4444", key="down_color")
 
-    col_color1, col_color2 = st.columns(2)
-    with col_color1:
-        st.color_picker("🔴 상승 색상 (빨강)", value="#E03131", key="up_color")
-    with col_color2:
-        st.color_picker("🔵 하락 색상 (파랑)", value="#1971C2", key="down_color")
-
-    diff_info = DIFFICULTY_SETTINGS[st.session_state.get("difficulty", "보통")]
-    st.info(f"**[{st.session_state.get('difficulty', '보통')} 모드 선택됨]** — {diff_info['desc']}")
+    mode_info = GAME_MODES[st.session_state.get("mode_select", "⚔️ 라이벌 경쟁 모드")]
+    st.info(f"**[{st.session_state.get('mode_select')}]** — {mode_info['desc']}")
 
     st.divider()
-    if st.button(
-        "🚀 게임 시작하기",
-        key="main_start_btn",
-        type="primary",
-        use_container_width=True,
-    ):
+    if st.button("🚀 게임 시작하기", type="primary", use_container_width=True):
         init_game_session()
         st.session_state.game_started = True
         st.rerun()
 
 else:
+    tot_val = sum(st.session_state.portfolio[t]["qty"] * st.session_state.coins[t]["price"] for t in st.session_state.coins)
+    tot_asset = st.session_state.cash + tot_val
+    roi = ((tot_asset - st.session_state.initial_cash) / st.session_state.initial_cash) * 100
+    check_endings(tot_asset)
+
+    if st.session_state.get("game_cleared", False):
+        st.balloons()
+        if st.session_state.ending_type == "LUXURY_MASTER":
+            st.success("👑 **[SUCCESS] 자본주의의 신 엔딩 달성!**")
+            st.write("축하합니다! 10종의 모든 사치품을 수집하여 시장의 절대 지배자가 되었습니다.")
+        elif st.session_state.ending_type == "BILLIONAIRE":
+            st.success("🏆 **[SUCCESS] 1,000억 빌리어네어 엔딩 달성!**")
+            st.write(f"축하합니다! 총 자산 {tot_asset:,.0f}원에 도달하여 월가 대부호의 반열에 올랐습니다.")
+        if st.button("🔄 새로운 회차 시작하기", type="primary"):
+            st.session_state.game_started = False
+            st.rerun()
+        st.divider()
+
     st.title("📈 트레이딩 대시보드")
+    if st.session_state.current_event:
+        st.warning(f"🚨 **돌발 이슈 발동**: {st.session_state.current_event['title']} ({st.session_state.current_event['msg']})")
 
-    active_chart_type = st.session_state.get("sb_chart_type", st.session_state.get("chart_type", "막대 그래프 (Bar)"))
-    active_up_color = st.session_state.get("sb_up_color", st.session_state.get("up_color", "#E03131"))
-    active_down_color = st.session_state.get("sb_down_color", st.session_state.get("down_color", "#1971C2"))
+    m1, m2, m3, m4, m5 = st.columns(5)
+    m1.metric("진행", f"{st.session_state.day}일차")
+    m2.metric("보유 현금", f"{st.session_state.cash:,.0f}원")
+    m3.metric("평가 금액", f"{tot_val:,.0f}원")
+    m4.metric("총 자산", f"{tot_asset:,.0f}원")
+    m5.metric("수익률", f"{roi:+.2f}%")
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        [
-            "📊 거래소",
-            "💎 사치품 상점 (10종)",
-            "💼 포트폴리오",
-            "🪙 신규 종목 상장",
-            "📰 전체 속보",
-        ]
-    )
+    st.divider()
 
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+        "📊 거래소", "⚔️ 라이벌 순위", "💎 사치품 상점 (10종)", "🏆 업적 & 칭호", "💼 포트폴리오", "🪙 신규 종목 상장", "📰 전체 속보"
+    ])
+
+    # [TAB 1] 거래소
     with tab1:
-        sorted_stocks = sorted(
-            st.session_state.coins.items(),
-            key=lambda x: x[1]["change"],
-            reverse=True,
-        )
-        g_ticker, g_data = sorted_stocks[0]
-        l_ticker, l_data = sorted_stocks[-1]
-
-        r1, r2 = st.columns(2)
-        r1.info(
-            f"🔥 최고 상승: **{g_data['name']}** ({g_ticker}) | **{g_data['change']:+.2f}%**"
-        )
-        r2.error(
-            f"📉 최고 하락: **{l_data['name']}** ({l_ticker}) | **{l_data['change']:+.2f}%**"
-        )
-
-        st.divider()
-
-        c_filter1, c_filter2, c_filter3 = st.columns(3)
+        f1, f2, f3 = st.columns(3)
+        with f1:
+            selected_cat = st.selectbox("📂 자산 카테고리", ["전체", "🇰🇷 한국 주식", "🇺🇸 미국 주식", "🪙 가상자산"])
+        with f2:
+            avail_sectors = ["전체"] + sorted(list({v.get("sector", "기타") for v in st.session_state.coins.values()}))
+            selected_sector = st.selectbox("🏷️ 세부분야", avail_sectors)
         
-        with c_filter1:
-            selected_cat = st.selectbox(
-                "📂 자산 카테고리",
-                ["전체", "🇰🇷 한국 주식", "🇺🇸 미국 주식", "🪙 가상자산"],
-                key="cat_filter",
-            )
-
-        if selected_cat == "전체":
-            available_sectors = ["전체"] + sorted(list({v.get("sector", "기타") for v in st.session_state.coins.values()}))
-        else:
-            available_sectors = ["전체"] + sorted(list({v.get("sector", "기타") for v in st.session_state.coins.values() if v["category"] == selected_cat}))
-
-        with c_filter2:
-            selected_sector = st.selectbox(
-                "🏷️ 세부분야",
-                available_sectors,
-                key="sector_filter",
-            )
-
-        filtered_tickers = []
-        for k, v in st.session_state.coins.items():
-            cat_match = (selected_cat == "전체") or (v["category"] == selected_cat)
-            sector_match = (selected_sector == "전체") or (v.get("sector", "기타") == selected_sector)
-            if cat_match and sector_match:
-                filtered_tickers.append(k)
-
-        with c_filter3:
-            selected_ticker = st.selectbox(
-                "📌 종목 선택",
-                filtered_tickers,
-                key="exchange_select_ticker",
-                format_func=lambda x: f"[{st.session_state.coins[x].get('sector', '기타')}] {st.session_state.coins[x]['name']} ({x})",
-            )
-
-        st.divider()
+        filtered = [k for k, v in st.session_state.coins.items() if (selected_cat == "전체" or v["category"] == selected_cat) and (selected_sector == "전체" or v.get("sector", "기타") == selected_sector)]
+        with f3:
+            selected_ticker = st.selectbox("📌 종목 선택", filtered if filtered else list(st.session_state.coins.keys()), format_func=lambda x: f"[{st.session_state.coins[x].get('sector','기타')}] {st.session_state.coins[x]['name']} ({x})")
 
         c_graph, c_news = st.columns([2, 1])
-
         coin_data = st.session_state.coins[selected_ticker]
         history = coin_data["history"]
 
         with c_graph:
-            cat_badge = render_badge(coin_data["category"], "#3B82F6")
-            sector_badge = render_badge(coin_data.get("sector", "기타"), "#10B981")
-            
-            st.markdown(
-                f"<div style='display: flex; align-items: center; margin-bottom: 10px;'>"
-                f"<h3 style='margin: 0; padding: 0;'>📊 {coin_data['name']} 차트</h3>{cat_badge}{sector_badge}"
-                f"</div>",
-                unsafe_allow_html=True,
-            )
+            st.markdown(f"### 📊 {coin_data['name']} 차트 ({selected_ticker})")
             fig = go.Figure()
-
-            if st.session_state.day > 1 and len(history) > 1:
-                x_days = [f"{d}일" for d in range(1, len(history) + 1)]
-                min_p = min(history)
-                max_p = max(history)
-                p_margin = (
-                    (max_p - min_p) * 0.2 if max_p != min_p else min_p * 0.05
-                )
-                y_bottom = max(0, min_p - p_margin)
-                y_top = max_p + p_margin
-
-                bar_colors = [
-                    active_up_color if (i == 0 or history[i] >= history[i - 1]) else active_down_color
-                    for i in range(len(history))
-                ]
-
-                if "막대" in active_chart_type or "Bar" in active_chart_type:
-                    fig.add_trace(
-                        go.Bar(
-                            x=x_days,
-                            y=[p - y_bottom for p in history],
-                            base=y_bottom,
-                            marker_color=bar_colors,
-                            name=selected_ticker,
-                            width=0.4,
-                            hovertemplate="%{x}<br>가격: %{customdata:,.2f}원<extra></extra>",
-                            customdata=history,
-                        )
-                    )
-                else:
-                    for i in range(1, len(history)):
-                        seg_color = active_up_color if history[i] >= history[i - 1] else active_down_color
-                        fig.add_trace(
-                            go.Scatter(
-                                x=[x_days[i - 1], x_days[i]],
-                                y=[history[i - 1], history[i]],
-                                mode="lines+markers",
-                                line=dict(color=seg_color, width=3),
-                                marker=dict(size=7, color=seg_color),
-                                showlegend=False,
-                                hovertemplate="%{x}<br>가격: %{y:,.2f}원<extra></extra>",
-                            )
-                        )
-
-                fig.update_layout(
-                    paper_bgcolor=card_bg,
-                    plot_bgcolor=card_bg,
-                    font=dict(color=text_color),
-                    margin=dict(l=10, r=10, t=20, b=10),
-                    height=280,
-                    xaxis=dict(gridcolor=border_color, type="category"),
-                    yaxis=dict(gridcolor=border_color, range=[y_bottom, y_top]),
-                )
+            active_up = st.session_state.get("sb_up_color", "#10B981")
+            active_down = st.session_state.get("sb_down_color", "#EF4444")
+            
+            if "막대" in st.session_state.get("sb_chart_type", "꺾은선"):
+                bar_colors = [active_up if (i == 0 or history[i] >= history[i - 1]) else active_down for i in range(len(history))]
+                fig.add_trace(go.Bar(y=history, marker_color=bar_colors))
             else:
-                fig.update_layout(
-                    paper_bgcolor=card_bg,
-                    plot_bgcolor=card_bg,
-                    font=dict(color=text_color),
-                    margin=dict(l=10, r=10, t=20, b=10),
-                    height=280,
-                    xaxis=dict(gridcolor=border_color, showgrid=True),
-                    yaxis=dict(gridcolor=border_color, showgrid=True),
-                    annotations=[
-                        {
-                            "text": "1일 차에는 변동 데이터가 없습니다.<br>'다음 날로 가기' 또는 '자동 날짜 진행'을 이용하세요.",
-                            "xref": "paper",
-                            "yref": "paper",
-                            "showarrow": False,
-                            "font": {"size": 13, "color": text_color},
-                        }
-                    ],
-                )
+                fig.add_trace(go.Scatter(y=history, mode="lines+markers", line=dict(color=active_up if coin_data["change"] >= 0 else active_down, width=3)))
 
+            fig.update_layout(height=260, paper_bgcolor=card_bg, plot_bgcolor=card_bg, font=dict(color=text_color), margin=dict(l=10, r=10, t=10, b=10))
             st.plotly_chart(fig, use_container_width=True)
 
         with c_news:
-            st.markdown(f"### 📰 관련 속보")
-            ticker_news = [
-                n
-                for n in st.session_state.news_log
-                if n["name"] == coin_data["name"]
-            ]
-            if ticker_news:
-                for item in ticker_news[:5]:
-                    st.caption(f"[{item['time']}] {item['msg']}")
-            else:
-                st.info("현재 해당 종목의 관련 속보가 없습니다.")
+            st.markdown("### 📰 종목 관련 뉴스")
+            t_news = [n for n in st.session_state.news_log if n["name"] == coin_data["name"]]
+            if t_news:
+                for item in t_news[:4]: st.caption(f"[{item['time']}] {item['msg']}")
+            else: st.info("최근 주요 소식이 없습니다.")
 
         st.divider()
 
-        tot_val = sum(
-            st.session_state.portfolio[t]["qty"]
-            * st.session_state.coins[t]["price"]
-            for t in st.session_state.coins
-        )
-        tot_asset = st.session_state.cash + tot_val
-        init_cash = st.session_state.get("initial_cash", 5000000.0)
-        roi = ((tot_asset - init_cash) / init_cash) * 100
-
-        st.markdown("**💰 보유 자산 및 실시간 수익률**")
-        m1, m2, m3, m4, m5 = st.columns(5)
-        m1.metric("진행", f"{st.session_state.day}일차")
-        m2.metric("보유 현금", f"{st.session_state.cash:,.0f}원")
-        m3.metric("평가 금액", f"{tot_val:,.0f}원")
-        m4.metric("총 자산", f"{tot_asset:,.0f}원")
-        m5.metric("수익률", f"{roi:+.2f}%")
-
-        st.divider()
-
-        next_col1, next_col2 = st.columns([3, 1])
-        with next_col1:
-            if st.button(
-                "🌙 다음 날로 가기 ➔ (수동 진행)",
-                key="next_day_action_btn",
-                type="primary",
-                use_container_width=True,
-            ):
+        next_c1, next_c2 = st.columns([3, 1])
+        with next_c1:
+            if st.button("🌙 다음 날로 가기 ➔ (수동 진행)", type="primary", use_container_width=True):
                 next_day_market()
                 st.rerun()
+        with next_c2:
+            st.toggle("🤖 자동 진행 (1.5초)", key="auto_play_toggle")
 
-        with next_col2:
-            auto_play = st.toggle("🤖 자동 진행 (1.5초)", key="auto_play_toggle")
-
-        st.divider()
-
-        my_data = st.session_state.portfolio.get(
-            selected_ticker, {"qty": 0.0, "avg_price": 0.0}
-        )
-
+        my_data = st.session_state.portfolio.get(selected_ticker, {"qty": 0.0, "avg_price": 0.0})
         b_col, s_col = st.columns(2)
+
         with b_col:
-            st.markdown("### 🟢 매수")
-            st.write(f"현재가: **{coin_data['price']:,.2f} 원**")
-
-            b_row1_1, b_row1_2, b_row1_3 = st.columns(3)
-            b_row1_1.button("+1", key="buy_add_1", on_click=add_buy_qty, args=(1.0,))
-            b_row1_2.button("+10", key="buy_add_10", on_click=add_buy_qty, args=(10.0,))
-            b_row1_3.button("+50", key="buy_add_50", on_click=add_buy_qty, args=(50.0,))
-
-            b_row2_1, b_row2_2, b_row2_3 = st.columns(3)
-            b_row2_1.button("+100", key="buy_add_100", on_click=add_buy_qty, args=(100.0,))
-            b_row2_2.button("🚀 올인", key="buy_max", on_click=set_buy_max, args=(coin_data["price"],))
-            b_row2_3.button("🔄 0으로", key="buy_reset", on_click=reset_buy_qty)
+            st.markdown(f"### 🟢 매수 (현재가: {coin_data['price']:,.2f} 원)")
+            r1_1, r1_2, r1_3 = st.columns(3)
+            r1_1.button("+1", key="b1", on_click=add_buy_qty, args=(1.0,))
+            r1_2.button("+10", key="b10", on_click=add_buy_qty, args=(10.0,))
+            r1_3.button("+50", key="b50", on_click=add_buy_qty, args=(50.0,))
+            
+            r2_1, r2_2, r2_3 = st.columns(3)
+            r2_1.button("+100", key="b100", on_click=add_buy_qty, args=(100.0,))
+            r2_2.button("🚀 올인", key="bmax", on_click=set_buy_max, args=(coin_data["price"],))
+            r2_3.button("🔄 리셋", key="bclr", on_click=reset_buy_qty)
 
             st.number_input("매수 수량", min_value=0.0, key="buy_qty")
-            st.button(
-                "🟢 매수하기",
-                key="buy_execute_btn",
-                type="primary",
-                use_container_width=True,
-                on_click=execute_buy,
-                args=(selected_ticker,),
-            )
+            st.button("🟢 매수 실행", type="primary", use_container_width=True, on_click=execute_buy, args=(selected_ticker,))
 
         with s_col:
-            st.markdown("### 🔴 매도")
-            st.write(f"보유 수량: **{my_data['qty']:,.2f} 주/개**")
+            st.markdown(f"### 🔴 매도 (보유: {my_data['qty']:,.2f} 주)")
+            sr1_1, sr1_2, sr1_3 = st.columns(3)
+            sr1_1.button("+1", key="s1", on_click=add_sell_qty, args=(1.0, my_data["qty"]))
+            sr1_2.button("+10", key="s10", on_click=add_sell_qty, args=(10.0, my_data["qty"]))
+            sr1_3.button("+50", key="s50", on_click=add_sell_qty, args=(50.0, my_data["qty"]))
 
-            s_row1_1, s_row1_2, s_row1_3 = st.columns(3)
-            s_row1_1.button("+1", key="sell_add_1", on_click=add_sell_qty, args=(1.0, my_data["qty"]))
-            s_row1_2.button("+10", key="sell_add_10", on_click=add_sell_qty, args=(10.0, my_data["qty"]))
-            s_row1_3.button("+50", key="sell_add_50", on_click=add_sell_qty, args=(50.0, my_data["qty"]))
+            sr2_1, sr2_2, sr2_3 = st.columns(3)
+            sr2_1.button("+100", key="s100", on_click=add_sell_qty, args=(100.0, my_data["qty"]))
+            sr2_2.button("🚀 전량 매도", key="smax", on_click=set_sell_max, args=(my_data["qty"],))
+            sr2_3.button("🔄 리셋", key="sclr", on_click=reset_sell_qty)
 
-            s_row2_1, s_row2_2, s_row2_3 = st.columns(3)
-            s_row2_1.button("+100", key="sell_add_100", on_click=add_sell_qty, args=(100.0, my_data["qty"]))
-            s_row2_2.button("🚀 올인", key="sell_max", on_click=set_sell_max, args=(my_data["qty"],))
-            s_row2_3.button("🔄 0으로", key="sell_reset", on_click=reset_sell_qty)
-
-            st.number_input(
-                "매도 수량",
-                min_value=0.0,
-                max_value=float(my_data["qty"]),
-                key="sell_qty",
-            )
-            st.button(
-                "🔴 매도하기",
-                key="sell_execute_btn",
-                type="primary",
-                use_container_width=True,
-                on_click=execute_sell,
-                args=(selected_ticker,),
-            )
+            st.number_input("매도 수량", min_value=0.0, max_value=float(my_data["qty"]), key="sell_qty")
+            st.button("🔴 매도 실행", type="primary", use_container_width=True, on_click=execute_sell, args=(selected_ticker,))
 
         if st.session_state.get("auto_play_toggle", False):
             time.sleep(1.5)
             next_day_market()
             st.rerun()
 
-    # 💡 [2] 다채로운 특수 효과 10종 사치품 상점 UI
+    # [TAB 2] 라이벌 순위
     with tab2:
+        st.subheader("⚔️ 트레이더 자산 순위표")
+        leaderboard = [{"이름": "👤 플레이어 (나)", "총 자산": tot_asset}]
+        for r_name, r_info in st.session_state.rivals.items():
+            leaderboard.append({"이름": r_name, "총 자산": r_info["cash"]})
+        leaderboard = sorted(leaderboard, key=lambda x: x["총 자산"], reverse=True)
+
+        if leaderboard[0]["이름"] == "👤 플레이어 (나)":
+            check_achievement("RIVAL_BEAT_ALL")
+
+        df_rank = pd.DataFrame(leaderboard)
+        df_rank["순위"] = [f"{i+1}위" for i in range(len(leaderboard))]
+        df_rank["총 자산"] = df_rank["총 자산"].apply(lambda x: f"{x:,.0f} 원")
+        st.table(df_rank[["순위", "이름", "총 자산"]])
+
+    # [TAB 3] 사치품 상점
+    with tab3:
         st.subheader("💎 사치품 & 특수 자산 상점 (10종 모음)")
-        st.info(
-            "💡 **특수 효과 시스템**: 단순 주가 보너스 외에도 **일일 부수입**, **일일 배당금**, **하락폭 방어(리스크 제한)**, **급등 확률 폭증** 등 고유의 특수 효과가 부여됩니다!"
-        )
-        
-        g_cols = st.columns(2)
+        cols = st.columns(2)
         for idx, (k, item) in enumerate(LUXURY_SHOP.items()):
-            with g_cols[idx % 2]:
+            with cols[idx % 2]:
                 st.markdown(f"### {item['icon']} {item['name']}")
                 st.write(f"가격: **{item['price']:,.0f}원**")
                 st.caption(f"✨ 효과: **{item['desc']}**")
-                
-                is_owned = k in st.session_state.owned_items
-                if is_owned:
-                    st.button(
-                        f"✅ 보유 중 (특수 효과 적용 중)",
-                        key=f"buy_luxury_{k}",
-                        disabled=True,
-                        use_container_width=True,
-                    )
+                if k in st.session_state.owned_items:
+                    st.button("✅ 보유 중 (효과 적용 중)", key=f"owned_{k}", disabled=True, use_container_width=True)
                 else:
-                    if st.button(
-                        f"🛒 {item['name']} 구매하기",
-                        key=f"buy_luxury_{k}",
-                        use_container_width=True,
-                    ):
+                    if st.button(f"🛒 {item['name']} 구매하기", key=f"buy_lux_{k}", use_container_width=True):
                         if st.session_state.cash >= item["price"]:
                             st.session_state.cash -= item["price"]
                             st.session_state.owned_items[k] = True
-                            st.balloons()
-                            st.toast(
-                                f"🎉 {item['name']} 구매 완료! [{item['desc']}] 효과가 활성화되었습니다.",
-                                icon="🎁",
-                            )
+                            if len(st.session_state.owned_items) >= 3:
+                                check_achievement("LUXURY_3")
+                            st.toast(f"🎉 {item['name']} 구매 완료!")
                             st.rerun()
-                        else:
-                            st.toast("❌ 구매 잔액이 부족합니다!", icon="⚠️")
-                st.write("")
+                        else: st.toast("❌ 잔액이 부족합니다.", icon="⚠️")
 
-    with tab3:
-        st.subheader("💼 내 포트폴리오")
+    # [TAB 4] 업적 및 칭호
+    with tab4:
+        st.subheader("🏆 업적 & 칭호 도전 과제")
+        cols = st.columns(2)
+        for idx, (key, info) in enumerate(ACHIEVEMENTS_MASTER.items()):
+            unlocked = st.session_state.unlocked_achievements.get(key, False)
+            with cols[idx % 2]:
+                if unlocked: st.success(f"✅ **{info['title']}** (달성 완료)\n\n{info['desc']} | 보상: +{info['reward']:,.0f}원 수령함")
+                else: st.info(f"🔒 **{info['title']}** (미달성)\n\n{info['desc']} | 보상: +{info['reward']:,.0f}원")
+
+    # [TAB 5] 포트폴리오
+    with tab5:
+        st.subheader("💼 내 포트폴리오 현황")
         p_list = []
         for t, d in st.session_state.portfolio.items():
             if d["qty"] > 0:
                 cp = st.session_state.coins[t]["price"]
-                p_list.append(
-                    {
-                        "티커": t,
-                        "종목명": st.session_state.coins[t]["name"],
-                        "세부분야": st.session_state.coins[t].get("sector", "기타"),
-                        "보유 수량": d["qty"],
-                        "평단가": f"{d['avg_price']:,.2f}원",
-                        "현재가": f"{cp:,.2f}원",
-                        "평가금액": f"{(d['qty']*cp):,.0f}원",
-                    }
-                )
-        if p_list:
-            st.dataframe(pd.DataFrame(p_list), use_container_width=True)
-        else:
-            st.write("보유 중인 주식이 없습니다.")
+                p_list.append({"티커": t, "종목명": st.session_state.coins[t]["name"], "수량": d["qty"], "평단가": f"{d['avg_price']:,.2f}원", "현재가": f"{cp:,.2f}원", "평가금액": f"{(d['qty']*cp):,.0f}원"})
+        if p_list: st.dataframe(pd.DataFrame(p_list), use_container_width=True)
+        else: st.write("보유 중인 주식이 없습니다.")
 
-    with tab4:
+    # [TAB 6] 신규 종목 상장
+    with tab6:
         st.subheader("🪙 신규 종목 상장 (Mint Asset)")
         m_col1, m_col2 = st.columns(2)
         with m_col1:
-            new_ticker = st.text_input("티커 (예: NEW-COIN)", key="mint_ticker_input")
-            new_name = st.text_input("종목명", key="mint_name_input")
-            new_sector = st.text_input("세부분야 (예: 반도체, AI)", value="일반", key="mint_sector_input")
+            new_ticker = st.text_input("티커 (예: NEW-COIN)", key="mint_ticker")
+            new_name = st.text_input("종목명", key="mint_name")
+            new_sector = st.text_input("세부분야", value="일반", key="mint_sector")
         with m_col2:
-            new_price = st.number_input(
-                "상장 가격(원)", value=10000.0, key="mint_price_input"
-            )
-            new_cat = st.selectbox(
-                "자산 카테고리",
-                ["🇰🇷 한국 주식", "🇺🇸 미국 주식", "🪙 가상자산"],
-                key="mint_cat_input",
-            )
+            new_price = st.number_input("상장 가격(원)", value=10000.0, key="mint_price")
+            new_cat = st.selectbox("자산 카테고리", ["🇰🇷 한국 주식", "🇺🇸 미국 주식", "🪙 가상자산"], key="mint_cat")
 
-        if st.button("🚀 거래소에 신규 상장하기", key="mint_submit_btn", type="primary"):
+        if st.button("🚀 신규 종목 상장하기", type="primary"):
             if new_ticker and new_name and new_ticker not in st.session_state.coins:
-                st.session_state.coins[new_ticker] = {
-                    "name": new_name,
-                    "category": new_cat,
-                    "sector": new_sector if new_sector else "일반",
-                    "price": float(new_price),
-                    "history": [float(new_price)],
-                    "change": 0.0,
-                }
-                st.session_state.portfolio[new_ticker] = {
-                    "qty": 0.0,
-                    "avg_price": 0.0,
-                }
+                st.session_state.coins[new_ticker] = {"name": new_name, "category": new_cat, "sector": new_sector, "price": float(new_price), "history": [float(new_price)], "change": 0.0}
+                st.session_state.portfolio[new_ticker] = {"qty": 0.0, "avg_price": 0.0}
                 st.toast(f"🎉 {new_name} ({new_ticker}) 상장 완료!", icon="✨")
                 st.rerun()
-            else:
-                st.toast("⚠️ 티커 중복이거나 입력값이 부족합니다.", icon="❌")
+            else: st.toast("⚠️ 티커가 중복되거나 정보가 누락되었습니다.", icon="❌")
 
-    with tab5:
-        st.subheader("📰 실시간 속보 기록")
+    # [TAB 7] 전체 속보
+    with tab7:
+        st.subheader("📰 실시간 시장 전체 속보")
         if st.session_state.news_log:
             for log in st.session_state.news_log:
                 st.write(f"- `{log['time']}` **[{log['name']}]** {log['msg']}")
         else:
-            st.info("아직 누적된 속보가 없습니다. 날짜를 넘기면 뉴스가 기록됩니다.")
+            st.info("누적된 속보가 없습니다. 날짜를 넘기면 뉴스가 기록됩니다.")
