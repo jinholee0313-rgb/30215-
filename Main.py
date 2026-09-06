@@ -15,9 +15,9 @@ st.set_page_config(
 
 # 난이도 설정 데이터
 DIFFICULTY_SETTINGS = {
-    "쉬움": {"cash": 10000000, "volatility": 0.03, "label_en": "Easy"},
-    "보통": {"cash": 5000000, "volatility": 0.05, "label_en": "Normal"},
-    "어려움": {"cash": 1000000, "volatility": 0.08, "label_en": "Hard"},
+    "쉬움": {"cash": 10000000, "volatility": 0.03},
+    "보통": {"cash": 5000000, "volatility": 0.05},
+    "어려움": {"cash": 1000000, "volatility": 0.08},
 }
 
 # 기본 종목 리스트
@@ -52,6 +52,27 @@ DEFAULT_COINS = {
     },
 }
 
+# 상황별 속보 문구 풀
+BULL_NEWS = [
+    "기관 투자자 대규모 자금 유입 발표로 매수세 유입",
+    "현물 ETF 순유입액 신고가 달성하며 강한 반등",
+    "글로벌 규제 완화 호재 발표로 시장 관심 집중",
+    "기술적 핵심 지지선 사수에 성공하며 투자 심리 회복",
+]
+
+BEAR_NEWS = [
+    "금리 인상 가능성 제기되며 투자 심리 급냉",
+    "장기 보유자의 차익 실현 물량이 쏟아지며 하락세",
+    "글로벌 거래소 규제 이슈 악재로 인한 하방 압력",
+    "주요 저항선 돌파 실패 후 매도 물량 증가",
+]
+
+FLAT_NEWS = [
+    "주요 경제 지표 발표를 앞두고 뚜렷한 관망세",
+    "거래량이 줄어들며 박스권 안에서 횡보 흐름 유지",
+    "시장 모멘텀 부족으로 보합권 내 소폭 등락 지속",
+]
+
 # 다국어 텍스트 패키지
 TEXT_PACK = {
     "한국어": {
@@ -79,7 +100,7 @@ TEXT_PACK = {
         "down_color": "하락(음봉) 색상",
         "start_game": "🚀 게임 시작하기",
         "back_to_start": "⚙️ 게임 설정으로",
-        "reset_game": "🔄 게임 리셋",
+        "reset_game": "🔄 다시하기 (게임 초기화)",
         "top_gainer": "🚀 최고 상승:",
         "top_loser": "📉 최고 하락:",
         "tab_exchange": "📊 거래소 (주식/코인)",
@@ -90,18 +111,16 @@ TEXT_PACK = {
         "category_filter": "카테고리 선택",
         "all": "전체 보기",
         "select_stock": "종목 선택",
-        "chart_title": "📈 실시간 시세 차트",
-        "chart_suffix": "시세 차트",
+        "chart_title": "📈 실시간 시세 차트 & 속보",
+        "news_box_title": "📰 관련 종목 속보",
         "turn": "회차 (턴)",
         "price": "가격 (원)",
         "won": "원",
         "control_header": "⏱️ 시간 흐름 제어",
-        "update_market": "⚡ 실시간 시세 갱신 (장중 변동)",
-        "next_day": "🌙 다음 날로 넘어가기 (장 마감)",
+        "next_day": "🌙 다음 날로 ➔ (시세 변동)",
         "asset_header": "💰 자산 현황 요약",
         "progress": "진행 상황",
         "day_str": "일차",
-        "turn_str": "회차",
         "cash": "보유 현금",
         "portfolio_val": "총 평가 금액",
         "total_assets": "총 자산",
@@ -117,11 +136,9 @@ TEXT_PACK = {
         "btn_sell": "🔴 매도하기",
         "my_qty": "보유 수량",
         "unit": "주/개",
-        "stock_news_header": "관련 속보 및 악재",
-        "no_stock_news": "해당 종목에 관한 최신 속보가 없습니다.",
         "mint_header": "✨ 신규 종목 상장 신청",
         "stock_name": "종목명",
-        "ticker_symbol": "티커 티커명 (영문 대문자)",
+        "ticker_symbol": "티커명 (영문 대문자)",
         "select_category": "카테고리 선택",
         "start_price": "상장 기준가 (원)",
         "btn_mint": "✨ 신규 상장하기",
@@ -159,11 +176,11 @@ TEXT_PACK = {
         "chart_type": "Select Chart Type",
         "chart_line": "Line Chart",
         "chart_bar": "Bar Chart",
-        "up_color": "Bullish (Up) Color",
-        "down_color": "Bearish (Down) Color",
+        "up_color": "Bullish Color",
+        "down_color": "Bearish Color",
         "start_game": "🚀 Start Game",
         "back_to_start": "⚙️ Back to Settings",
-        "reset_game": "🔄 Reset Game",
+        "reset_game": "🔄 Reset / Retry",
         "top_gainer": "🚀 Top Gainer:",
         "top_loser": "📉 Top Loser:",
         "tab_exchange": "📊 Exchange",
@@ -174,18 +191,16 @@ TEXT_PACK = {
         "category_filter": "Category",
         "all": "All",
         "select_stock": "Select Asset",
-        "chart_title": "📈 Real-Time Price Chart",
-        "chart_suffix": "Price Chart",
+        "chart_title": "📈 Real-Time Chart & News",
+        "news_box_title": "📰 Asset Breaking News",
         "turn": "Turn",
         "price": "Price (KRW)",
         "won": "KRW",
         "control_header": "⏱️ Time Control",
-        "update_market": "⚡ Update Market (Intraday)",
-        "next_day": "🌙 Next Day (Market Close)",
+        "next_day": "🌙 Next Day ➔ (Update Market)",
         "asset_header": "💰 Asset Summary",
         "progress": "Progress",
         "day_str": "Day",
-        "turn_str": "Turn",
         "cash": "Available Cash",
         "portfolio_val": "Portfolio Value",
         "total_assets": "Total Assets",
@@ -201,8 +216,6 @@ TEXT_PACK = {
         "btn_sell": "🔴 Execute Sell",
         "my_qty": "Owned Quantity",
         "unit": "Units",
-        "stock_news_header": "Related News & Events",
-        "no_stock_news": "No recent breaking news for this asset.",
         "mint_header": "✨ Listing Request",
         "stock_name": "Asset Name",
         "ticker_symbol": "Ticker Symbol",
@@ -261,7 +274,6 @@ def init_game_session():
 
     st.session_state.cash = float(cash_val)
     st.session_state.day = 1
-    st.session_state.turn = 1
     st.session_state.coins = pd.Series(DEFAULT_COINS).to_dict()
     st.session_state.portfolio = {ticker: 0.0 for ticker in DEFAULT_COINS}
     st.session_state.news_log = []
@@ -269,7 +281,6 @@ def init_game_session():
     st.session_state.sell_qty = 0.0
 
 
-# 언어별 텍스트 매핑
 lang = (
     "한국어"
     if "한국어" in st.session_state.get("language", "한국어")
@@ -277,10 +288,11 @@ lang = (
 )
 txt = TEXT_PACK[lang]
 
+
 # ==========================================
-# 3. Streamlit @st.dialog 모달 알림창 정의
+# 3. Streamlit @st.dialog 모달 알림창
 # ==========================================
-@st.dialog("🔔 거래 알림 (Trade Result)")
+@st.dialog("🔔 거래 알림")
 def show_trade_dialog(msg, status="info"):
     if status == "success":
         st.success(msg)
@@ -290,12 +302,12 @@ def show_trade_dialog(msg, status="info"):
         st.error(msg)
     else:
         st.info(msg)
-    if st.button("확인 (Close)", use_container_width=True):
+    if st.button("확인", use_container_width=True):
         st.rerun()
 
 
 # ==========================================
-# 4. 수량 조절 및 거래 로직 함수들
+# 4. 수량 조절 및 거래/시간 진행 로직
 # ==========================================
 def add_buy_qty(val):
     st.session_state.buy_qty += val
@@ -343,7 +355,7 @@ def execute_buy(ticker):
     )
     st.session_state.buy_qty = 0.0
     show_trade_dialog(
-        f"🟢 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매수 완료! (체결가: {total_cost:,.0f}원)",
+        f"🟢 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매수 완료!",
         "success",
     )
 
@@ -366,17 +378,14 @@ def execute_sell(ticker):
     st.session_state.portfolio[ticker] -= qty
     st.session_state.sell_qty = 0.0
     show_trade_dialog(
-        f"🔴 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료! (정산금: {total_revenue:,.0f}원)",
+        f"🔴 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료!",
         "success",
     )
 
 
-def update_market(next_day=False):
-    if next_day:
-        st.session_state.day += 1
-        st.session_state.turn = 1
-    else:
-        st.session_state.turn += 1
+def next_day_market():
+    """'다음 날로' 버튼을 누를 때만 날짜와 시세가 함께 변동하도록 보장"""
+    st.session_state.day += 1
 
     diff_key = st.session_state.get("difficulty", "보통")
     if "쉬움" in diff_key or "Easy" in diff_key:
@@ -386,75 +395,14 @@ def update_market(next_day=False):
     else:
         volatility = DIFFICULTY_SETTINGS["보통"]["volatility"]
 
-    # 일정 확률로 특수 뉴스 이벤트 발생
-    event_occurred = random.random() < 0.25
-    event_type = random.choice(
-        ["SUPER_PUMP", "PUMP", "DUMP", "SUPER_DUMP"]
-    )
-    event_target = random.choice(list(st.session_state.coins.keys()))
-    event_coin_name = st.session_state.coins[event_target]["name"]
-
-    time_str = (
-        f"{st.session_state.day}일차 [{st.session_state.turn}회차]"
-        if st.session_state.language == "한국어"
-        else f"Day {st.session_state.day} [Turn {st.session_state.turn}]"
-    )
-    is_kor = st.session_state.language == "한국어"
-
-    if event_occurred:
-        if event_type == "SUPER_PUMP":
-            msg = (
-                f"[{time_str} 🚀🚀] **초대형 호재!** '{event_coin_name}'의 압도적인 기술 혁신 발표!"
-                if is_kor
-                else f"[{time_str} 🚀🚀] **MEGA PUMP!** Massive good news for '{event_coin_name}'!"
-            )
-        elif event_type == "PUMP":
-            msg = (
-                f"[{time_str} 📈] **호재 발표!** '{event_coin_name}' 실적 호조!"
-                if is_kor
-                else f"[{time_str} 📈] **PUMP!** Positive earnings report for '{event_coin_name}'!"
-            )
-        elif event_type == "DUMP":
-            msg = (
-                f"[{time_str} 📉] **악재 발생!** '{event_coin_name}' 규제 이슈!"
-                if is_kor
-                else f"[{time_str} 📉] **DUMP!** Regulatory issues hit '{event_coin_name}'!"
-            )
-        elif event_type == "SUPER_DUMP":
-            msg = (
-                f"[{time_str} 💀💀] **경악!** '{event_coin_name}' 초대형 폭락 사태 발생!"
-                if is_kor
-                else f"[{time_str} 💀💀] **CRASH!** Devastating price drop for '{event_coin_name}'!"
-            )
-    else:
-        msg = (
-            f"[{time_str} ☀️] 안정적인 장중 시세 흐름이 유지되고 있습니다."
-            if is_kor
-            else f"[{time_str} ☀️] Market trades steadily with low volatility."
-        )
-        event_target = None
-
-    st.session_state.news_log.insert(
-        0,
-        {
-            "time": time_str,
-            "ticker": event_target if event_occurred else None,
-            "msg": msg,
-        },
-    )
+    time_str = f"Day {st.session_state.day}"
 
     for ticker, data in st.session_state.coins.items():
-        if event_occurred and ticker == event_target:
-            if event_type == "SUPER_PUMP":
-                change_rate = random.uniform(0.50, 1.50)
-            elif event_type == "PUMP":
-                change_rate = random.uniform(0.10, 0.35)
-            elif event_type == "DUMP":
-                change_rate = random.uniform(-0.30, -0.10)
-            elif event_type == "SUPER_DUMP":
-                change_rate = random.uniform(-0.70, -0.40)
-        else:
-            change_rate = random.uniform(-volatility, volatility)
+        change_rate = random.uniform(-volatility, volatility)
+
+        # 특수 뉴스 이벤트 발생 여부
+        if random.random() < 0.2:
+            change_rate = random.choice([0.15, 0.25, -0.15, -0.25])
 
         new_price = round(data["price"] * (1 + change_rate), 2)
         if new_price < 0.01:
@@ -463,6 +411,28 @@ def update_market(next_day=False):
         data["change"] = change_rate * 100
         data["price"] = new_price
         data["history"].append(new_price)
+
+        # 뉴스 로그 생성
+        if change_rate > 0.05:
+            news_txt = random.choice(BULL_NEWS)
+            status_tag = "🚀 호재"
+        elif change_rate < -0.05:
+            news_txt = random.choice(BEAR_NEWS)
+            status_tag = "📉 악재"
+        else:
+            news_txt = random.choice(FLAT_NEWS)
+            status_tag = "☀️ 보합"
+
+        st.session_state.news_log.insert(
+            0,
+            {
+                "time": time_str,
+                "ticker": ticker,
+                "name": data["name"],
+                "tag": status_tag,
+                "msg": news_txt,
+            },
+        )
 
 
 # ==========================================
@@ -520,6 +490,14 @@ st.markdown(
             padding: 12px;
             border-radius: 10px;
         }}
+        .news-card {{
+            background-color: {card_bg};
+            border: 1px solid {border_color};
+            border-radius: 10px;
+            padding: 14px;
+            height: 250px;
+            overflow-y: auto;
+        }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -532,7 +510,6 @@ if not st.session_state.game_started:
     st.title(txt["title"])
     st.subheader(txt["setting_header"])
 
-    # 2x2 레이아웃 배치
     row1_col1, row1_col2 = st.columns(2)
     with row1_col1:
         st.selectbox(txt["lang_select"], ["한국어", "English"], key="language")
@@ -561,18 +538,6 @@ if not st.session_state.game_started:
             key="chart_type",
         )
 
-    # 커스텀 테마 색상 선택
-    if "커스텀" in st.session_state.theme or "Custom" in st.session_state.theme:
-        st.divider()
-        st.subheader("🎨 커스텀 팔레트 설정")
-        c_col1, c_col2, c_col3 = st.columns(3)
-        with c_col1:
-            st.color_picker(txt["custom_bg"], key="custom_bg")
-        with c_col2:
-            st.color_picker(txt["custom_text"], key="custom_text")
-        with c_col3:
-            st.color_picker(txt["custom_card"], key="custom_card")
-
     st.divider()
     st.subheader(txt["chart_header"])
     col_u, col_d = st.columns(2)
@@ -594,7 +559,7 @@ if not st.session_state.game_started:
 # 7. 화면 2: 메인 트레이딩 게임 화면
 # ==========================================
 else:
-    # 상단 헤더 및 이동/리셋 버튼
+    # 상단 버튼 (설정으로 / 다시하기)
     col_title, col_btn1, col_btn2 = st.columns([3, 1, 1])
     with col_title:
         st.title(txt["title"])
@@ -619,27 +584,27 @@ else:
     rank_col1, rank_col2 = st.columns(2)
     with rank_col1:
         st.info(
-            f"{txt['top_gainer']} {top_gainer_data['name']} ({top_gainer_ticker}) | **{top_gainer_data['change']:+.2f}%** ({top_gainer_data['price']:,.2f} {txt['won']})"
+            f"{txt['top_gainer']} {top_gainer_data['name']} ({top_gainer_ticker}) | **{top_gainer_data['change']:+.2f}%**"
         )
     with rank_col2:
         st.error(
-            f"{txt['top_loser']} {top_loser_data['name']} ({top_loser_ticker}) | **{top_loser_data['change']:+.2f}%** ({top_loser_data['price']:,.2f} {txt['won']})"
+            f"{txt['top_loser']} {top_loser_data['name']} ({top_loser_ticker}) | **{top_loser_data['change']:+.2f}%**"
         )
 
     st.divider()
 
-    # 메인 탭 구성
-    tab_titles = [
-        txt["tab_exchange"],
-        txt["tab_mint"],
-        txt["tab_portfolio"],
-        txt["tab_news"],
-    ]
-    tab1, tab2, tab3, tab4 = st.tabs(tab_titles)
+    # 메인 탭
+    tab1, tab2, tab3, tab4 = st.tabs(
+        [
+            txt["tab_exchange"],
+            txt["tab_mint"],
+            txt["tab_portfolio"],
+            txt["tab_news"],
+        ]
+    )
 
     # TAB 1: 거래소
     with tab1:
-        st.subheader(txt["filter_header"])
         categories = [txt["all"]] + sorted(
             list(
                 set(
@@ -677,98 +642,102 @@ else:
 
         st.divider()
 
-        # 📊 실시간 Plotly 차트 시각화
+        # 📊 [핵심] 차트 세로 길이 축소 & 옆에 뉴스 창 나란히 배치 (Grid Layout)
         st.subheader(txt["chart_title"])
-        fig = go.Figure()
+        col_chart, col_news = st.columns([1.3, 1])
 
-        history = coin_data["history"]
-        up_c = st.session_state.up_color
-        down_c = st.session_state.down_color
+        with col_chart:
+            fig = go.Figure()
+            history = coin_data["history"]
+            up_c = st.session_state.up_color
+            down_c = st.session_state.down_color
 
-        if st.session_state.chart_type in ["막대 그래프 (Bar)", "Bar Chart"]:
-            bar_colors = [up_c]
-            for i in range(1, len(history)):
-                if history[i] >= history[i - 1]:
-                    bar_colors.append(up_c)
-                else:
-                    bar_colors.append(down_c)
-
-            fig.add_trace(
-                go.Bar(
-                    y=history,
-                    name=selected_ticker,
-                    marker_color=bar_colors,
+            if st.session_state.chart_type in [
+                "막대 그래프 (Bar)",
+                "Bar Chart",
+            ]:
+                bar_colors = [
+                    up_c
+                    if i == 0 or history[i] >= history[i - 1]
+                    else down_c
+                    for i in range(len(history))
+                ]
+                fig.add_trace(
+                    go.Bar(
+                        y=history, name=selected_ticker, marker_color=bar_colors
+                    )
                 )
-            )
-        else:
-            line_color = up_c if history[-1] >= history[0] else down_c
-            fig.add_trace(
-                go.Scatter(
-                    y=history,
-                    mode="lines+markers",
-                    name=selected_ticker,
-                    line=dict(color=line_color, width=3),
+            else:
+                line_color = up_c if history[-1] >= history[0] else down_c
+                fig.add_trace(
+                    go.Scatter(
+                        y=history,
+                        mode="lines+markers",
+                        name=selected_ticker,
+                        line=dict(color=line_color, width=2.5),
+                    )
                 )
-            )
 
-        fig.update_layout(
-            template=(
-                "plotly_white"
-                if "라이트" in st.session_state.theme
-                or "Light" in st.session_state.theme
-                else "plotly_dark"
-            ),
-            paper_bgcolor=card_bg,
-            plot_bgcolor=card_bg,
-            font=dict(color=text_color),
-            title=dict(
-                text=f"{coin_data['name']} ({selected_ticker}) {txt['chart_suffix']}",
-                font=dict(color=text_color, size=16),
-            ),
-            xaxis=dict(
-                title=txt["turn"],
-                title_font=dict(color=text_color),
-                tickfont=dict(color=text_color),
-                gridcolor=border_color,
-            ),
-            yaxis=dict(
-                title=txt["price"],
-                title_font=dict(color=text_color),
-                tickfont=dict(color=text_color),
-                gridcolor=border_color,
-            ),
-            height=380,
-        )
-        st.plotly_chart(fig, use_container_width=True)
+            # 차트 높이 축소 설정 (height=250)
+            fig.update_layout(
+                paper_bgcolor=card_bg,
+                plot_bgcolor=card_bg,
+                font=dict(color=text_color),
+                margin=dict(l=10, r=10, t=10, b=10),
+                height=250,
+                xaxis=dict(gridcolor=border_color),
+                yaxis=dict(gridcolor=border_color),
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+        with col_news:
+            st.markdown(f"**{txt['news_box_title']}**")
+            stock_news = [
+                n
+                for n in st.session_state.news_log
+                if n.get("ticker") == selected_ticker
+            ]
+
+            if stock_news:
+                latest = stock_news[0]
+                st.info(
+                    f"**[{latest['time']}] {latest['tag']}**\n\n{latest['msg']}"
+                )
+            else:
+                st.caption("아직 발생한 종목 속보가 없습니다.")
+
+            with st.expander("이전 속보 기록 보기"):
+                for n in stock_news[1:5]:
+                    st.write(f"- `{n['time']}` {n['tag']}: {n['msg']}")
 
         st.divider()
 
-        # 시세 조작 제어 버튼
-        st.subheader(txt["control_header"])
-        btn_col1, btn_col2 = st.columns(2)
-        with btn_col1:
+        # ⏱️ 시간 흐름 제어 버튼 (다음 날로 / 다시하기)
+        c_btn1, c_btn2 = st.columns(2)
+        with c_btn1:
             if st.button(
-                txt["update_market"], type="primary", use_container_width=True
+                txt["next_day"], type="primary", use_container_width=True
             ):
-                update_market(next_day=False)
+                next_day_market()
                 st.rerun()
-
-        with btn_col2:
-            if st.button(txt["next_day"], use_container_width=True):
-                update_market(next_day=True)
+        with c_btn2:
+            if st.button(txt["reset_game"], use_container_width=True):
+                init_game_session()
                 st.rerun()
 
         st.divider()
 
-        # 자산 현황 요약
-        st.subheader(txt["asset_header"])
+        # 자산 요약
         diff_key = st.session_state.get("difficulty", "보통")
-        if "쉬움" in diff_key or "Easy" in diff_key:
-            initial_start_cash = DIFFICULTY_SETTINGS["쉬움"]["cash"]
-        elif "어려움" in diff_key or "Hard" in diff_key:
-            initial_start_cash = DIFFICULTY_SETTINGS["어려움"]["cash"]
-        else:
-            initial_start_cash = DIFFICULTY_SETTINGS["보통"]["cash"]
+        initial_start_cash = (
+            DIFFICULTY_SETTINGS["쉬움"]["cash"]
+            if "쉬움" in diff_key or "Easy" in diff_key
+            else (
+                DIFFICULTY_SETTINGS["어려움"]["cash"]
+                if "어려움" in diff_key or "Hard" in diff_key
+                else DIFFICULTY_SETTINGS["보통"]["cash"]
+            )
+        )
 
         total_coin_val = sum(
             st.session_state.portfolio.get(t, 0)
@@ -782,8 +751,7 @@ else:
 
         col1, col2, col3, col4, col5 = st.columns(5)
         col1.metric(
-            txt["progress"],
-            f"{st.session_state.day}{txt['day_str']} ({st.session_state.turn}{txt['turn_str']})",
+            txt["progress"], f"{st.session_state.day}{txt['day_str']}"
         )
         col2.metric(
             txt["cash"], f"{st.session_state.cash:,.0f} {txt['won']}"
@@ -798,7 +766,7 @@ else:
 
         st.divider()
 
-        # 매수 / 매도 인터페이스
+        # 매수/매도 인터페이스
         st.subheader(txt["trade_header"])
         t_col1, t_col2 = st.columns(2)
 
@@ -825,9 +793,8 @@ else:
             buy_amount = st.number_input(
                 txt["buy_qty"], min_value=0.0, key="buy_qty"
             )
-            total_buy_price = buy_amount * coin_data["price"]
             st.write(
-                f"{txt['needed_amount']}: **{total_buy_price:,.2f} {txt['won']}**"
+                f"{txt['needed_amount']}: **{(buy_amount * coin_data['price']):,.2f} {txt['won']}**"
             )
 
             st.button(
@@ -866,9 +833,8 @@ else:
                 max_value=float(my_qty),
                 key="sell_qty",
             )
-            total_sell_price = sell_amount * coin_data["price"]
             st.write(
-                f"{txt['expected_amount']}: **{total_sell_price:,.2f} {txt['won']}**"
+                f"{txt['expected_amount']}: **{(sell_amount * coin_data['price']):,.2f} {txt['won']}**"
             )
 
             st.button(
@@ -878,23 +844,6 @@ else:
                 on_click=execute_sell,
                 args=(selected_ticker,),
             )
-
-        # 개별 종목 속보
-        st.divider()
-        st.markdown(
-            f"### 📰 [{coin_data['name']}] {txt['stock_news_header']}"
-        )
-        stock_related_news = [
-            item
-            for item in st.session_state.news_log
-            if item.get("ticker") == selected_ticker
-        ]
-
-        if stock_related_news:
-            for item in stock_related_news:
-                st.write(f"- {item['msg']}")
-        else:
-            st.info(txt["no_stock_news"])
 
     # TAB 2: 민팅 (신규 상장)
     with tab2:
@@ -935,29 +884,7 @@ else:
                         "change": 0.0,
                     }
                     st.session_state.portfolio[new_ticker] = 0.0
-
-                    time_str = (
-                        f"{st.session_state.day}일차 [{st.session_state.turn}회차]"
-                        if st.session_state.language == "한국어"
-                        else f"Day {st.session_state.day} [Turn {st.session_state.turn}]"
-                    )
-                    mint_msg = (
-                        f"🎉 신규 종목 '{new_coin_name}({new_ticker})'이(가) 상장되었습니다!"
-                        if st.session_state.language == "한국어"
-                        else f"🎉 New stock '{new_coin_name}({new_ticker})' is officially listed!"
-                    )
-
-                    st.session_state.news_log.insert(
-                        0,
-                        {
-                            "time": time_str,
-                            "ticker": new_ticker,
-                            "msg": mint_msg,
-                        },
-                    )
-                    st.success(
-                        f"🎉 '{new_coin_name}({new_ticker})' {txt['mint_success']}"
-                    )
+                    st.success(f"🎉 {txt['mint_success']}")
                     st.rerun()
 
     # TAB 3: 포트폴리오
@@ -967,7 +894,6 @@ else:
         for ticker, qty in st.session_state.portfolio.items():
             if qty > 0:
                 current_p = st.session_state.coins[ticker]["price"]
-                total_val = qty * current_p
                 portfolio_data.append(
                     {
                         txt["col_ticker"]: ticker,
@@ -979,7 +905,7 @@ else:
                         ],
                         txt["col_qty"]: f"{qty:,.2f} {txt['unit']}",
                         txt["col_price"]: f"{current_p:,.2f} {txt['won']}",
-                        txt["col_val"]: f"{total_val:,.0f} {txt['won']}",
+                        txt["col_val"]: f"{(qty * current_p):,.0f} {txt['won']}",
                     }
                 )
 
@@ -994,4 +920,6 @@ else:
     with tab4:
         st.subheader(txt["all_news_header"])
         for news in st.session_state.news_log:
-            st.write(f"- {news['msg']}")
+            st.write(
+                f"- **[{news['time']}] {news['name']} ({news['tag']})**: {news['msg']}"
+            )
