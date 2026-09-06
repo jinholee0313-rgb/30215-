@@ -32,7 +32,9 @@ DIFFICULTY_SETTINGS = {
     },
 }
 
+# 💡 종목을 총 10개로 확대 구성
 DEFAULT_COINS = {
+    # 🇰🇷 한국 주식 (4개)
     "K-SEMI": {
         "name": "한국반도체 스타플랜트",
         "category": "🇰🇷 한국 주식",
@@ -47,6 +49,21 @@ DEFAULT_COINS = {
         "history": [42000.0],
         "change": 0.0,
     },
+    "K-BATTERY": {
+        "name": "네오 차세대 배터리",
+        "category": "🇰🇷 한국 주식",
+        "price": 125000.0,
+        "history": [125000.0],
+        "change": 0.0,
+    },
+    "K-GAME": {
+        "name": "하이퍼 인터랙티브 게임즈",
+        "category": "🇰🇷 한국 주식",
+        "price": 34500.0,
+        "history": [34500.0],
+        "change": 0.0,
+    },
+    # 🇺🇸 미국 주식 (4개)
     "US-AI": {
         "name": "실리콘밸리 AI솔루션",
         "category": "🇺🇸 미국 주식",
@@ -61,11 +78,33 @@ DEFAULT_COINS = {
         "history": [310000.0],
         "change": 0.0,
     },
+    "US-CLOUD": {
+        "name": "오로라 클라우드 컴퓨팅",
+        "category": "🇺🇸 미국 주식",
+        "price": 420000.0,
+        "history": [420000.0],
+        "change": 0.0,
+    },
+    "US-EV": {
+        "name": "글로벌 모빌리티 EV",
+        "category": "🇺🇸 미국 주식",
+        "price": 245000.0,
+        "history": [245000.0],
+        "change": 0.0,
+    },
+    # 🪙 가상자산 (2개)
     "CRYPTO-X": {
         "name": "하이퍼체인 메인넷",
         "category": "🪙 가상자산",
         "price": 48000000.0,
         "history": [48000000.0],
+        "change": 0.0,
+    },
+    "CRYPTO-Y": {
+        "name": "디파이 프로토콜 코인",
+        "category": "🪙 가상자산",
+        "price": 1250000.0,
+        "history": [1250000.0],
         "change": 0.0,
     },
 }
@@ -277,7 +316,6 @@ def next_day_market():
         data["price"] = new_price
         data["history"].append(new_price)
 
-        # 💡 변동 기준을 ±1%로 설정하여 속보가 매일 업데이트되도록 구현
         if change_rate > 0.01:
             st.session_state.news_log.insert(
                 0,
@@ -299,7 +337,6 @@ def next_day_market():
             )
             has_news = True
 
-    # 변동폭이 너무 적어 뉴스가 누락될 경우 하루 1개 무조건 보장 생성
     if not has_news:
         sample_ticker = random.choice(list(st.session_state.coins.keys()))
         sample_data = st.session_state.coins[sample_ticker]
@@ -732,7 +769,6 @@ else:
                 args=(selected_ticker,),
             )
 
-        # 자동 진행 스위치 활성화 시 루프 실행
         if st.session_state.get("auto_play_toggle", False):
             time.sleep(1.5)
             next_day_market()
