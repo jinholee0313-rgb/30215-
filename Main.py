@@ -33,7 +33,6 @@ DIFFICULTY_SETTINGS = {
 }
 
 DEFAULT_COINS = {
-    # 🇰🇷 [1] 한국 주식 - 반도체
     "K-NEON": {
         "name": "네온체스트",
         "category": "🇰🇷 한국 주식",
@@ -58,7 +57,6 @@ DEFAULT_COINS = {
         "history": [112000.0],
         "change": 0.0,
     },
-    # 🇰🇷 [2] 한국 주식 - 바이오
     "K-BIO": {
         "name": "한신바이오",
         "category": "🇰🇷 한국 주식",
@@ -75,7 +73,6 @@ DEFAULT_COINS = {
         "history": [28500.0],
         "change": 0.0,
     },
-    # 🇰🇷 [3] 한국 주식 - 2차전지
     "K-BATTERY": {
         "name": "네오 차세대 배터리",
         "category": "🇰🇷 한국 주식",
@@ -92,7 +89,6 @@ DEFAULT_COINS = {
         "history": [64000.0],
         "change": 0.0,
     },
-    # 🇰🇷 [4] 한국 주식 - 엔터/게임
     "K-GAME": {
         "name": "하이퍼 인터랙티브",
         "category": "🇰🇷 한국 주식",
@@ -109,7 +105,6 @@ DEFAULT_COINS = {
         "history": [19800.0],
         "change": 0.0,
     },
-    # 🇺🇸 [5] 미국 주식 - AI / 빅테크
     "US-AI": {
         "name": "실리콘밸리 AI",
         "category": "🇺🇸 미국 주식",
@@ -126,7 +121,6 @@ DEFAULT_COINS = {
         "history": [210000.0],
         "change": 0.0,
     },
-    # 🇺🇸 [6] 미국 주식 - 우주/항공
     "US-SPACE": {
         "name": "네오에어로 스페이스",
         "category": "🇺🇸 미국 주식",
@@ -143,7 +137,6 @@ DEFAULT_COINS = {
         "history": [95000.0],
         "change": 0.0,
     },
-    # 🇺🇸 [7] 미국 주식 - 친환경/전기차
     "US-EV": {
         "name": "글로벌 모빌리티 EV",
         "category": "🇺🇸 미국 주식",
@@ -160,7 +153,6 @@ DEFAULT_COINS = {
         "history": [68000.0],
         "change": 0.0,
     },
-    # 🇺🇸 [8] 미국 주식 - 클라우드/보안
     "US-CLOUD": {
         "name": "오로라 클라우드",
         "category": "🇺🇸 미국 주식",
@@ -177,7 +169,6 @@ DEFAULT_COINS = {
         "history": [155000.0],
         "change": 0.0,
     },
-    # 🪙 [9] 가상자산 - 메인넷
     "CRYPTO-X": {
         "name": "하이퍼체인",
         "category": "🪙 가상자산",
@@ -202,7 +193,6 @@ DEFAULT_COINS = {
         "history": [240000.0],
         "change": 0.0,
     },
-    # 🪙 [10] 가상자산 - 디파이/RWA
     "CRYPTO-Y": {
         "name": "덱스파이 코인",
         "category": "🪙 가상자산",
@@ -290,8 +280,8 @@ def init_game_session():
     st.session_state.sb_language = st.session_state.get("language", "한국어")
     st.session_state.sb_theme = st.session_state.get("theme", "라이트 모드 (기본)")
     st.session_state.sb_chart_type = st.session_state.get("chart_type", "막대 그래프 (Bar)")
-    st.session_state.sb_up_color = st.session_state.get("up_color", "#E03131")
-    st.session_state.sb_down_color = st.session_state.get("down_color", "#1971C2")
+    st.session_state.sb_up_color = st.session_state.get("up_color", "#E03131")    # 빨강 (상승)
+    st.session_state.sb_down_color = st.session_state.get("down_color", "#1971C2")  # 파랑 (하락)
 
 
 # ==========================================
@@ -318,9 +308,9 @@ with st.sidebar:
         )
         col_u, col_d = st.columns(2)
         with col_u:
-            st.color_picker("상승 색상", key="sb_up_color")
+            st.color_picker("🔴 상승 색상 (빨강)", key="sb_up_color")
         with col_d:
-            st.color_picker("하락 색상", key="sb_down_color")
+            st.color_picker("🔵 하락 색상 (파랑)", key="sb_down_color")
 
         st.divider()
         if st.button(
@@ -629,9 +619,9 @@ if not st.session_state.game_started:
 
     col_color1, col_color2 = st.columns(2)
     with col_color1:
-        st.color_picker("🔴 상승 색상", value="#E03131", key="up_color")
+        st.color_picker("🔴 상승 색상 (빨강)", value="#E03131", key="up_color")
     with col_color2:
-        st.color_picker("🔵 하락 색상", value="#1971C2", key="down_color")
+        st.color_picker("🔵 하락 색상 (파랑)", value="#1971C2", key="down_color")
 
     diff_info = DIFFICULTY_SETTINGS[st.session_state.get("difficulty", "보통")]
     st.info(f"**[{st.session_state.get('difficulty', '보통')} 모드 선택됨]** — {diff_info['desc']}")
@@ -651,6 +641,7 @@ else:
     st.title("📈 트레이딩 대시보드")
 
     active_chart_type = st.session_state.get("sb_chart_type", st.session_state.get("chart_type", "막대 그래프 (Bar)"))
+    # 상승 = 빨간색(#E03131), 하락 = 파란색(#1971C2)
     active_up_color = st.session_state.get("sb_up_color", st.session_state.get("up_color", "#E03131"))
     active_down_color = st.session_state.get("sb_down_color", st.session_state.get("down_color", "#1971C2"))
 
@@ -665,7 +656,6 @@ else:
     )
 
     with tab1:
-        # 1. 인기 항목
         sorted_stocks = sorted(
             st.session_state.coins.items(),
             key=lambda x: x[1]["change"],
@@ -684,7 +674,6 @@ else:
 
         st.divider()
 
-        # 2. 카테고리 & 세부분야(섹터) 필터
         c_filter1, c_filter2, c_filter3 = st.columns(3)
         
         with c_filter1:
@@ -723,7 +712,6 @@ else:
 
         st.divider()
 
-        # 3. 그래프 & 뉴스
         c_graph, c_news = st.columns([2, 1])
 
         coin_data = st.session_state.coins[selected_ticker]
@@ -751,7 +739,7 @@ else:
                 y_bottom = max(0, min_p - p_margin)
                 y_top = max_p + p_margin
 
-                # 💡 핵심 수정: 전일 대비(i vs i-1) 기준으로 막대/마커 색상을 동적 계산
+                # 💡 전일 대비 상승 시 빨강(active_up_color), 하락 시 파랑(active_down_color)
                 bar_colors = [
                     active_up_color if (i == 0 or history[i] >= history[i - 1]) else active_down_color
                     for i in range(len(history))
@@ -771,19 +759,20 @@ else:
                         )
                     )
                 else:
-                    # 꺾은선 그래프: 전체 선 색상은 최근 전일 대비 변동 기준, 마커(점)는 매일 상승/하락별 동적 적용
-                    line_c = active_up_color if history[-1] >= history[-2] else active_down_color
-                    fig.add_trace(
-                        go.Scatter(
-                            x=x_days,
-                            y=history,
-                            mode="lines+markers",
-                            line=dict(color=line_c, width=3),
-                            marker=dict(size=8, color=bar_colors),
-                            name=selected_ticker,
-                            hovertemplate="%{x}<br>가격: %{y:,.2f}원<extra></extra>",
+                    # 💡 꺾은선 그래프: 날짜별(구간별)로 상승하면 빨강 선/점, 하락하면 파랑 선/점으로 개별 바인딩
+                    for i in range(1, len(history)):
+                        seg_color = active_up_color if history[i] >= history[i - 1] else active_down_color
+                        fig.add_trace(
+                            go.Scatter(
+                                x=[x_days[i - 1], x_days[i]],
+                                y=[history[i - 1], history[i]],
+                                mode="lines+markers",
+                                line=dict(color=seg_color, width=3),
+                                marker=dict(size=7, color=seg_color),
+                                showlegend=False,
+                                hovertemplate="%{x}<br>가격: %{y:,.2f}원<extra></extra>",
+                            )
                         )
-                    )
 
                 fig.update_layout(
                     paper_bgcolor=card_bg,
@@ -831,7 +820,6 @@ else:
 
         st.divider()
 
-        # 4. 보유 자산 수익률
         tot_val = sum(
             st.session_state.portfolio[t]["qty"]
             * st.session_state.coins[t]["price"]
@@ -851,7 +839,6 @@ else:
 
         st.divider()
 
-        # 5. 다음 날로 가기 & 자동 진행 컨트롤
         next_col1, next_col2 = st.columns([3, 1])
         with next_col1:
             if st.button(
@@ -868,7 +855,6 @@ else:
 
         st.divider()
 
-        # 6. 매수 / 매도
         my_data = st.session_state.portfolio.get(
             selected_ticker, {"qty": 0.0, "avg_price": 0.0}
         )
