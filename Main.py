@@ -70,7 +70,7 @@ LANG_PACK = {
         "no_stock_news": "해당 종목의 최근 소식이 없습니다.",
         "mint_header": "✨ 신규 종목 상장 (Minting)",
         "stock_name": "종목 이름",
-        "ticker_symbol": "티커 티커 기호 (예: AAPL, BTC)",
+        "ticker_symbol": "티커 기호 (예: AAPL, BTC)",
         "select_category": "카테고리 분류",
         "start_price": "상장 시작가 (원)",
         "btn_mint": "🚀 신규 종목 상장하기",
@@ -299,8 +299,7 @@ if "custom_card" not in st.session_state:
 
 
 def init_game_session():
-    diff_key = st.session_state.difficulty
-    # 대표 난이도 매핑
+    diff_key = st.session_state.get("difficulty", "보통")
     if "쉬움" in diff_key or "Easy" in diff_key:
         key = "쉬움"
     elif "어려움" in diff_key or "Hard" in diff_key:
@@ -312,8 +311,6 @@ def init_game_session():
     st.session_state.cash = start_cash
     st.session_state.day = 1
     st.session_state.turn = 1
-    st.session_state.coins = pd.Series(DEFAULT_MARKET).to_dict()
-    # 깊은 복사 처리
     st.session_state.coins = {
         k: {
             "name": v["name"],
@@ -391,7 +388,7 @@ st.markdown(
     }}
     </style>
 """,
-    unsafe_content_allowed=True,
+    unsafe_allow_html=True,
 )
 
 
@@ -475,7 +472,7 @@ def update_market(next_day=False):
         else f"Day {st.session_state.day} [Turn {st.session_state.turn}]"
     )
 
-    diff_key = st.session_state.difficulty
+    diff_key = st.session_state.get("difficulty", "보통")
     if "쉬움" in diff_key or "Easy" in diff_key:
         d_config = DIFFICULTY_SETTINGS["쉬움"]
     elif "어려움" in diff_key or "Hard" in diff_key:
@@ -784,7 +781,7 @@ else:
 
         # 자산 현황 요약
         st.subheader(txt["asset_header"])
-        diff_key = st.session_state.difficulty
+        diff_key = st.session_state.get("difficulty", "보통")
         if "쉬움" in diff_key or "Easy" in diff_key:
             initial_start_cash = DIFFICULTY_SETTINGS["쉬움"]["cash"]
         elif "어려움" in diff_key or "Hard" in diff_key:
