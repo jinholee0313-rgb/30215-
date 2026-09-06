@@ -20,18 +20,45 @@ GAME_MODES = {
         "volatility": 0.03,
         "event_prob": 0.10,
         "desc": "💰 시작 자금: 3,000만 원 | 📊 낮은 변동성 | 편안하게 적응하기 좋은 모드",
+        "intro_title": "☕ 여유로운 첫걸음, 자산가 가문의 유산",
+        "intro_story": """
+        은퇴한 월가 트레이더 삼촌이 당신에게 3,000만 원의 씨앗 돈을 건넸습니다.
+        
+        "얘야, 시장은 급하게 서두르는 사람의 돈을 느긋한 사람에게 옮기는 곳이란다. 
+        큰 위험 부담 없이 천천히 주식과 코인 시장의 흐름을 익혀보려무나."
+        
+        당신은 편안한 환경에서 차분하게 첫 투자를 시작합니다.
+        """,
     },
     "⚔️ 라이벌 경쟁 모드": {
         "cash": 10000000,
         "volatility": 0.05,
         "event_prob": 0.25,
         "desc": "💰 시작 자금: 1,000만 원 | ⚔️ AI 트레이더들과 실시간 자산 순위 다툼",
+        "intro_title": "🏆 챔피언십 리그: 월가 신진 트레이더 대전",
+        "intro_story": """
+        전 세계 초대형 AI 트레이더들이 참가하는 글로벌 투자 서바이벌에 초대받았습니다.
+        주어진 자금은 1,000만 원. 상대는 가치투자의 귀재, 초단타 AI, 혁신 기술 투자자입니다.
+        
+        "랭킹 1위를 차지해 실력을 증명하고 글로벌 투자 시장의 왕좌를 차지하십시오!"
+        
+        자산 순위표의 정상에 오르기 위한 치열한 라이벌전이 시작됩니다.
+        """,
     },
     "🌪️ 핫불&하락장 (이벤트 모드)": {
         "cash": 5000000,
         "volatility": 0.09,
         "event_prob": 0.45,
         "desc": "💰 시작 자금: 500만 원 | 🚨 금리 변동, 코인 해킹 등 대형 시장 쇼크 빈발",
+        "intro_title": "🌪️ 대폭락과 대폭등, 혼돈의 금융 시장",
+        "intro_story": """
+        글로벌 금리 인상 쇼크와 대형 거래소의 해킹 악재가 소용돌이치는 최악의 경제 위기 상황.
+        수많은 투자자들이 손실을 입고 떠나가는 가운데, 당신은 남은 500만 원으로 시장에 뛰어듭니다.
+        
+        "위기 속에 거대한 기회가 있다. 극심한 변동성을 이겨내고 시장의 전설이 될 수 있을 것인가?"
+        
+        예측 불가능한 폭풍우 속으로 들어갈 준비를 마쳤습니다.
+        """,
     },
 }
 
@@ -63,9 +90,6 @@ LUXURY_SHOP = {
     "ITEM_10": {"name": "전용 리조트 & 비즈니스 제트기", "price": 10000000000, "icon": "🛩️", "effect_type": "god_mode", "val": (0.05, 0.40), "desc": "시장 지배력 행사 [상승률 +5.0%p & 급등 호재 확률 +40%p 폭증]"},
 }
 
-# ==========================================
-# 모드별 세분화된 업적 데이터
-# ==========================================
 MODE_ACHIEVEMENTS = {
     "🌱 캐주얼 모드": {
         "FIRST_BUY": {"title": "🐣 첫 걸음마", "desc": "첫 주식/가상자산 매수 완료", "reward": 500000},
@@ -102,6 +126,8 @@ BEAR_NEWS = ["실적 발표 우려감 제기되며 매도 물량 쏟아짐", "�
 # ==========================================
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
+if "opening_done" not in st.session_state:
+    st.session_state.opening_done = False
 
 def init_game_session():
     mode_name = st.session_state.get("mode_select", "⚔️ 라이벌 경쟁 모드")
@@ -205,7 +231,6 @@ def next_day_market():
     st.session_state.day += 1
     time_str = f"Day {st.session_state.day}"
 
-    # 사치품 효과 계산
     rate_buff, daily_cash_bonus, dividend_rate, bull_prob_bonus, shield_prob = 0.0, 0.0, 0.0, 0.0, 0.0
     loss_cap = None
 
@@ -225,7 +250,6 @@ def next_day_market():
     if daily_cash_bonus > 0: st.session_state.cash += daily_cash_bonus
     if dividend_rate > 0: st.session_state.cash += st.session_state.cash * dividend_rate
 
-    # 돌발 시장 이벤트 발동
     st.session_state.current_event = None
     if random.random() < st.session_state.event_prob:
         event = random.choice(MARKET_EVENTS)
@@ -234,12 +258,10 @@ def next_day_market():
         if event["impact"] < 0:
             check_achievement("SURVIVED_CRASH")
 
-    # 라이벌 AI 자산 변동
     for r_name, r_info in st.session_state.rivals.items():
         r_rate = random.uniform(-0.02, 0.03) if r_info["style"] == "safe" else random.uniform(-0.10, 0.12)
         r_info["cash"] = max(100000, round(r_info["cash"] * (1 + r_rate)))
 
-    # 종목 시세 변동
     for ticker, data in st.session_state.coins.items():
         change_rate = random.uniform(-st.session_state.volatility + rate_buff, st.session_state.volatility + rate_buff)
 
@@ -265,7 +287,6 @@ def next_day_market():
         elif change_rate < -0.02:
             st.session_state.news_log.insert(0, {"time": time_str, "name": data["name"], "msg": random.choice(BEAR_NEWS) + f" (▼ {data['change']:+.2f}%)"})
 
-    # 모드별 일차 업적 조건 확인
     if st.session_state.day >= 30:
         check_achievement("CASUAL_30DAYS")
         check_achievement("EVENT_SURVIVAL_30")
@@ -277,7 +298,7 @@ def next_day_market():
 # ==========================================
 with st.sidebar:
     st.header("⚙️ 게임 설정")
-    if st.session_state.game_started:
+    if st.session_state.game_started and st.session_state.opening_done:
         st.selectbox("🌐 언어 선택", ["한국어", "English"], key="sb_language")
         st.selectbox("🎨 화면 테마 설정", ["다크 모드", "라이트 모드 (기본)", "올블랙 모드", "블루 모드"], key="sb_theme")
         st.selectbox("📊 그래프 형태", ["꺾은선 그래프 (Line)", "막대 그래프 (Bar)"], key="sb_chart_type")
@@ -287,9 +308,10 @@ with st.sidebar:
         st.divider()
         if st.button("🔄 게임 초기화 (설정으로)", type="secondary", use_container_width=True):
             st.session_state.game_started = False
+            st.session_state.opening_done = False
             st.rerun()
     else:
-        st.info("💡 메인 화면에서 난이도 및 모드를 설정 후 시작하세요.")
+        st.info("💡 시작 화면에서 설정 후 시작할 수 있습니다.")
 
 active_theme = st.session_state.get("sb_theme", st.session_state.get("theme", "다크 모드"))
 if "라이트" in active_theme:
@@ -317,8 +339,10 @@ st.markdown(
 )
 
 # ==========================================
-# 5. 메인 레이아웃
+# 5. 메인 레이아웃 및 3단계 상태 관리
 # ==========================================
+
+# [단계 1] 시작 화면 설정
 if not st.session_state.game_started:
     st.title("📈 글로벌 모의 주식 & 가상자산 시뮬레이터")
     st.divider()
@@ -339,17 +363,43 @@ if not st.session_state.game_started:
     st.info(f"**[{st.session_state.get('mode_select')}]** — {mode_info['desc']}")
 
     st.divider()
-    if st.button("🚀 게임 시작하기", type="primary", use_container_width=True):
+    if st.button("🚀 스토리 시작하기", type="primary", use_container_width=True):
         init_game_session()
         st.session_state.game_started = True
         st.rerun()
 
+# [단계 2] 모드별 스토리 오프닝 연출
+elif st.session_state.game_started and not st.session_state.opening_done:
+    mode_name = st.session_state.current_mode
+    mode_info = GAME_MODES[mode_name]
+
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown(f"# {mode_info['intro_title']}")
+    st.divider()
+
+    st.markdown(
+        f"""
+        <div style="background-color: {card_bg}; border: 1px solid {border_color}; padding: 24px; border-radius: 12px; font-size: 1.1em; line-height: 1.8;">
+            {mode_info['intro_story'].strip().replace('\n', '<br>')}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.write("")
+    st.info(f"💰 **초기 투자 자금**: {st.session_state.cash:,.0f} 원")
+
+    st.divider()
+    if st.button("💼 시장에 입장하여 거래 시작하기 ➔", type="primary", use_container_width=True):
+        st.session_state.opening_done = True
+        st.rerun()
+
+# [단계 3] 실제 트레이딩 대시보드
 else:
     tot_val = sum(st.session_state.portfolio[t]["qty"] * st.session_state.coins[t]["price"] for t in st.session_state.coins)
     tot_asset = st.session_state.cash + tot_val
     roi = ((tot_asset - st.session_state.initial_cash) / st.session_state.initial_cash) * 100
     
-    # 자산 조건 업적 확인
     if tot_asset >= 100000000:
         check_achievement("CASUAL_100M")
     if tot_asset >= 50000000:
@@ -367,6 +417,7 @@ else:
             st.write(f"축하합니다! 총 자산 {tot_asset:,.0f}원에 도달하여 월가 대부호의 반열에 올랐습니다.")
         if st.button("🔄 새로운 회차 시작하기", type="primary"):
             st.session_state.game_started = False
+            st.session_state.opening_done = False
             st.rerun()
         st.divider()
 
@@ -514,7 +565,7 @@ else:
                             st.rerun()
                         else: st.toast("❌ 잔액이 부족합니다.", icon="⚠️")
 
-    # [TAB 4] 업적 및 칭호 (현재 모드 맞춤형)
+    # [TAB 4] 업적 및 칭호
     with tab4:
         curr_mode = st.session_state.get("current_mode", "⚔️ 라이벌 경쟁 모드")
         active_achievements = MODE_ACHIEVEMENTS.get(curr_mode, {})
