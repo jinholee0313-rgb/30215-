@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ==========================================
-# 1. 페이지 기본 설정 및 데이터 정의
+# 1. 페이지 기본 설정 및 상태 초기화
 # ==========================================
 st.set_page_config(
     page_title="글로벌 주식 & 가상자산 시뮬레이터",
@@ -14,7 +14,23 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# [신규] 난이도 설정 항목
+# 세션 기본값 선행 초기화 (첫 실행 시 테마 미반영 버그 방지)
+if "game_started" not in st.session_state:
+    st.session_state.game_started = False
+if "opening_done" not in st.session_state:
+    st.session_state.opening_done = False
+if "theme" not in st.session_state:
+    st.session_state.theme = "라이트 모드 (기본)"
+if "chart_type" not in st.session_state:
+    st.session_state.chart_type = "꺾은선 그래프 (Line)"
+if "up_color" not in st.session_state:
+    st.session_state.up_color = "#EF4444"
+if "down_color" not in st.session_state:
+    st.session_state.down_color = "#2563EB"
+
+# ==========================================
+# 2. 난이도 및 모드 설정 데이터
+# ==========================================
 DIFFICULTIES = {
     "🟢 쉬움 (Easy)": {
         "cash_mult": 1.5,
@@ -144,13 +160,8 @@ BULL_NEWS = ["대규모 수주 계약 체결 발표로 강한 매수세 유입",
 BEAR_NEWS = ["실적 발표 우려감 제기되며 매도 물량 쏟아짐", "글로벌 공급망 차질 이슈 악재로 하방 압력 심화"]
 
 # ==========================================
-# 2. 세션 상태 및 게임 데이터 초기화
+# 3. 게임 실행 함수 및 비즈니스 로직
 # ==========================================
-if "game_started" not in st.session_state:
-    st.session_state.game_started = False
-if "opening_done" not in st.session_state:
-    st.session_state.opening_done = False
-
 def init_game_session():
     mode_name = st.session_state.get("mode_select", "⚔️ 라이벌 경쟁 모드")
     diff_name = st.session_state.get("difficulty_select", "🟡 보통 (Normal)")
@@ -158,7 +169,6 @@ def init_game_session():
     mode_config = GAME_MODES.get(mode_name, GAME_MODES["⚔️ 라이벌 경쟁 모드"])
     diff_config = DIFFICULTIES.get(diff_name, DIFFICULTIES["🟡 보통 (Normal)"])
 
-    # 난이도 배율 반영
     final_cash = float(mode_config["cash"] * diff_config["cash_mult"])
     final_volatility = mode_config["volatility"] * diff_config["vol_mult"]
     final_event_prob = min(0.9, mode_config["event_prob"] * diff_config["event_mult"])
@@ -191,12 +201,6 @@ def init_game_session():
         "돈나무 언니 (혁신성장)": {"cash": final_cash * 1.0, "style": "growth"},
     }
 
-    st.session_state.sb_language = st.session_state.get("language", "한국어")
-    st.session_state.sb_theme = st.session_state.get("theme", "다크 모드")
-    st.session_state.sb_chart_type = st.session_state.get("chart_type", "꺾은선 그래프 (Line)")
-    st.session_state.sb_up_color = st.session_state.get("up_color", "#EF4444")
-    st.session_state.sb_down_color = st.session_state.get("down_color", "#2563EB")
-
 def check_achievement(key):
     mode_name = st.session_state.get("current_mode")
     mode_achievements = MODE_ACHIEVEMENTS.get(mode_name, {})
@@ -215,9 +219,6 @@ def check_endings(tot_asset):
         st.session_state.game_cleared = True
         st.session_state.ending_type = "BILLIONAIRE"
 
-# ==========================================
-# 3. 매매 및 시장 진행 함수
-# ==========================================
 def add_buy_qty(val): st.session_state.buy_qty += val
 def set_buy_max(price):
     if price > 0: st.session_state.buy_qty = float(st.session_state.cash // price)
@@ -325,46 +326,27 @@ def next_day_market():
         check_achievement("HOLDING_50")
 
 # ==========================================
-# 4. 사이드바 및 UI 테마
+# 4. 동적 UI 테마 동기화 및 CSS 적용
 # ==========================================
-with st.sidebar:
-    st.header("⚙️ 게임 설정")
-    if st.session_state.game_started and st.session_state.opening_done:
-        st.write(f"🎮 **모드**: {st.session_state.get('current_mode')}")
-        st.write(f"🎚️ **난이도**: {st.session_state.get('current_difficulty')}")
-        st.divider()
-        st.selectbox("🌐 언어 선택", ["한국어", "English"], key="sb_language")
-        st.selectbox("🎨 화면 테마 설정", ["다크 모드", "라이트 모드 (기본)", "올블랙 모드", "블루 모드"], key="sb_theme")
-        st.selectbox("📊 그래프 형태", ["꺾은선 그래프 (Line)", "막대 그래프 (Bar)"], key="sb_chart_type")
-        col_u, col_d = st.columns(2)
-        with col_u: st.color_picker("🔴 상승 색상", value="#EF4444", key="sb_up_color")
-        with col_d: st.color_picker("🔵 하락 색상", value="#2563EB", key="sb_down_color")
-        st.divider()
-        if st.button("🔄 게임 초기화 (설정으로)", type="secondary", use_container_width=True):
-            st.session_state.game_started = False
-            st.session_state.opening_done = False
-            st.rerun()
-    else:
-        st.info("💡 시작 화면에서 설정 후 시작할 수 있습니다.")
+active_theme = st.session_state.get("theme", "라이트 모드 (기본)")
 
-active_theme = st.session_state.get("sb_theme", st.session_state.get("theme", "다크 모드"))
 if "라이트" in active_theme:
-    bg_color, sidebar_bg, text_color, card_bg, border_color = "#F8F9FA", "#FFFFFF", "#212529", "#FFFFFF", "#E9ECEF"
+    bg_color, sidebar_bg, text_color, card_bg, border_color = "#FFFFFF", "#F8F9FA", "#212529", "#F1F3F5", "#CED4DA"
 elif "올블랙" in active_theme:
     bg_color, sidebar_bg, text_color, card_bg, border_color = "#000000", "#0B0B0B", "#FFFFFF", "#121212", "#282828"
 elif "블루" in active_theme:
     bg_color, sidebar_bg, text_color, card_bg, border_color = "#0F172A", "#1E293B", "#F8FAFC", "#334155", "#475569"
-else:
+else: # 다크 모드
     bg_color, sidebar_bg, text_color, card_bg, border_color = "#121212", "#1A1A1A", "#E0E0E0", "#242424", "#3A3A3A"
 
 st.markdown(
     f"""
     <style>
-        .stApp {{ background-color: {bg_color}; color: {text_color}; font-family: 'Pretendard', sans-serif; }}
+        .stApp {{ background-color: {bg_color} !important; color: {text_color} !important; font-family: 'Pretendard', sans-serif; }}
         section[data-testid="stSidebar"] {{ background-color: {sidebar_bg} !important; border-right: 1px solid {border_color} !important; }}
         .stMarkdown, .stText, h1, h2, h3, h4, label {{ color: {text_color} !important; }}
         div[data-testid="stMetric"] {{
-            background-color: {card_bg}; border: 1px solid {border_color}; border-radius: 12px !important; padding: 12px !important;
+            background-color: {card_bg} !important; border: 1px solid {border_color} !important; border-radius: 12px !important; padding: 12px !important;
         }}
         div.stButton > button {{ border-radius: 10px !important; font-weight: 600 !important; border: 1px solid {border_color} !important; }}
     </style>
@@ -372,11 +354,32 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# 사이드바 설정
+with st.sidebar:
+    st.header("⚙️ 게임 설정")
+    if st.session_state.game_started and st.session_state.opening_done:
+        st.write(f"🎮 **모드**: {st.session_state.get('current_mode')}")
+        st.write(f"🎚️ **난이도**: {st.session_state.get('current_difficulty')}")
+        st.divider()
+        st.selectbox("🌐 언어 선택", ["한국어", "English"], key="language")
+        st.selectbox("🎨 화면 테마 설정", ["라이트 모드 (기본)", "다크 모드", "올블랙 모드", "블루 모드"], key="theme")
+        st.selectbox("📊 그래프 형태", ["꺾은선 그래프 (Line)", "막대 그래프 (Bar)"], key="chart_type")
+        col_u, col_d = st.columns(2)
+        with col_u: st.color_picker("🔴 상승 색상", value=st.session_state.up_color, key="up_color")
+        with col_d: st.color_picker("🔵 하락 색상", value=st.session_state.down_color, key="down_color")
+        st.divider()
+        if st.button("🔄 게임 초기화 (설정으로)", type="secondary", use_container_width=True):
+            st.session_state.game_started = False
+            st.session_state.opening_done = False
+            st.rerun()
+    else:
+        st.info("💡 시작 화면에서 설정을 변경할 수 있습니다.")
+
 # ==========================================
-# 5. 메인 레이아웃 및 3단계 상태 관리
+# 5. 메인 화면 제어 (3단계)
 # ==========================================
 
-# [단계 1] 시작 화면 설정 (난이도 추가)
+# [단계 1] 시작 화면 설정
 if not st.session_state.game_started:
     st.title("📈 글로벌 모의 주식 & 가상자산 시뮬레이터")
     st.divider()
@@ -384,15 +387,15 @@ if not st.session_state.game_started:
     c1, c2 = st.columns(2)
     with c1:
         st.selectbox("🎯 게임 모드 선택", list(GAME_MODES.keys()), key="mode_select")
-        st.selectbox("🎚️ 난이도 선택", list(DIFFICULTIES.keys()), index=1, key="difficulty_select") # 난이도 선택 추가
+        st.selectbox("🎚️ 난이도 선택", list(DIFFICULTIES.keys()), index=1, key="difficulty_select")
         st.selectbox("🌐 언어 선택", ["한국어", "English"], key="language")
     with c2:
-        st.selectbox("🎨 화면 테마 설정", ["다크 모드", "라이트 모드 (기본)", "올블랙 모드", "블루 모드"], key="theme")
+        st.selectbox("🎨 화면 테마 설정", ["라이트 모드 (기본)", "다크 모드", "올블랙 모드", "블루 모드"], key="theme")
         st.selectbox("📊 그래프 형태", ["꺾은선 그래프 (Line)", "막대 그래프 (Bar)"], key="chart_type")
 
         col_u, col_d = st.columns(2)
-        with col_u: st.color_picker("🔴 상승 색상", value="#EF4444", key="up_color")
-        with col_d: st.color_picker("🔵 하락 색상", value="#2563EB", key="down_color")
+        with col_u: st.color_picker("🔴 상승 색상", value=st.session_state.up_color, key="up_color")
+        with col_d: st.color_picker("🔵 하락 색상", value=st.session_state.down_color, key="down_color")
 
     mode_info = GAME_MODES[st.session_state.get("mode_select", "⚔️ 라이벌 경쟁 모드")]
     diff_info = DIFFICULTIES[st.session_state.get("difficulty_select", "🟡 보통 (Normal)")]
@@ -498,10 +501,10 @@ else:
         with c_graph:
             st.markdown(f"### 📊 {coin_data['name']} 차트 ({selected_ticker})")
             fig = go.Figure()
-            active_up = st.session_state.get("sb_up_color", "#EF4444")
-            active_down = st.session_state.get("sb_down_color", "#2563EB")
+            active_up = st.session_state.get("up_color", "#EF4444")
+            active_down = st.session_state.get("down_color", "#2563EB")
             
-            if "막대" in st.session_state.get("sb_chart_type", "꺾은선"):
+            if "막대" in st.session_state.get("chart_type", "꺾은선"):
                 bar_colors = [active_up if (i == 0 or history[i] >= history[i - 1]) else active_down for i in range(len(history))]
                 fig.add_trace(go.Bar(y=history, marker_color=bar_colors))
             else:
