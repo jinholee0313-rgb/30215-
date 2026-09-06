@@ -464,7 +464,7 @@ def next_day_market():
 
 
 # ==========================================
-# 5. 테마 연동 동적 CSS (사이드바 & 버튼 정밀 제어)
+# 5. 테마 연동 동적 CSS
 # ==========================================
 active_theme = st.session_state.get(
     "sb_theme", st.session_state.get("theme", "라이트 모드 (기본)")
@@ -517,14 +517,12 @@ def render_badge(text, bg_c="#E03131", text_c="#FFFFFF"):
 st.markdown(
     f"""
     <style>
-        /* 메인 배경 및 글자색 */
         .stApp {{
             background-color: {bg_color};
             color: {text_color};
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
         }}
         
-        /* 💡 사이드바(설정창) 배경 및 경계선 동기화 */
         section[data-testid="stSidebar"] {{
             background-color: {sidebar_bg} !important;
             border-right: 1px solid {border_color} !important;
@@ -541,7 +539,6 @@ st.markdown(
             color: {text_color} !important;
         }}
         
-        /* 메트릭 카드 테마 */
         div[data-testid="stMetric"] {{
             background-color: {card_bg};
             border: 1px solid {border_color};
@@ -555,7 +552,6 @@ st.markdown(
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         }}
         
-        /* 💡 버튼 스타일 세부 조정 (Primary / Secondary) */
         div.stButton > button {{
             border-radius: 12px !important;
             font-weight: 600 !important;
@@ -576,7 +572,6 @@ st.markdown(
             opacity: 0.9;
         }}
         
-        /* 💡 입력창 및 선택 박스 배경/테두리 스타일 맞춤 */
         div[data-baseweb="input"], div[data-baseweb="select"] > div {{
             background-color: {card_bg} !important;
             border-color: {border_color} !important;
@@ -584,7 +579,6 @@ st.markdown(
             border-radius: 12px !important;
         }}
         
-        /* 탭 스타일 */
         button[data-baseweb="tab"] {{
             font-size: 16px !important;
             font-weight: 700 !important;
@@ -601,7 +595,6 @@ st.markdown(
 # 6. 메인 화면
 # ==========================================
 
-# A. 초기 설정 화면
 if not st.session_state.game_started:
     st.title("📈 글로벌 모의 주식 & 가상자산 트레이딩 시뮬레이터")
     st.divider()
@@ -654,13 +647,12 @@ if not st.session_state.game_started:
         st.session_state.game_started = True
         st.rerun()
 
-# B. 게임 실행 화면
 else:
     st.title("📈 트레이딩 대시보드")
 
-    active_chart_type = st.session_state.get("sb_chart_type", "막대 그래프 (Bar)")
-    active_up_color = st.session_state.get("sb_up_color", "#E03131")
-    active_down_color = st.session_state.get("sb_down_color", "#1971C2")
+    active_chart_type = st.session_state.get("sb_chart_type", st.session_state.get("chart_type", "막대 그래프 (Bar)"))
+    active_up_color = st.session_state.get("sb_up_color", st.session_state.get("up_color", "#E03131"))
+    active_down_color = st.session_state.get("sb_down_color", st.session_state.get("down_color", "#1971C2"))
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
         [
@@ -759,13 +751,13 @@ else:
                 y_bottom = max(0, min_p - p_margin)
                 y_top = max_p + p_margin
 
+                # 💡 핵심 수정: 전일 대비(i vs i-1) 기준으로 막대/마커 색상을 동적 계산
+                bar_colors = [
+                    active_up_color if (i == 0 or history[i] >= history[i - 1]) else active_down_color
+                    for i in range(len(history))
+                ]
+
                 if "막대" in active_chart_type or "Bar" in active_chart_type:
-                    bar_colors = [
-                        active_up_color
-                        if history[i] >= history[max(0, i - 1)]
-                        else active_down_color
-                        for i in range(len(history))
-                    ]
                     fig.add_trace(
                         go.Bar(
                             x=x_days,
@@ -779,18 +771,15 @@ else:
                         )
                     )
                 else:
-                    line_c = (
-                        active_up_color
-                        if history[-1] >= history[0]
-                        else active_down_color
-                    )
+                    # 꺾은선 그래프: 전체 선 색상은 최근 전일 대비 변동 기준, 마커(점)는 매일 상승/하락별 동적 적용
+                    line_c = active_up_color if history[-1] >= history[-2] else active_down_color
                     fig.add_trace(
                         go.Scatter(
                             x=x_days,
                             y=history,
                             mode="lines+markers",
                             line=dict(color=line_c, width=3),
-                            marker=dict(size=6, color=line_c),
+                            marker=dict(size=8, color=bar_colors),
                             name=selected_ticker,
                             hovertemplate="%{x}<br>가격: %{y:,.2f}원<extra></extra>",
                         )
