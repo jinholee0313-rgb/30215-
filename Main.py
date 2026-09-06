@@ -330,19 +330,9 @@ else:
         "#E9ECEF",
     )
 
+# 줄바꿈 없는 뱃지 태그 반환 (코드 블록 오인 방지)
 def render_badge(text, bg_c="#E03131", text_c="#FFFFFF"):
-    return f"""<span style="
-        background-color: {bg_c};
-        color: {text_c};
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 700;
-        margin-left: 6px;
-        display: inline-block;
-        vertical-align: middle;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    ">{text}</span>"""
+    return f'<span style="background-color: {bg_c}; color: {text_c}; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-left: 6px; display: inline-block; vertical-align: middle; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">{text}</span>'
 
 st.markdown(
     f"""
@@ -475,7 +465,7 @@ else:
     )
 
     with tab1:
-        # 1. 인기 항목 (뱃지 적용)
+        # 1. 인기 항목
         sorted_stocks = sorted(
             st.session_state.coins.items(),
             key=lambda x: x[1]["change"],
@@ -531,7 +521,9 @@ else:
         with c_graph:
             badge_html = render_badge(coin_data["category"], "#3B82F6")
             st.markdown(
-                f"### 📊 {coin_data['name']} 차트 {badge_html}",
+                f"<div style='display: flex; align-items: center; margin-bottom: 10px;'>"
+                f"<h3 style='margin: 0; padding: 0;'>📊 {coin_data['name']} 차트</h3>{badge_html}"
+                f"</div>",
                 unsafe_allow_html=True,
             )
             fig = go.Figure()
