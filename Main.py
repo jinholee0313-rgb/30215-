@@ -63,12 +63,28 @@ LUXURY_SHOP = {
     "ITEM_10": {"name": "전용 리조트 & 비즈니스 제트기", "price": 10000000000, "icon": "🛩️", "effect_type": "god_mode", "val": (0.05, 0.40), "desc": "시장 지배력 행사 [상승률 +5.0%p & 급등 호재 확률 +40%p 폭증]"},
 }
 
-ACHIEVEMENTS_MASTER = {
-    "FIRST_BUY": {"title": "🐣 첫 걸음마", "desc": "첫 주식/가상자산 매수 완료", "reward": 500000},
-    "HOLDING_50": {"title": "🗿 강철 멘탈 존버족", "desc": "50일 차 이상 생존 달성", "reward": 3000000},
-    "RIVAL_BEAT_ALL": {"title": "👑 월가 제패", "desc": "라이벌 경쟁에서 자산 1위 등극", "reward": 10000000},
-    "SURVIVED_CRASH": {"title": "🛡️ 위기 극복의 신", "desc": "시장 대형 악재 이벤트를 경험하고 생존", "reward": 2000000},
-    "LUXURY_3": {"title": "🛍️ 플렉스 입문", "desc": "사치품 3개 이상 보유", "reward": 5000000},
+# ==========================================
+# 모드별 세분화된 업적 데이터
+# ==========================================
+MODE_ACHIEVEMENTS = {
+    "🌱 캐주얼 모드": {
+        "FIRST_BUY": {"title": "🐣 첫 걸음마", "desc": "첫 주식/가상자산 매수 완료", "reward": 500000},
+        "CASUAL_30DAYS": {"title": "☕ 느긋한 자산가", "desc": "30일 차 동안 편안하게 시장 적응 달성", "reward": 2000000},
+        "CASUAL_100M": {"title": "🌱 여유로운 부자", "desc": "총 자산 1억 원 달성", "reward": 5000000},
+        "LUXURY_3": {"title": "🛍️ 플렉스 입문", "desc": "사치품 3개 이상 보유", "reward": 3000000},
+    },
+    "⚔️ 라이벌 경쟁 모드": {
+        "FIRST_BUY": {"title": "🐣 첫 걸음마", "desc": "첫 주식/가상자산 매수 완료", "reward": 500000},
+        "RIVAL_BEAT_ALL": {"title": "👑 월가 제패", "desc": "라이벌 경쟁에서 자산 1위 등극", "reward": 10000000},
+        "HOLDING_50": {"title": "🗿 강철 멘탈 존버족", "desc": "50일 차 이상 생존 달성", "reward": 3000000},
+        "LUXURY_5": {"title": "🏎️ 라이벌 압도", "desc": "사치품 5개 이상 보유", "reward": 8000000},
+    },
+    "🌪️ 핫불&하락장 (이벤트 모드)": {
+        "FIRST_BUY": {"title": "🐣 첫 걸음마", "desc": "첫 주식/가상자산 매수 완료", "reward": 500000},
+        "SURVIVED_CRASH": {"title": "🛡️ 위기 극복의 신", "desc": "시장 대형 악재 이벤트를 경험하고 생존", "reward": 2000000},
+        "EVENT_SURVIVAL_30": {"title": "🔥 폭풍 속의 트레이더", "desc": "이벤트 모드에서 30일 이상 생존", "reward": 5000000},
+        "EVENT_50M": {"title": "💎 혼돈 속의 거상", "desc": "총 자산 5,000만 원 달성", "reward": 10000000},
+    },
 }
 
 MARKET_EVENTS = [
@@ -91,6 +107,7 @@ def init_game_session():
     mode_name = st.session_state.get("mode_select", "⚔️ 라이벌 경쟁 모드")
     mode_config = GAME_MODES.get(mode_name, GAME_MODES["⚔️ 라이벌 경쟁 모드"])
 
+    st.session_state.current_mode = mode_name
     st.session_state.cash = float(mode_config["cash"])
     st.session_state.initial_cash = float(mode_config["cash"])
     st.session_state.volatility = mode_config["volatility"]
@@ -102,7 +119,10 @@ def init_game_session():
     st.session_state.coins = pd.Series(DEFAULT_COINS).to_dict()
     st.session_state.portfolio = {ticker: {"qty": 0.0, "avg_price": 0.0} for ticker in DEFAULT_COINS}
     st.session_state.owned_items = {}
-    st.session_state.unlocked_achievements = {k: False for k in ACHIEVEMENTS_MASTER}
+
+    current_mode_achievements = MODE_ACHIEVEMENTS.get(mode_name, {})
+    st.session_state.unlocked_achievements = {k: False for k in current_mode_achievements}
+
     st.session_state.news_log = []
     st.session_state.current_event = None
     st.session_state.buy_qty = 0.0
@@ -121,11 +141,14 @@ def init_game_session():
     st.session_state.sb_down_color = st.session_state.get("down_color", "#2563EB")
 
 def check_achievement(key):
-    if key in ACHIEVEMENTS_MASTER and not st.session_state.unlocked_achievements.get(key, False):
+    mode_name = st.session_state.get("current_mode")
+    mode_achievements = MODE_ACHIEVEMENTS.get(mode_name, {})
+    
+    if key in mode_achievements and not st.session_state.unlocked_achievements.get(key, False):
         st.session_state.unlocked_achievements[key] = True
-        reward = ACHIEVEMENTS_MASTER[key]["reward"]
+        reward = mode_achievements[key]["reward"]
         st.session_state.cash += reward
-        st.toast(f"🏆 업적 달성! [{ACHIEVEMENTS_MASTER[key]['title']}] (+{reward:,.0f}원 수령)", icon="🎉")
+        st.toast(f"🏆 [{mode_name}] 업적 달성! [{mode_achievements[key]['title']}] (+{reward:,.0f}원 수령)", icon="🎉")
 
 def check_endings(tot_asset):
     if len(st.session_state.owned_items) >= 10 and not st.session_state.game_cleared:
@@ -217,7 +240,6 @@ def next_day_market():
         r_info["cash"] = max(100000, round(r_info["cash"] * (1 + r_rate)))
 
     # 종목 시세 변동
-    has_news = False
     for ticker, data in st.session_state.coins.items():
         change_rate = random.uniform(-st.session_state.volatility + rate_buff, st.session_state.volatility + rate_buff)
 
@@ -240,11 +262,13 @@ def next_day_market():
 
         if change_rate > 0.02:
             st.session_state.news_log.insert(0, {"time": time_str, "name": data["name"], "msg": random.choice(BULL_NEWS) + f" (▲ {data['change']:+.2f}%)"})
-            has_news = True
         elif change_rate < -0.02:
             st.session_state.news_log.insert(0, {"time": time_str, "name": data["name"], "msg": random.choice(BEAR_NEWS) + f" (▼ {data['change']:+.2f}%)"})
-            has_news = True
 
+    # 모드별 일차 업적 조건 확인
+    if st.session_state.day >= 30:
+        check_achievement("CASUAL_30DAYS")
+        check_achievement("EVENT_SURVIVAL_30")
     if st.session_state.day >= 50:
         check_achievement("HOLDING_50")
 
@@ -324,6 +348,13 @@ else:
     tot_val = sum(st.session_state.portfolio[t]["qty"] * st.session_state.coins[t]["price"] for t in st.session_state.coins)
     tot_asset = st.session_state.cash + tot_val
     roi = ((tot_asset - st.session_state.initial_cash) / st.session_state.initial_cash) * 100
+    
+    # 자산 조건 업적 확인
+    if tot_asset >= 100000000:
+        check_achievement("CASUAL_100M")
+    if tot_asset >= 50000000:
+        check_achievement("EVENT_50M")
+
     check_endings(tot_asset)
 
     if st.session_state.get("game_cleared", False):
@@ -353,7 +384,7 @@ else:
     st.divider()
 
     tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-        "📊 거래소", "⚔️ 라이벌 순위", "💎 사치품 상점 (10종)", "🏆 업적 & 칭호", "💼 포트폴리오", "🪙 신규 종목 상장", "📰 전체 속보"
+        "📊 거래소", "⚔️ 라이벌 순위", "💎 사치품 상점 (10종)", "🏆 모드별 업적", "💼 포트폴리오", "🪙 신규 종목 상장", "📰 전체 속보"
     ])
 
     # [TAB 1] 거래소
@@ -477,19 +508,28 @@ else:
                             st.session_state.owned_items[k] = True
                             if len(st.session_state.owned_items) >= 3:
                                 check_achievement("LUXURY_3")
+                            if len(st.session_state.owned_items) >= 5:
+                                check_achievement("LUXURY_5")
                             st.toast(f"🎉 {item['name']} 구매 완료!")
                             st.rerun()
                         else: st.toast("❌ 잔액이 부족합니다.", icon="⚠️")
 
-    # [TAB 4] 업적 및 칭호
+    # [TAB 4] 업적 및 칭호 (현재 모드 맞춤형)
     with tab4:
-        st.subheader("🏆 업적 & 칭호 도전 과제")
+        curr_mode = st.session_state.get("current_mode", "⚔️ 라이벌 경쟁 모드")
+        active_achievements = MODE_ACHIEVEMENTS.get(curr_mode, {})
+        
+        st.subheader(f"🏆 [{curr_mode}] 전용 업적 과제")
+        st.caption("선택하신 게임 모드에 따라 전용 업적이 다르게 부여됩니다.")
+        
         cols = st.columns(2)
-        for idx, (key, info) in enumerate(ACHIEVEMENTS_MASTER.items()):
+        for idx, (key, info) in enumerate(active_achievements.items()):
             unlocked = st.session_state.unlocked_achievements.get(key, False)
             with cols[idx % 2]:
-                if unlocked: st.success(f"✅ **{info['title']}** (달성 완료)\n\n{info['desc']} | 보상: +{info['reward']:,.0f}원 수령함")
-                else: st.info(f"🔒 **{info['title']}** (미달성)\n\n{info['desc']} | 보상: +{info['reward']:,.0f}원")
+                if unlocked: 
+                    st.success(f"✅ **{info['title']}** (달성 완료)\n\n{info['desc']} | 보상: +{info['reward']:,.0f}원 수령함")
+                else: 
+                    st.info(f"🔒 **{info['title']}** (미달성)\n\n{info['desc']} | 보상: +{info['reward']:,.0f}원")
 
     # [TAB 5] 포트폴리오
     with tab5:
