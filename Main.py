@@ -189,34 +189,28 @@ with st.sidebar:
         st.info("💡 메인 화면에서 설정을 마친 뒤 시작하기 버튼을 누르세요.")
 
 # ==========================================
-# 4. 트레이딩 함수
+# 4. 트레이딩 & 수량 조절 콜백 함수
 # ==========================================
 def add_buy_qty(val):
     st.session_state.buy_qty += val
-
 
 def set_buy_max(price):
     if price > 0:
         st.session_state.buy_qty = float(st.session_state.cash // price)
 
-
 def reset_buy_qty():
     st.session_state.buy_qty = 0.0
-
 
 def add_sell_qty(val, max_qty):
     st.session_state.sell_qty = min(
         st.session_state.sell_qty + val, float(max_qty)
     )
 
-
 def set_sell_max(max_qty):
     st.session_state.sell_qty = float(max_qty)
 
-
 def reset_sell_qty():
     st.session_state.sell_qty = 0.0
-
 
 def execute_buy(ticker):
     qty = st.session_state.buy_qty
@@ -250,7 +244,6 @@ def execute_buy(ticker):
         icon="✅",
     )
 
-
 def execute_sell(ticker):
     qty = st.session_state.sell_qty
     curr_price = st.session_state.coins[ticker]["price"]
@@ -270,7 +263,6 @@ def execute_sell(ticker):
         f"🔴 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료!",
         icon="✅",
     )
-
 
 def next_day_market():
     st.session_state.day += 1
@@ -305,7 +297,6 @@ def next_day_market():
                     "msg": random.choice(BEAR_NEWS),
                 },
             )
-
 
 # ==========================================
 # 5. 테마 CSS 설정
@@ -506,7 +497,6 @@ else:
             st.markdown(f"**📊 {coin_data['name']} 차트**")
             fig = go.Figure()
 
-            # 1일 차일 때는 데이터 없이 창만 유지
             if st.session_state.day > 1 and len(history) > 1:
                 x_days = [f"{d}일" for d in range(1, len(history) + 1)]
                 min_p = min(history)
@@ -564,7 +554,6 @@ else:
                     yaxis=dict(gridcolor=border_color, range=[y_bottom, y_top]),
                 )
             else:
-                # 1일 차 빈 그래프 틀만 생성
                 fig.update_layout(
                     paper_bgcolor=card_bg,
                     plot_bgcolor=card_bg,
@@ -638,7 +627,7 @@ else:
         st.divider()
 
         # ----------------------------------------------------
-        # 6. 매수 / 매도 (주문 방식 선택 없이 즉시 매매)
+        # 6. 매수 / 매도 (+1, +10, +50, +100, 올인, 0으로 돌아가기 버튼 포함)
         # ----------------------------------------------------
         my_data = st.session_state.portfolio.get(
             selected_ticker, {"qty": 0.0, "avg_price": 0.0}
@@ -649,20 +638,16 @@ else:
             st.markdown("### 🟢 매수")
             st.write(f"현재가: **{coin_data['price']:,.2f} 원**")
 
-            b_btn1, b_btn2, b_btn3 = st.columns(3)
-            b_btn1.button(
-                "+10",
-                key="buy_add_10_btn",
-                on_click=add_buy_qty,
-                args=(10.0,),
-            )
-            b_btn2.button(
-                "🚀 MAX",
-                key="buy_max_btn",
-                on_click=set_buy_max,
-                args=(coin_data["price"],),
-            )
-            b_btn3.button("🔄 리셋", key="buy_reset_btn", on_click=reset_buy_qty)
+            # 수량 조절 버튼 (+1, +10, +50 / +100, 올인, 0으로)
+            b_row1_1, b_row1_2, b_row1_3 = st.columns(3)
+            b_row1_1.button("+1", key="buy_add_1", on_click=add_buy_qty, args=(1.0,))
+            b_row1_2.button("+10", key="buy_add_10", on_click=add_buy_qty, args=(10.0,))
+            b_row1_3.button("+50", key="buy_add_50", on_click=add_buy_qty, args=(50.0,))
+
+            b_row2_1, b_row2_2, b_row2_3 = st.columns(3)
+            b_row2_1.button("+100", key="buy_add_100", on_click=add_buy_qty, args=(100.0,))
+            b_row2_2.button("🚀 올인", key="buy_max", on_click=set_buy_max, args=(coin_data["price"],))
+            b_row2_3.button("🔄 0으로", key="buy_reset", on_click=reset_buy_qty)
 
             st.number_input(
                 "매수 수량", min_value=0.0, key="buy_qty"
@@ -680,20 +665,16 @@ else:
             st.markdown("### 🔴 매도")
             st.write(f"보유 수량: **{my_data['qty']:,.2f} 주/개**")
 
-            s_btn1, s_btn2, s_btn3 = st.columns(3)
-            s_btn1.button(
-                "+10",
-                key="sell_add_10_btn",
-                on_click=add_sell_qty,
-                args=(10.0, my_data["qty"]),
-            )
-            s_btn2.button(
-                "🔥 MAX",
-                key="sell_max_btn",
-                on_click=set_sell_max,
-                args=(my_data["qty"],),
-            )
-            s_btn3.button("🔄 리셋", key="sell_reset_btn", on_click=reset_sell_qty)
+            # 수량 조절 버튼 (+1, +10, +50 / +100, 올인, 0으로)
+            s_row1_1, s_row1_2, s_row1_3 = st.columns(3)
+            s_row1_1.button("+1", key="sell_add_1", on_click=add_sell_qty, args=(1.0, my_data["qty"]))
+            s_row1_2.button("+10", key="sell_add_10", on_click=add_sell_qty, args=(10.0, my_data["qty"]))
+            s_row1_3.button("+50", key="sell_add_50", on_click=add_sell_qty, args=(50.0, my_data["qty"]))
+
+            s_row2_1, s_row2_2, s_row2_3 = st.columns(3)
+            s_row2_1.button("+100", key="sell_add_100", on_click=add_sell_qty, args=(100.0, my_data["qty"]))
+            s_row2_2.button("🚀 올인", key="sell_max", on_click=set_sell_max, args=(my_data["qty"],))
+            s_row2_3.button("🔄 0으로", key="sell_reset", on_click=reset_sell_qty)
 
             st.number_input(
                 "매도 수량",
