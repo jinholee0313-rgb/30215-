@@ -146,7 +146,6 @@ def init_game_session():
     st.session_state.news_log = []
     st.session_state.buy_qty = 0.0
     st.session_state.sell_qty = 0.0
-    st.session_state.pending_orders = []
 
 
 # ==========================================
@@ -155,9 +154,7 @@ def init_game_session():
 with st.sidebar:
     st.header("⚙️ 실시간 설정")
     if st.session_state.game_started:
-        st.selectbox(
-            "🌐 언어 선택", ["한국어", "English"], key="sb_language"
-        )
+        st.selectbox("🌐 언어 선택", ["한국어", "English"], key="sb_language")
         st.selectbox(
             "🎨 화면 테마 설정",
             [
@@ -221,7 +218,7 @@ def reset_sell_qty():
     st.session_state.sell_qty = 0.0
 
 
-def execute_buy(ticker, order_type="시장가", limit_price=0.0):
+def execute_buy(ticker):
     qty = st.session_state.buy_qty
     curr_price = st.session_state.coins[ticker]["price"]
 
@@ -229,25 +226,7 @@ def execute_buy(ticker, order_type="시장가", limit_price=0.0):
         st.toast("⚠️ 매수 수량을 입력해주세요.", icon="❌")
         return
 
-    exec_price = curr_price if order_type == "시장가" else limit_price
-
-    if order_type == "지정가" and limit_price < curr_price:
-        st.session_state.pending_orders.append(
-            {
-                "type": "매수",
-                "ticker": ticker,
-                "qty": qty,
-                "target_price": limit_price,
-            }
-        )
-        st.toast(
-            f"📌 {st.session_state.coins[ticker]['name']} {limit_price:,.0f}원 지정가 매수 예약 완료!",
-            icon="📋",
-        )
-        st.session_state.buy_qty = 0.0
-        return
-
-    total_cost = qty * exec_price
+    total_cost = qty * curr_price
     if total_cost > st.session_state.cash:
         st.toast("⚠️ 잔액이 부족합니다.", icon="❌")
         return
@@ -267,12 +246,12 @@ def execute_buy(ticker, order_type="시장가", limit_price=0.0):
     }
     st.session_state.buy_qty = 0.0
     st.toast(
-        f"🟢 [{order_type}] {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매수 완료!",
+        f"🟢 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매수 완료!",
         icon="✅",
     )
 
 
-def execute_sell(ticker, order_type="시장가", limit_price=0.0):
+def execute_sell(ticker):
     qty = st.session_state.sell_qty
     curr_price = st.session_state.coins[ticker]["price"]
 
@@ -283,30 +262,12 @@ def execute_sell(ticker, order_type="시장가", limit_price=0.0):
         st.toast("⚠️ 매도 가능 수량을 확인해주세요.", icon="❌")
         return
 
-    exec_price = curr_price if order_type == "시장가" else limit_price
-
-    if order_type == "지정가" and limit_price > curr_price:
-        st.session_state.pending_orders.append(
-            {
-                "type": "매도",
-                "ticker": ticker,
-                "qty": qty,
-                "target_price": limit_price,
-            }
-        )
-        st.toast(
-            f"📌 {st.session_state.coins[ticker]['name']} {limit_price:,.0f}원 지정가 매도 예약 완료!",
-            icon="📋",
-        )
-        st.session_state.sell_qty = 0.0
-        return
-
-    st.session_state.cash += qty * exec_price
+    st.session_state.cash += qty * curr_price
     new_qty = curr_data["qty"] - qty
     st.session_state.portfolio[ticker]["qty"] = max(0.0, new_qty)
     st.session_state.sell_qty = 0.0
     st.toast(
-        f"🔴 [{order_type}] {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료!",
+        f"🔴 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료!",
         icon="✅",
     )
 
@@ -344,42 +305,6 @@ def next_day_market():
                     "msg": random.choice(BEAR_NEWS),
                 },
             )
-
-    remaining_orders = []
-    for order in st.session_state.pending_orders:
-        t = order["ticker"]
-        cp = st.session_state.coins[t]["price"]
-        if order["type"] == "매수" and cp <= order["target_price"]:
-            cost = order["qty"] * cp
-            if st.session_state.cash >= cost:
-                st.session_state.cash -= cost
-                curr = st.session_state.portfolio[t]
-                n_qty = curr["qty"] + order["qty"]
-                n_avg = ((curr["qty"] * curr["avg_price"]) + cost) / n_qty
-                st.session_state.portfolio[t] = {
-                    "qty": n_qty,
-                    "avg_price": n_avg,
-                }
-                st.toast(
-                    f"🎉 [지정가 체결] {st.session_state.coins[t]['name']} 매수 체결!",
-                    icon="🎯",
-                )
-            else:
-                remaining_orders.append(order)
-        elif order["type"] == "매도" and cp >= order["target_price"]:
-            curr = st.session_state.portfolio[t]
-            if curr["qty"] >= order["qty"]:
-                st.session_state.cash += order["qty"] * cp
-                st.session_state.portfolio[t]["qty"] -= order["qty"]
-                st.toast(
-                    f"🎉 [지정가 체결] {st.session_state.coins[t]['name']} 매도 체결!",
-                    icon="🎯",
-                )
-            else:
-                remaining_orders.append(order)
-        else:
-            remaining_orders.append(order)
-    st.session_state.pending_orders = remaining_orders
 
 
 # ==========================================
@@ -440,18 +365,15 @@ st.markdown(
 # 6. 메인 화면
 # ==========================================
 
-# A. 요구사항에 맞춘 [기본 창 / 초기 화면]
+# A. 초기 설정 화면 (2x2 그리드)
 if not st.session_state.game_started:
     st.title("📈 글로벌 모의 주식 & 가상자산 트레이딩 시뮬레이터")
     st.divider()
 
-    # 요청대로 4가지 설정을 기본 창 중앙에 노출
     col_main1, col_main2 = st.columns(2)
 
     with col_main1:
-        st.selectbox(
-            "🌐 언어 선택", ["한국어", "English"], key="language"
-        )
+        st.selectbox("🌐 언어 선택", ["한국어", "English"], key="language")
         st.selectbox(
             "🎯 난이도 선택",
             list(DIFFICULTY_SETTINGS.keys()),
@@ -482,7 +404,6 @@ if not st.session_state.game_started:
     with col_color2:
         st.color_picker("🔵 하락 색상", key="down_color")
 
-    # 난이도 안내 설명
     diff_info = DIFFICULTY_SETTINGS[st.session_state.difficulty]
     st.info(f"**[{st.session_state.difficulty} 모드 선택됨]** — {diff_info['desc']}")
 
@@ -511,120 +432,214 @@ else:
         "sb_down_color", st.session_state.down_color
     )
 
-    sorted_stocks = sorted(
-        st.session_state.coins.items(),
-        key=lambda x: x[1]["change"],
-        reverse=True,
-    )
-    g_ticker, g_data = sorted_stocks[0]
-    l_ticker, l_data = sorted_stocks[-1]
-
-    r1, r2 = st.columns(2)
-    r1.info(
-        f"🚀 최고 상승: {g_data['name']} ({g_ticker}) | **{g_data['change']:+.2f}%**"
-    )
-    r2.error(
-        f"📉 최고 하락: {l_data['name']} ({l_ticker}) | **{l_data['change']:+.2f}%**"
-    )
-
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
         [
             "📊 거래소",
             "🏠 사치품 상점",
             "💼 포트폴리오",
             "🪙 신규 종목 상장",
-            "📰 속보 & 지정가 현황",
+            "📰 전체 속보",
         ]
     )
 
     with tab1:
-        c1, c2 = st.columns([1, 2])
-        with c1:
+        # ----------------------------------------------------
+        # 1. 인기 항목 (상단 배치)
+        # ----------------------------------------------------
+        sorted_stocks = sorted(
+            st.session_state.coins.items(),
+            key=lambda x: x[1]["change"],
+            reverse=True,
+        )
+        g_ticker, g_data = sorted_stocks[0]
+        l_ticker, l_data = sorted_stocks[-1]
+
+        r1, r2 = st.columns(2)
+        r1.info(
+            f"🔥 인기 최고 상승: {g_data['name']} ({g_ticker}) | **{g_data['change']:+.2f}%**"
+        )
+        r2.error(
+            f"📉 인기 최고 하락: {l_data['name']} ({l_ticker}) | **{l_data['change']:+.2f}%**"
+        )
+
+        st.divider()
+
+        # ----------------------------------------------------
+        # 2. 종목 카테고리 & 종목 선택
+        # ----------------------------------------------------
+        cat_col, ticker_col = st.columns(2)
+        with cat_col:
+            selected_cat = st.selectbox(
+                "📂 종목 카테고리",
+                ["전체", "🇰🇷 한국 주식", "🇺🇸 미국 주식", "🪙 가상자산"],
+                key="cat_filter",
+            )
+
+        if selected_cat == "전체":
+            filtered_tickers = list(st.session_state.coins.keys())
+        else:
+            filtered_tickers = [
+                k
+                for k, v in st.session_state.coins.items()
+                if v["category"] == selected_cat
+            ]
+
+        with ticker_col:
             selected_ticker = st.selectbox(
-                "종목 선택",
-                list(st.session_state.coins.keys()),
+                "📌 종목 선택",
+                filtered_tickers,
                 key="exchange_select_ticker",
                 format_func=lambda x: f"{st.session_state.coins[x]['name']} ({x})",
             )
-        with c2:
-            current_chart_type = st.radio(
-                "📊 현재 선택된 차트",
-                [active_chart_type],
-                key="exchange_chart_type_radio",
-            )
+
+        st.divider()
+
+        # ----------------------------------------------------
+        # 3. 그래프 & 뉴스 (좌우 분할 배치)
+        # ----------------------------------------------------
+        c_graph, c_news = st.columns([2, 1])
 
         coin_data = st.session_state.coins[selected_ticker]
         history = coin_data["history"]
 
-        fig = go.Figure()
-        x_days = [f"{d}일" for d in range(1, len(history) + 1)]
+        with c_graph:
+            st.markdown(f"**📊 {coin_data['name']} 차트**")
+            fig = go.Figure()
 
-        min_p = min(history)
-        max_p = max(history)
-        p_margin = (max_p - min_p) * 0.2 if max_p != min_p else min_p * 0.05
-        y_bottom = max(0, min_p - p_margin)
-        y_top = max_p + p_margin
+            # 1일 차일 때는 데이터 없이 창만 유지
+            if st.session_state.day > 1 and len(history) > 1:
+                x_days = [f"{d}일" for d in range(1, len(history) + 1)]
+                min_p = min(history)
+                max_p = max(history)
+                p_margin = (
+                    (max_p - min_p) * 0.2 if max_p != min_p else min_p * 0.05
+                )
+                y_bottom = max(0, min_p - p_margin)
+                y_top = max_p + p_margin
 
-        if "막대" in active_chart_type or "Bar" in active_chart_type:
-            bar_colors = [
-                active_up_color
-                if history[i] >= history[max(0, i - 1)]
-                else active_down_color
-                for i in range(len(history))
+                if "막대" in active_chart_type or "Bar" in active_chart_type:
+                    bar_colors = [
+                        active_up_color
+                        if history[i] >= history[max(0, i - 1)]
+                        else active_down_color
+                        for i in range(len(history))
+                    ]
+                    fig.add_trace(
+                        go.Bar(
+                            x=x_days,
+                            y=[p - y_bottom for p in history],
+                            base=y_bottom,
+                            marker_color=bar_colors,
+                            name=selected_ticker,
+                            width=0.4,
+                            hovertemplate="%{x}<br>가격: %{customdata:,.2f}원<extra></extra>",
+                            customdata=history,
+                        )
+                    )
+                else:
+                    line_c = (
+                        active_up_color
+                        if history[-1] >= history[0]
+                        else active_down_color
+                    )
+                    fig.add_trace(
+                        go.Scatter(
+                            x=x_days,
+                            y=history,
+                            mode="lines+markers",
+                            line=dict(color=line_c, width=3),
+                            marker=dict(size=6, color=line_c),
+                            name=selected_ticker,
+                            hovertemplate="%{x}<br>가격: %{y:,.2f}원<extra></extra>",
+                        )
+                    )
+
+                fig.update_layout(
+                    paper_bgcolor=card_bg,
+                    plot_bgcolor=card_bg,
+                    font=dict(color=text_color),
+                    margin=dict(l=10, r=10, t=20, b=10),
+                    height=280,
+                    xaxis=dict(gridcolor=border_color, type="category"),
+                    yaxis=dict(gridcolor=border_color, range=[y_bottom, y_top]),
+                )
+            else:
+                # 1일 차 빈 그래프 틀만 생성
+                fig.update_layout(
+                    paper_bgcolor=card_bg,
+                    plot_bgcolor=card_bg,
+                    font=dict(color=text_color),
+                    margin=dict(l=10, r=10, t=20, b=10),
+                    height=280,
+                    xaxis=dict(gridcolor=border_color, showgrid=True),
+                    yaxis=dict(gridcolor=border_color, showgrid=True),
+                    annotations=[
+                        {
+                            "text": "1일 차에는 변동 데이터가 없습니다.<br>'다음 날로 가기'를 누르면 차트가 생성됩니다.",
+                            "xref": "paper",
+                            "yref": "paper",
+                            "showarrow": False,
+                            "font": {"size": 13, "color": text_color},
+                        }
+                    ],
+                )
+
+            st.plotly_chart(fig, use_container_width=True)
+
+        with c_news:
+            st.markdown(f"**📰 {coin_data['name']} 속보**")
+            ticker_news = [
+                n
+                for n in st.session_state.news_log
+                if n["name"] == coin_data["name"]
             ]
-            bar_heights = [p - y_bottom for p in history]
-
-            fig.add_trace(
-                go.Bar(
-                    x=x_days,
-                    y=bar_heights,
-                    base=y_bottom,
-                    marker_color=bar_colors,
-                    name=selected_ticker,
-                    width=0.4,
-                    hovertemplate="%{x}<br>가격: %{customdata:,.2f}원<extra></extra>",
-                    customdata=history,
-                )
-            )
-        else:
-            line_c = (
-                active_up_color
-                if history[-1] >= history[0]
-                else active_down_color
-            )
-            fig.add_trace(
-                go.Scatter(
-                    x=x_days,
-                    y=history,
-                    mode="lines+markers",
-                    line=dict(color=line_c, width=3),
-                    marker=dict(size=6, color=line_c),
-                    name=selected_ticker,
-                    hovertemplate="%{x}<br>가격: %{y:,.2f}원<extra></extra>",
-                )
-            )
-
-        fig.update_layout(
-            paper_bgcolor=card_bg,
-            plot_bgcolor=card_bg,
-            font=dict(color=text_color),
-            margin=dict(l=10, r=10, t=20, b=10),
-            height=300,
-            xaxis=dict(gridcolor=border_color, type="category"),
-            yaxis=dict(gridcolor=border_color, range=[y_bottom, y_top]),
-        )
-        st.plotly_chart(fig, use_container_width=True)
+            if ticker_news:
+                for item in ticker_news[:5]:
+                    st.caption(f"[{item['time']}] {item['msg']}")
+            else:
+                st.info("현재 해당 종목의 관련 속보가 없습니다.")
 
         st.divider()
 
-        order_type = st.radio(
-            "⚡ 주문 방식 선택",
-            ["시장가 (즉시 체결)", "지정가 (목표가 체결)"],
-            horizontal=True,
-            key="order_type_selector",
+        # ----------------------------------------------------
+        # 4. 보유 자산 수익률
+        # ----------------------------------------------------
+        tot_val = sum(
+            st.session_state.portfolio[t]["qty"]
+            * st.session_state.coins[t]["price"]
+            for t in st.session_state.coins
         )
-        is_limit = "지정가" in order_type
+        tot_asset = st.session_state.cash + tot_val
+        init_cash = st.session_state.get("initial_cash", 5000000.0)
+        roi = ((tot_asset - init_cash) / init_cash) * 100
 
+        st.markdown("**💰 보유 자산 및 수익률**")
+        m1, m2, m3, m4, m5 = st.columns(5)
+        m1.metric("진행", f"{st.session_state.day}일차")
+        m2.metric("보유 현금", f"{st.session_state.cash:,.0f}원")
+        m3.metric("평가 금액", f"{tot_val:,.0f}원")
+        m4.metric("총 자산", f"{tot_asset:,.0f}원")
+        m5.metric("수익률", f"{roi:+.2f}%")
+
+        st.divider()
+
+        # ----------------------------------------------------
+        # 5. 다음 날로 가기
+        # ----------------------------------------------------
+        if st.button(
+            "🌙 다음 날로 가기 ➔ (시세 변동 반영)",
+            key="next_day_action_btn",
+            type="primary",
+            use_container_width=True,
+        ):
+            next_day_market()
+            st.rerun()
+
+        st.divider()
+
+        # ----------------------------------------------------
+        # 6. 매수 / 매도 (주문 방식 선택 없이 즉시 매매)
+        # ----------------------------------------------------
         my_data = st.session_state.portfolio.get(
             selected_ticker, {"qty": 0.0, "avg_price": 0.0}
         )
@@ -633,14 +648,6 @@ else:
         with b_col:
             st.markdown("### 🟢 매수")
             st.write(f"현재가: **{coin_data['price']:,.2f} 원**")
-
-            b_limit_price = coin_data["price"]
-            if is_limit:
-                b_limit_price = st.number_input(
-                    "매수 희망가 (지정가)",
-                    value=float(coin_data["price"]),
-                    key="buy_limit_price_input",
-                )
 
             b_btn1, b_btn2, b_btn3 = st.columns(3)
             b_btn1.button(
@@ -661,29 +668,17 @@ else:
                 "매수 수량", min_value=0.0, key="buy_qty"
             )
             st.button(
-                "🟢 매수 주문 제출",
+                "🟢 매수하기",
                 key="buy_execute_btn",
                 type="primary",
                 use_container_width=True,
                 on_click=execute_buy,
-                args=(
-                    selected_ticker,
-                    "지정가" if is_limit else "시장가",
-                    b_limit_price,
-                ),
+                args=(selected_ticker,),
             )
 
         with s_col:
             st.markdown("### 🔴 매도")
             st.write(f"보유 수량: **{my_data['qty']:,.2f} 주/개**")
-
-            s_limit_price = coin_data["price"]
-            if is_limit:
-                s_limit_price = st.number_input(
-                    "매도 희망가 (지정가)",
-                    value=float(coin_data["price"]),
-                    key="sell_limit_price_input",
-                )
 
             s_btn1, s_btn2, s_btn3 = st.columns(3)
             s_btn1.button(
@@ -707,27 +702,13 @@ else:
                 key="sell_qty",
             )
             st.button(
-                "🔴 매도 주문 제출",
+                "🔴 매도하기",
                 key="sell_execute_btn",
                 type="primary",
                 use_container_width=True,
                 on_click=execute_sell,
-                args=(
-                    selected_ticker,
-                    "지정가" if is_limit else "시장가",
-                    s_limit_price,
-                ),
+                args=(selected_ticker,),
             )
-
-        st.divider()
-        if st.button(
-            "🌙 다음 날로 ➔ (시세 변동 및 지정가 체결)",
-            key="next_day_action_btn",
-            type="primary",
-            use_container_width=True,
-        ):
-            next_day_market()
-            st.rerun()
 
     with tab2:
         st.subheader("💎 사치품 상점")
@@ -802,33 +783,6 @@ else:
                 st.toast("⚠️ 티커 중복이거나 입력값이 부족합니다.", icon="❌")
 
     with tab5:
-        st.subheader("📌 미체결 지정가 주문 현황")
-        if st.session_state.pending_orders:
-            st.dataframe(
-                pd.DataFrame(st.session_state.pending_orders),
-                use_container_width=True,
-            )
-        else:
-            st.write("대기 중인 지정가 주문이 없습니다.")
-
-        st.divider()
         st.subheader("📰 실시간 속보 기록")
         for log in st.session_state.news_log:
             st.write(f"- `{log['time']}` **[{log['name']}]** {log['msg']}")
-
-    st.divider()
-    tot_val = sum(
-        st.session_state.portfolio[t]["qty"]
-        * st.session_state.coins[t]["price"]
-        for t in st.session_state.coins
-    )
-    tot_asset = st.session_state.cash + tot_val
-    init_cash = st.session_state.get("initial_cash", 5000000.0)
-    roi = ((tot_asset - init_cash) / init_cash) * 100
-
-    m1, m2, m3, m4, m5 = st.columns(5)
-    m1.metric("진행", f"{st.session_state.day}일차")
-    m2.metric("보유 현금", f"{st.session_state.cash:,.0f}원")
-    m3.metric("평가 금액", f"{tot_val:,.0f}원")
-    m4.metric("총 자산", f"{tot_asset:,.0f}원")
-    m5.metric("수익률", f"{roi:+.2f}%")
