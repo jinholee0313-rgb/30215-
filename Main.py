@@ -4,206 +4,26 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ==========================================
-# 1. 다국어 팩 (LANG_PACK)
+# 1. 페이지 기본 설정 및 기본 테마 지정 (라이트 모드)
 # ==========================================
-LANG_PACK = {
-    "한국어": {
-        "title": "📈 모의 주식 & 코인 트레이딩 게임",
-        "setting_header": "⚙️ 게임 환경 설정",
-        "lang_select": "🌐 언어 선택 (Language)",
-        "diff_select": "🎯 난이도 선택",
-        "diff_easy": "🌱 쉬움 (초기자금 5,000만 원 / 낮은 변동성)",
-        "diff_normal": "⚖️ 보통 (초기자금 1,000만 원 / 표준 변동성)",
-        "diff_hard": "🔥 어려움 (초기자금 200만 원 / 높은 변동성)",
-        "theme_select": "🎨 테마 선택",
-        "theme_dark": "소프트 다크 모드",
-        "theme_light": "라이트 모드",
-        "theme_black": "딥 블랙 모드",
-        "theme_blue": "미드나잇 블루 모드",
-        "theme_custom": "커스텀 컬러",
-        "custom_bg": "배경 색상",
-        "custom_text": "텍스트 색상",
-        "custom_card": "카드/박스 배경 색상",
-        "chart_header": "📊 차트 및 그래프 설정",
-        "chart_type": "차트 유형",
-        "chart_line": "선 그래프 (Line)",
-        "chart_bar": "막대 그래프 (Bar)",
-        "up_color": "상승(양봉) 색상",
-        "down_color": "하락(음봉) 색상",
-        "start_game": "🚀 게임 시작하기",
-        "back_to_start": "⚙️ 설정 페이지로 이동",
-        "reset_game": "🔄 게임 리셋 (초기화)",
-        "top_gainer": "🔥 최고 상승:",
-        "top_loser": "📉 최대 하락:",
-        "tab_exchange": "🏛️ 거래소",
-        "tab_mint": "✨ 신규 종목 민팅",
-        "tab_portfolio": "💼 포트폴리오",
-        "tab_news": "📰 전체 뉴스",
-        "filter_header": "🔍 종목 검색 및 필터",
-        "category_filter": "카테고리 선택",
-        "all": "전체 보기",
-        "select_stock": "거래할 종목 선택",
-        "chart_title": "📊 실시간 시세 차트",
-        "chart_suffix": "시세 추이",
-        "turn": "회차 (Turn)",
-        "price": "가격 (원)",
-        "control_header": "⚡ 장중 시세 변동 조작",
-        "update_market": "📈 다음 턴으로 (시세 변동)",
-        "next_day": "🌙 다음 날로 넘어가기 (Day+1)",
-        "asset_header": "💰 보유 자산 현황",
-        "progress": "진행 경과",
-        "cash": "보유 현금",
-        "portfolio_val": "주식/코인 평가액",
-        "total_assets": "총 평가 자산",
-        "roi": "총 수익률",
-        "trade_header": "🔄 매수 & 매도 주문",
-        "buy_header": "🔴 매수 (Buy)",
-        "sell_header": "🔵 매도 (Sell)",
-        "buy_qty": "매수 수량",
-        "sell_qty": "매도 수량",
-        "needed_amount": "필요 금액",
-        "expected_amount": "예상 수령액",
-        "btn_buy": "🔴 매수하기",
-        "btn_sell": "🔵 매도하기",
-        "my_qty": "현재 보유 수량",
-        "stock_news_header": "관련 속보 및 호재/악재",
-        "no_stock_news": "해당 종목의 최근 소식이 없습니다.",
-        "mint_header": "✨ 신규 종목 상장 (Minting)",
-        "stock_name": "종목 이름",
-        "ticker_symbol": "티커 기호 (예: AAPL, BTC)",
-        "select_category": "카테고리 분류",
-        "start_price": "상장 시작가 (원)",
-        "btn_mint": "🚀 신규 종목 상장하기",
-        "err_empty": "종목 이름과 티커를 모두 입력해 주세요.",
-        "err_exists": "이미 존재하는 티커 기호입니다.",
-        "mint_success": "종목이 성공적으로 상장되었습니다!",
-        "port_header": "💼 나의 보유 자산 상세",
-        "no_port": "현재 보유 중인 주식 및 코인이 없습니다.",
-        "col_ticker": "티커",
-        "col_name": "종목명",
-        "col_category": "카테고리",
-        "col_qty": "보유 수량",
-        "col_price": "현재가",
-        "col_val": "평가 금액",
-        "all_news_header": "📰 시장 전체 뉴스 및 이벤트 기록",
-        "min_buy_err": "최소 1주 이상 매수할 수 있습니다.",
-        "no_cash_err": "현금이 부족합니다!",
-        "buy_done": "매수가 완료되었습니다.",
-        "min_sell_err": "최소 1주 이상 매도할 수 있습니다.",
-        "no_qty_err": "보유 수량이 부족합니다!",
-        "sell_done": "매도가 완료되었습니다.",
-        "won": "원",
-        "unit": "주",
-        "day_str": "일차",
-        "turn_str": "회차",
-    },
-    "English": {
-        "title": "📈 Stock & Crypto Trading Simulator",
-        "setting_header": "⚙️ Game Settings",
-        "lang_select": "🌐 Language",
-        "diff_select": "🎯 Select Difficulty",
-        "diff_easy": "🌱 Easy (Cash 50M KRW / Low Volatility)",
-        "diff_normal": "⚖️ Normal (Cash 10M KRW / Standard Volatility)",
-        "diff_hard": "🔥 Hard (Cash 2M KRW / High Volatility)",
-        "theme_select": "🎨 Select Theme",
-        "theme_dark": "Soft Dark Mode",
-        "theme_light": "Light Mode",
-        "theme_black": "Deep Black Mode",
-        "theme_blue": "Midnight Blue Mode",
-        "theme_custom": "Custom Colors",
-        "custom_bg": "Background Color",
-        "custom_text": "Text Color",
-        "custom_card": "Card/Box Color",
-        "chart_header": "📊 Chart Settings",
-        "chart_type": "Chart Type",
-        "chart_line": "Line Chart",
-        "chart_bar": "Bar Chart",
-        "up_color": "Bullish (Up) Color",
-        "down_color": "Bearish (Down) Color",
-        "start_game": "🚀 Start Game",
-        "back_to_start": "⚙️ Go to Settings",
-        "reset_game": "🔄 Reset Game",
-        "top_gainer": "🔥 Top Gainer:",
-        "top_loser": "📉 Top Loser:",
-        "tab_exchange": "🏛️ Exchange",
-        "tab_mint": "✨ Mint New Stock",
-        "tab_portfolio": "💼 Portfolio",
-        "tab_news": "📰 All News",
-        "filter_header": "🔍 Search & Filter",
-        "category_filter": "Category",
-        "all": "All Categories",
-        "select_stock": "Select Asset",
-        "chart_title": "📊 Real-Time Price Chart",
-        "chart_suffix": "Price Trend",
-        "turn": "Turn",
-        "price": "Price (KRW)",
-        "control_header": "⚡ Market Controls",
-        "update_market": "📈 Next Turn",
-        "next_day": "🌙 Jump to Next Day (Day+1)",
-        "asset_header": "💰 Account Summary",
-        "progress": "Progress",
-        "cash": "Available Cash",
-        "portfolio_val": "Stock/Crypto Value",
-        "total_assets": "Total Portfolio Value",
-        "roi": "Total ROI",
-        "trade_header": "🔄 Order Book",
-        "buy_header": "🔴 Buy",
-        "sell_header": "🔵 Sell",
-        "buy_qty": "Buy Quantity",
-        "sell_qty": "Sell Quantity",
-        "needed_amount": "Total Cost",
-        "expected_amount": "Total Revenue",
-        "btn_buy": "🔴 Place Buy Order",
-        "btn_sell": "🔵 Place Sell Order",
-        "my_qty": "My Holdings",
-        "stock_news_header": "Asset News & Events",
-        "no_stock_news": "No recent news for this asset.",
-        "mint_header": "✨ List New Asset (Minting)",
-        "stock_name": "Asset Name",
-        "ticker_symbol": "Ticker Symbol (e.g. AAPL, BTC)",
-        "select_category": "Category",
-        "start_price": "Initial Listing Price (KRW)",
-        "btn_mint": "🚀 List Asset",
-        "err_empty": "Please enter both name and ticker symbol.",
-        "err_exists": "This ticker symbol already exists.",
-        "mint_success": "Asset successfully listed!",
-        "port_header": "💼 My Asset Holdings",
-        "no_port": "You do not hold any assets currently.",
-        "col_ticker": "Ticker",
-        "col_name": "Name",
-        "col_category": "Category",
-        "col_qty": "Quantity",
-        "col_price": "Current Price",
-        "col_val": "Value",
-        "all_news_header": "📰 Market News & Event Log",
-        "min_buy_err": "Minimum buy quantity is 1.",
-        "no_cash_err": "Insufficient cash available!",
-        "buy_done": "Buy order executed successfully.",
-        "min_sell_err": "Minimum sell quantity is 1.",
-        "no_qty_err": "Insufficient asset quantity!",
-        "sell_done": "Sell order executed successfully.",
-        "won": "KRW",
-        "unit": "Units",
-        "day_str": "Day",
-        "turn_str": "Turn",
-    },
-}
+st.set_page_config(
+    page_title="주식 & 가상화폐 트레이딩 시뮬레이터",
+    page_icon="📈",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
-# ==========================================
-# 2. 난이도 및 기본 시장 설정
-# ==========================================
+# 난이도 설정 데이터
 DIFFICULTY_SETTINGS = {
-    "쉬움": {"cash": 50000000.0, "volatility": 0.05, "event_prob": 0.15},
-    "보통": {"cash": 10000000.0, "volatility": 0.10, "event_prob": 0.25},
-    "어려움": {"cash": 2000000.0, "volatility": 0.20, "event_prob": 0.40},
-    "Easy": {"cash": 50000000.0, "volatility": 0.05, "event_prob": 0.15},
-    "Normal": {"cash": 10000000.0, "volatility": 0.10, "event_prob": 0.25},
-    "Hard": {"cash": 2000000.0, "volatility": 0.20, "event_prob": 0.40},
+    "쉬움": {"cash": 10000000, "volatility": 0.03, "label_en": "Easy"},
+    "보통": {"cash": 5000000, "volatility": 0.05, "label_en": "Normal"},
+    "어려움": {"cash": 1000000, "volatility": 0.08, "label_en": "Hard"},
 }
 
-DEFAULT_MARKET = {
+# 기본 종목 리스트
+DEFAULT_COINS = {
     "HYUNDAI": {
-        "name": "현대차",
+        "name": "현대자동차",
         "category": "🇰🇷 한국 - 자동차",
         "price": 240000.0,
         "history": [240000.0],
@@ -216,220 +36,283 @@ DEFAULT_MARKET = {
         "history": [75000.0],
         "change": 0.0,
     },
-    "LIG-NEX1": {
-        "name": "LIG넥스원",
-        "category": "🇰🇷 한국 - 방산/우주",
-        "price": 160000.0,
-        "history": [160000.0],
-        "change": 0.0,
-    },
-    "ALTOS": {
-        "name": "알테오젠",
-        "category": "🇰🇷 한국 - 바이오",
-        "price": 190000.0,
-        "history": [190000.0],
-        "change": 0.0,
-    },
-    "TSLA": {
-        "name": "테슬라 (Tesla)",
-        "category": "🇺🇸 미국 - 빅테크",
-        "price": 280000.0,
-        "history": [280000.0],
-        "change": 0.0,
-    },
     "NVDA": {
-        "name": "엔비디아 (NVIDIA)",
+        "name": "엔비디아",
         "category": "🇺🇸 미국 - 빅테크",
-        "price": 180000.0,
-        "history": [180000.0],
+        "price": 120000.0,
+        "history": [120000.0],
         "change": 0.0,
     },
-    "STAR": {
-        "name": "스타코인 (StarCoin)",
+    "BTC": {
+        "name": "비트코인",
         "category": "🪙 가상화폐",
-        "price": 5000.0,
-        "history": [5000.0],
-        "change": 0.0,
-    },
-    "MEME": {
-        "name": "도지밈코인 (MemeCoin)",
-        "category": "🪙 가상화폐",
-        "price": 150.0,
-        "history": [150.0],
+        "price": 85000000.0,
+        "history": [85000000.0],
         "change": 0.0,
     },
 }
 
-# 페이지 기본 레이아웃 설정
-st.set_page_config(
-    page_title="Stock & Crypto Trading Simulator",
-    layout="wide",
-    initial_sidebar_state="collapsed",
-)
+# 다국어 텍스트 패키지
+TEXT_PACK = {
+    "한국어": {
+        "title": "📈 모의 주식 & 가상화폐 트레이딩 시뮬레이터",
+        "setting_header": "⚙️ 게임 초기 설정",
+        "lang_select": "🌐 언어 선택 (Language)",
+        "diff_select": "🎯 난이도 선택",
+        "diff_easy": "🌱 쉬움 (자본금 1,000만원 / 변동성 낮음)",
+        "diff_normal": "⚖️ 보통 (자본금 500만원 / 변동성 보통)",
+        "diff_hard": "🔥 어려움 (자본금 100만원 / 변동성 높음)",
+        "theme_select": "🎨 화면 테마 설정",
+        "theme_light": "☀️ 라이트 모드 (기본)",
+        "theme_dark": "🌙 다크 모드",
+        "theme_black": "🖤 올블랙 모드",
+        "theme_blue": "🔵 블루 모드",
+        "theme_custom": "🌈 커스텀 색상",
+        "custom_bg": "배경색",
+        "custom_text": "글자색",
+        "custom_card": "카드/테이블 배경색",
+        "chart_header": "📊 차트 커스텀 설정",
+        "chart_type": "차트 형태 선택",
+        "chart_line": "꺾은선 그래프 (Line)",
+        "chart_bar": "막대 그래프 (Bar)",
+        "up_color": "상승(양봉) 색상",
+        "down_color": "하락(음봉) 색상",
+        "start_game": "🚀 게임 시작하기",
+        "back_to_start": "⚙️ 게임 설정으로",
+        "reset_game": "🔄 게임 리셋",
+        "top_gainer": "🚀 최고 상승:",
+        "top_loser": "📉 최고 하락:",
+        "tab_exchange": "📊 거래소 (주식/코인)",
+        "tab_mint": "🪙 신규 종목 상장 (민팅)",
+        "tab_portfolio": "💼 내 포트폴리오",
+        "tab_news": "📰 전체 속보 기록",
+        "filter_header": "🔍 종목 검색 및 필터",
+        "category_filter": "카테고리 선택",
+        "all": "전체 보기",
+        "select_stock": "종목 선택",
+        "chart_title": "📈 실시간 시세 차트",
+        "chart_suffix": "시세 차트",
+        "turn": "회차 (턴)",
+        "price": "가격 (원)",
+        "won": "원",
+        "control_header": "⏱️ 시간 흐름 제어",
+        "update_market": "⚡ 실시간 시세 갱신 (장중 변동)",
+        "next_day": "🌙 다음 날로 넘어가기 (장 마감)",
+        "asset_header": "💰 자산 현황 요약",
+        "progress": "진행 상황",
+        "day_str": "일차",
+        "turn_str": "회차",
+        "cash": "보유 현금",
+        "portfolio_val": "총 평가 금액",
+        "total_assets": "총 자산",
+        "roi": "총 수익률",
+        "trade_header": "🛒 매수 및 매도",
+        "buy_header": "🟢 매수 (Buy)",
+        "sell_header": "🔴 매도 (Sell)",
+        "buy_qty": "매수 수량",
+        "sell_qty": "매도 수량",
+        "needed_amount": "필요 금액",
+        "expected_amount": "예상 수령액",
+        "btn_buy": "🟢 매수하기",
+        "btn_sell": "🔴 매도하기",
+        "my_qty": "보유 수량",
+        "unit": "주/개",
+        "stock_news_header": "관련 속보 및 악재",
+        "no_stock_news": "해당 종목에 관한 최신 속보가 없습니다.",
+        "mint_header": "✨ 신규 종목 상장 신청",
+        "stock_name": "종목명",
+        "ticker_symbol": "티커 티커명 (영문 대문자)",
+        "select_category": "카테고리 선택",
+        "start_price": "상장 기준가 (원)",
+        "btn_mint": "✨ 신규 상장하기",
+        "mint_success": "종목이 성공적으로 상장되었습니다!",
+        "err_empty": "종목명과 티커를 모두 입력해주세요.",
+        "err_exists": "이미 존재하는 티커입니다.",
+        "port_header": "💼 보유 자산 현황",
+        "col_ticker": "티커",
+        "col_name": "종목명",
+        "col_category": "카테고리",
+        "col_qty": "보유 수량",
+        "col_price": "현재가",
+        "col_val": "평가 금액",
+        "no_port": "보유 중인 주식/코인이 없습니다.",
+        "all_news_header": "📰 전체 속보 및 뉴스 기록",
+    },
+    "English": {
+        "title": "📈 Stock & Crypto Trading Simulator",
+        "setting_header": "⚙️ Initial Game Settings",
+        "lang_select": "🌐 Select Language",
+        "diff_select": "🎯 Select Difficulty",
+        "diff_easy": "🌱 Easy (Cash: 10M KRW / Low Volatility)",
+        "diff_normal": "⚖️ Normal (Cash: 5M KRW / Normal Volatility)",
+        "diff_hard": "🔥 Hard (Cash: 1M KRW / High Volatility)",
+        "theme_select": "🎨 Theme Settings",
+        "theme_light": "☀️ Light Mode (Default)",
+        "theme_dark": "🌙 Dark Mode",
+        "theme_black": "🖤 All-Black Mode",
+        "theme_blue": "🔵 Blue Mode",
+        "theme_custom": "🌈 Custom Theme",
+        "custom_bg": "Background Color",
+        "custom_text": "Text Color",
+        "custom_card": "Card Background",
+        "chart_header": "📊 Chart Customization",
+        "chart_type": "Select Chart Type",
+        "chart_line": "Line Chart",
+        "chart_bar": "Bar Chart",
+        "up_color": "Bullish (Up) Color",
+        "down_color": "Bearish (Down) Color",
+        "start_game": "🚀 Start Game",
+        "back_to_start": "⚙️ Back to Settings",
+        "reset_game": "🔄 Reset Game",
+        "top_gainer": "🚀 Top Gainer:",
+        "top_loser": "📉 Top Loser:",
+        "tab_exchange": "📊 Exchange",
+        "tab_mint": "🪙 Mint New Stock",
+        "tab_portfolio": "💼 My Portfolio",
+        "tab_news": "📰 All News Logs",
+        "filter_header": "🔍 Search & Filter",
+        "category_filter": "Category",
+        "all": "All",
+        "select_stock": "Select Asset",
+        "chart_title": "📈 Real-Time Price Chart",
+        "chart_suffix": "Price Chart",
+        "turn": "Turn",
+        "price": "Price (KRW)",
+        "won": "KRW",
+        "control_header": "⏱️ Time Control",
+        "update_market": "⚡ Update Market (Intraday)",
+        "next_day": "🌙 Next Day (Market Close)",
+        "asset_header": "💰 Asset Summary",
+        "progress": "Progress",
+        "day_str": "Day",
+        "turn_str": "Turn",
+        "cash": "Available Cash",
+        "portfolio_val": "Portfolio Value",
+        "total_assets": "Total Assets",
+        "roi": "Total ROI",
+        "trade_header": "🛒 Trade Assets",
+        "buy_header": "🟢 Buy",
+        "sell_header": "🔴 Sell",
+        "buy_qty": "Buy Quantity",
+        "sell_qty": "Sell Quantity",
+        "needed_amount": "Required Amount",
+        "expected_amount": "Estimated Total",
+        "btn_buy": "🟢 Execute Buy",
+        "btn_sell": "🔴 Execute Sell",
+        "my_qty": "Owned Quantity",
+        "unit": "Units",
+        "stock_news_header": "Related News & Events",
+        "no_stock_news": "No recent breaking news for this asset.",
+        "mint_header": "✨ Listing Request",
+        "stock_name": "Asset Name",
+        "ticker_symbol": "Ticker Symbol",
+        "select_category": "Select Category",
+        "start_price": "Initial Listing Price (KRW)",
+        "btn_mint": "✨ List Asset",
+        "mint_success": "Asset successfully listed!",
+        "err_empty": "Please fill in all fields.",
+        "err_exists": "Ticker already exists.",
+        "port_header": "💼 Current Holdings",
+        "col_ticker": "Ticker",
+        "col_name": "Name",
+        "col_category": "Category",
+        "col_qty": "Quantity",
+        "col_price": "Current Price",
+        "col_val": "Total Value",
+        "no_port": "You do not own any assets yet.",
+        "all_news_header": "📰 Global Breaking News Logs",
+    },
+}
 
 # ==========================================
-# 3. 세션 상태 초기화 및 관리
+# 2. 세션 상태 (Session State) 초기화
 # ==========================================
-if "game_started" not in st.session_state:
-    st.session_state.game_started = False
-
 if "language" not in st.session_state:
     st.session_state.language = "한국어"
-
 if "theme" not in st.session_state:
-    st.session_state.theme = "소프트 다크 모드"
-
+    st.session_state.theme = "☀️ 라이트 모드 (기본)"
+if "difficulty" not in st.session_state:
+    st.session_state.difficulty = "🌱 쉬움 (자본금 1,000만원 / 변동성 낮음)"
 if "chart_type" not in st.session_state:
-    st.session_state.chart_type = "선 그래프 (Line)"
-
+    st.session_state.chart_type = "꺾은선 그래프 (Line)"
 if "up_color" not in st.session_state:
-    st.session_state.up_color = "#FF4B4B"
-
+    st.session_state.up_color = "#E03131"  # 상승 빨간색
 if "down_color" not in st.session_state:
-    st.session_state.down_color = "#0068C9"
-
+    st.session_state.down_color = "#1971C2"  # 하락 파란색
 if "custom_bg" not in st.session_state:
-    st.session_state.custom_bg = "#1e1e2e"
-
+    st.session_state.custom_bg = "#FFFFFF"
 if "custom_text" not in st.session_state:
-    st.session_state.custom_text = "#cdd6f4"
-
+    st.session_state.custom_text = "#212529"
 if "custom_card" not in st.session_state:
-    st.session_state.custom_card = "#313244"
+    st.session_state.custom_card = "#F8F9FA"
+
+if "game_started" not in st.session_state:
+    st.session_state.game_started = False
 
 
 def init_game_session():
     diff_key = st.session_state.get("difficulty", "보통")
     if "쉬움" in diff_key or "Easy" in diff_key:
-        key = "쉬움"
+        cash_val = DIFFICULTY_SETTINGS["쉬움"]["cash"]
     elif "어려움" in diff_key or "Hard" in diff_key:
-        key = "어려움"
+        cash_val = DIFFICULTY_SETTINGS["어려움"]["cash"]
     else:
-        key = "보통"
+        cash_val = DIFFICULTY_SETTINGS["보통"]["cash"]
 
-    start_cash = DIFFICULTY_SETTINGS[key]["cash"]
-    st.session_state.cash = start_cash
+    st.session_state.cash = float(cash_val)
     st.session_state.day = 1
     st.session_state.turn = 1
-    st.session_state.coins = {
-        k: {
-            "name": v["name"],
-            "category": v["category"],
-            "price": v["price"],
-            "history": list(v["history"]),
-            "change": v["change"],
-        }
-        for k, v in DEFAULT_MARKET.items()
-    }
-    st.session_state.portfolio = {k: 0.0 for k in DEFAULT_MARKET}
+    st.session_state.coins = pd.Series(DEFAULT_COINS).to_dict()
+    st.session_state.portfolio = {ticker: 0.0 for ticker in DEFAULT_COINS}
     st.session_state.news_log = []
     st.session_state.buy_qty = 0.0
     st.session_state.sell_qty = 0.0
-    st.session_state.trade_msg = None
 
 
-txt = LANG_PACK[
-    "한국어" if "한국어" in st.session_state.language else "English"
-]
-
-# ==========================================
-# 4. 동적 CSS 테마 적용
-# ==========================================
-theme = st.session_state.theme
-if theme in ["소프트 다크 모드", "Soft Dark Mode"]:
-    bg_color, card_bg, text_color, border_color = (
-        "#1a1b26",
-        "#24283b",
-        "#a9b1d6",
-        "#414868",
-    )
-elif theme in ["라이트 모드", "Light Mode"]:
-    bg_color, card_bg, text_color, border_color = (
-        "#f8f9fa",
-        "#ffffff",
-        "#212529",
-        "#dee2e6",
-    )
-elif theme in ["딥 블랙 모드", "Deep Black Mode"]:
-    bg_color, card_bg, text_color, border_color = (
-        "#000000",
-        "#121212",
-        "#ffffff",
-        "#272727",
-    )
-elif theme in ["미드나잇 블루 모드", "Midnight Blue Mode"]:
-    bg_color, card_bg, text_color, border_color = (
-        "#0f172a",
-        "#1e293b",
-        "#f8fafc",
-        "#334155",
-    )
-else:
-    bg_color = st.session_state.custom_bg
-    text_color = st.session_state.custom_text
-    card_bg = st.session_state.custom_card
-    border_color = "#555555"
-
-st.markdown(
-    f"""
-    <style>
-    .stApp {{
-        background-color: {bg_color};
-        color: {text_color};
-    }}
-    div[data-testid="stMetric"] {{
-        background-color: {card_bg};
-        border: 1px solid {border_color};
-        padding: 15px;
-        border-radius: 10px;
-    }}
-    div[data-testid="stMetric"] * {{
-        color: {text_color} !important;
-    }}
-    </style>
-""",
-    unsafe_allow_html=True,
+# 언어별 텍스트 매핑
+lang = (
+    "한국어"
+    if "한국어" in st.session_state.get("language", "한국어")
+    else "English"
 )
+txt = TEXT_PACK[lang]
+
+# ==========================================
+# 3. Streamlit @st.dialog 모달 알림창 정의
+# ==========================================
+@st.dialog("🔔 거래 알림 (Trade Result)")
+def show_trade_dialog(msg, status="info"):
+    if status == "success":
+        st.success(msg)
+    elif status == "warning":
+        st.warning(msg)
+    elif status == "error":
+        st.error(msg)
+    else:
+        st.info(msg)
+    if st.button("확인 (Close)", use_container_width=True):
+        st.rerun()
 
 
 # ==========================================
-# 5. 거래 및 마켓 연동 콜백 함수
+# 4. 수량 조절 및 거래 로직 함수들
 # ==========================================
-def add_buy_qty(amount):
-    st.session_state.buy_qty += amount
+def add_buy_qty(val):
+    st.session_state.buy_qty += val
 
 
 def set_buy_max(price):
     if price > 0:
-        st.session_state.buy_qty = float(st.session_state.cash / price)
+        st.session_state.buy_qty = float(st.session_state.cash // price)
 
 
 def reset_buy_qty():
     st.session_state.buy_qty = 0.0
 
 
-def execute_buy(ticker):
-    price = st.session_state.coins[ticker]["price"]
-    buy_amount = st.session_state.buy_qty
-    total_buy_price = buy_amount * price
-
-    if buy_amount < 1.0:
-        st.session_state.trade_msg = ("warning", txt["min_buy_err"])
-    elif st.session_state.cash >= total_buy_price:
-        st.session_state.cash -= total_buy_price
-        st.session_state.portfolio[ticker] = (
-            st.session_state.portfolio.get(ticker, 0.0) + buy_amount
-        )
-        st.session_state.buy_qty = 0.0
-        msg = f"{st.session_state.coins[ticker]['name']} {buy_amount:,.2f} {txt['buy_done']}"
-        st.session_state.trade_msg = ("success", msg)
-    else:
-        st.session_state.trade_msg = ("error", txt["no_cash_err"])
-
-
-def add_sell_qty(amount, max_qty):
-    st.session_state.sell_qty = float(
-        min(max_qty, st.session_state.sell_qty + amount)
+def add_sell_qty(val, max_qty):
+    st.session_state.sell_qty = min(
+        st.session_state.sell_qty + val, float(max_qty)
     )
 
 
@@ -441,22 +324,51 @@ def reset_sell_qty():
     st.session_state.sell_qty = 0.0
 
 
-def execute_sell(ticker):
+def execute_buy(ticker):
+    qty = st.session_state.buy_qty
     price = st.session_state.coins[ticker]["price"]
-    sell_amount = st.session_state.sell_qty
-    my_qty = st.session_state.portfolio.get(ticker, 0.0)
-    total_sell_price = sell_amount * price
+    total_cost = qty * price
 
-    if sell_amount < 1.0:
-        st.session_state.trade_msg = ("warning", txt["min_sell_err"])
-    elif my_qty >= sell_amount:
-        st.session_state.cash += total_sell_price
-        st.session_state.portfolio[ticker] = my_qty - sell_amount
-        st.session_state.sell_qty = 0.0
-        msg = f"{st.session_state.coins[ticker]['name']} {sell_amount:,.2f} {txt['sell_done']}"
-        st.session_state.trade_msg = ("success", msg)
-    else:
-        st.session_state.trade_msg = ("error", txt["no_qty_err"])
+    if qty <= 0:
+        show_trade_dialog("매수할 수량을 입력해주세요.", "warning")
+        return
+
+    if total_cost > st.session_state.cash:
+        show_trade_dialog("보유 현금이 부족합니다!", "error")
+        return
+
+    st.session_state.cash -= total_cost
+    st.session_state.portfolio[ticker] = (
+        st.session_state.portfolio.get(ticker, 0.0) + qty
+    )
+    st.session_state.buy_qty = 0.0
+    show_trade_dialog(
+        f"🟢 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매수 완료! (체결가: {total_cost:,.0f}원)",
+        "success",
+    )
+
+
+def execute_sell(ticker):
+    qty = st.session_state.sell_qty
+    price = st.session_state.coins[ticker]["price"]
+    total_revenue = qty * price
+    my_qty = st.session_state.portfolio.get(ticker, 0.0)
+
+    if qty <= 0:
+        show_trade_dialog("매도할 수량을 입력해주세요.", "warning")
+        return
+
+    if qty > my_qty:
+        show_trade_dialog("보유한 수량보다 많이 매도할 수 없습니다!", "error")
+        return
+
+    st.session_state.cash += total_revenue
+    st.session_state.portfolio[ticker] -= qty
+    st.session_state.sell_qty = 0.0
+    show_trade_dialog(
+        f"🔴 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료! (정산금: {total_revenue:,.0f}원)",
+        "success",
+    )
 
 
 def update_market(next_day=False):
@@ -466,59 +378,54 @@ def update_market(next_day=False):
     else:
         st.session_state.turn += 1
 
+    diff_key = st.session_state.get("difficulty", "보통")
+    if "쉬움" in diff_key or "Easy" in diff_key:
+        volatility = DIFFICULTY_SETTINGS["쉬움"]["volatility"]
+    elif "어려움" in diff_key or "Hard" in diff_key:
+        volatility = DIFFICULTY_SETTINGS["어려움"]["volatility"]
+    else:
+        volatility = DIFFICULTY_SETTINGS["보통"]["volatility"]
+
+    # 일정 확률로 특수 뉴스 이벤트 발생
+    event_occurred = random.random() < 0.25
+    event_type = random.choice(
+        ["SUPER_PUMP", "PUMP", "DUMP", "SUPER_DUMP"]
+    )
+    event_target = random.choice(list(st.session_state.coins.keys()))
+    event_coin_name = st.session_state.coins[event_target]["name"]
+
     time_str = (
         f"{st.session_state.day}일차 [{st.session_state.turn}회차]"
         if st.session_state.language == "한국어"
         else f"Day {st.session_state.day} [Turn {st.session_state.turn}]"
     )
-
-    diff_key = st.session_state.get("difficulty", "보통")
-    if "쉬움" in diff_key or "Easy" in diff_key:
-        d_config = DIFFICULTY_SETTINGS["쉬움"]
-    elif "어려움" in diff_key or "Hard" in diff_key:
-        d_config = DIFFICULTY_SETTINGS["어려움"]
-    else:
-        d_config = DIFFICULTY_SETTINGS["보통"]
-
-    event_prob = d_config["event_prob"]
-    volatility = d_config["volatility"]
-
-    event_occurred = random.random() < event_prob
-    event_target = random.choice(list(st.session_state.coins.keys()))
-    event_coin_name = st.session_state.coins[event_target]["name"]
-
-    if "어려움" in diff_key or "Hard" in diff_key:
-        event_types = ["SUPER_PUMP", "PUMP", "DUMP", "DUMP", "SUPER_DUMP"]
-    else:
-        event_types = ["SUPER_PUMP", "PUMP", "PUMP", "DUMP", "SUPER_DUMP"]
-
-    event_type = random.choice(event_types) if event_occurred else "NONE"
     is_kor = st.session_state.language == "한국어"
 
-    if event_type == "SUPER_PUMP":
-        msg = (
-            f"[{time_str} 🚀🚀] **초대형 대박!** '{event_coin_name}' 관련 혁신 호재 발표!"
-            if is_kor
-            else f"[{time_str} 🚀🚀] **MEGA PUMP!** Massive good news for '{event_coin_name}'!"
-        )
-    elif event_type == "PUMP":
-        msg = (
-            f"[{time_str} 📈] **호재 발표!** '{event_coin_name}' 실적 호조!"
-            if is_kor
-            else f"[{time_str} 📈] **PUMP!** Positive earnings report for '{event_coin_name}'!"
-        )
-    elif event_type == "DUMP":
-        msg = (
-            f"[{time_str} 📉] **악재 발생!** '{event_coin_name}' 규제 이슈!"
-            if is_kor
-            else f"[{time_str} 📉] **DUMP!** Regulatory issues hit '{event_coin_name}'!"
-        )
-    elif event_type == "SUPER_DUMP":
-        msg = (
-            f"[{time_str} 💀💀] **경악!** '{event_coin_name}' 초대형 폭락 사태 발생!"
-            if is_kor
-            else f"[{time_str} 💀💀] **CRASH!** Devastating price drop for '{event_coin_name}'!"
-        )
+    if event_occurred:
+        if event_type == "SUPER_PUMP":
+            msg = (
+                f"[{time_str} 🚀🚀] **초대형 호재!** '{event_coin_name}'의 압도적인 기술 혁신 발표!"
+                if is_kor
+                else f"[{time_str} 🚀🚀] **MEGA PUMP!** Massive good news for '{event_coin_name}'!"
+            )
+        elif event_type == "PUMP":
+            msg = (
+                f"[{time_str} 📈] **호재 발표!** '{event_coin_name}' 실적 호조!"
+                if is_kor
+                else f"[{time_str} 📈] **PUMP!** Positive earnings report for '{event_coin_name}'!"
+            )
+        elif event_type == "DUMP":
+            msg = (
+                f"[{time_str} 📉] **악재 발생!** '{event_coin_name}' 규제 이슈!"
+                if is_kor
+                else f"[{time_str} 📉] **DUMP!** Regulatory issues hit '{event_coin_name}'!"
+            )
+        elif event_type == "SUPER_DUMP":
+            msg = (
+                f"[{time_str} 💀💀] **경악!** '{event_coin_name}' 초대형 폭락 사태 발생!"
+                if is_kor
+                else f"[{time_str} 💀💀] **CRASH!** Devastating price drop for '{event_coin_name}'!"
+            )
     else:
         msg = (
             f"[{time_str} ☀️] 안정적인 장중 시세 흐름이 유지되고 있습니다."
@@ -559,42 +466,115 @@ def update_market(next_day=False):
 
 
 # ==========================================
-# 6. 화면 1: 게임 설정 / 시작 화면
+# 5. 동적 CSS 스타일링 (테마 적용)
+# ==========================================
+theme_choice = st.session_state.theme
+
+if "다크" in theme_choice or "Dark" in theme_choice:
+    bg_color, text_color, card_bg, border_color = (
+        "#121212",
+        "#E0E0E0",
+        "#1E1E1E",
+        "#333333",
+    )
+elif "올블랙" in theme_choice or "Black" in theme_choice:
+    bg_color, text_color, card_bg, border_color = (
+        "#000000",
+        "#FFFFFF",
+        "#111111",
+        "#222222",
+    )
+elif "블루" in theme_choice or "Blue" in theme_choice:
+    bg_color, text_color, card_bg, border_color = (
+        "#0F172A",
+        "#F8FAFC",
+        "#1E293B",
+        "#334155",
+    )
+elif "커스텀" in theme_choice or "Custom" in theme_choice:
+    bg_color = st.session_state.custom_bg
+    text_color = st.session_state.custom_text
+    card_bg = st.session_state.custom_card
+    border_color = "#CCCCCC"
+else:  # 기본값: 라이트 모드
+    bg_color, text_color, card_bg, border_color = (
+        "#FFFFFF",
+        "#212529",
+        "#F8F9FA",
+        "#DEE2E6",
+    )
+
+st.markdown(
+    f"""
+    <style>
+        .stApp {{
+            background-color: {bg_color};
+            color: {text_color};
+        }}
+        .stMarkdown, .stText, h1, h2, h3, h4, h5, h6, label {{
+            color: {text_color} !important;
+        }}
+        div[data-testid="stMetric"] {{
+            background-color: {card_bg};
+            border: 1px solid {border_color};
+            padding: 12px;
+            border-radius: 10px;
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ==========================================
+# 6. 화면 1: 게임 설정 / 시작 화면 (2x2 그리드)
 # ==========================================
 if not st.session_state.game_started:
     st.title(txt["title"])
     st.subheader(txt["setting_header"])
 
-    st.selectbox(txt["lang_select"], ["한국어", "English"], key="language")
+    # 2x2 레이아웃 배치
+    row1_col1, row1_col2 = st.columns(2)
+    with row1_col1:
+        st.selectbox(txt["lang_select"], ["한국어", "English"], key="language")
+    with row1_col2:
+        theme_options = [
+            txt["theme_light"],
+            txt["theme_dark"],
+            txt["theme_black"],
+            txt["theme_blue"],
+            txt["theme_custom"],
+        ]
+        st.selectbox(txt["theme_select"], theme_options, key="theme")
 
-    diff_options = (
-        [txt["diff_easy"], txt["diff_normal"], txt["diff_hard"]]
-        if st.session_state.language == "한국어"
-        else [txt["diff_easy"], txt["diff_normal"], txt["diff_hard"]]
-    )
-    st.selectbox(txt["diff_select"], diff_options, key="difficulty")
+    row2_col1, row2_col2 = st.columns(2)
+    with row2_col1:
+        diff_options = [
+            txt["diff_easy"],
+            txt["diff_normal"],
+            txt["diff_hard"],
+        ]
+        st.selectbox(txt["diff_select"], diff_options, key="difficulty")
+    with row2_col2:
+        st.selectbox(
+            txt["chart_type"],
+            [txt["chart_line"], txt["chart_bar"]],
+            key="chart_type",
+        )
 
-    theme_options = [
-        txt["theme_dark"],
-        txt["theme_light"],
-        txt["theme_black"],
-        txt["theme_blue"],
-        txt["theme_custom"],
-    ]
-    st.selectbox(txt["theme_select"], theme_options, key="theme")
-
-    if st.session_state.theme == txt["theme_custom"]:
-        st.color_picker(txt["custom_bg"], key="custom_bg")
-        st.color_picker(txt["custom_text"], key="custom_text")
-        st.color_picker(txt["custom_card"], key="custom_card")
+    # 커스텀 테마 색상 선택
+    if "커스텀" in st.session_state.theme or "Custom" in st.session_state.theme:
+        st.divider()
+        st.subheader("🎨 커스텀 팔레트 설정")
+        c_col1, c_col2, c_col3 = st.columns(3)
+        with c_col1:
+            st.color_picker(txt["custom_bg"], key="custom_bg")
+        with c_col2:
+            st.color_picker(txt["custom_text"], key="custom_text")
+        with c_col3:
+            st.color_picker(txt["custom_card"], key="custom_card")
 
     st.divider()
     st.subheader(txt["chart_header"])
-    st.selectbox(
-        txt["chart_type"],
-        [txt["chart_line"], txt["chart_bar"]],
-        key="chart_type",
-    )
     col_u, col_d = st.columns(2)
     with col_u:
         st.color_picker(txt["up_color"], key="up_color")
@@ -614,7 +594,7 @@ if not st.session_state.game_started:
 # 7. 화면 2: 메인 트레이딩 게임 화면
 # ==========================================
 else:
-    # 상단 헤더 및 상단 이동/리셋 버튼
+    # 상단 헤더 및 이동/리셋 버튼
     col_title, col_btn1, col_btn2 = st.columns([3, 1, 1])
     with col_title:
         st.title(txt["title"])
@@ -627,7 +607,7 @@ else:
             init_game_session()
             st.rerun()
 
-    # 급상승 / 급락 위젯
+    # 급상승 / 급락 실시간 위젯
     sorted_stocks = sorted(
         st.session_state.coins.items(),
         key=lambda x: x[1]["change"],
@@ -697,7 +677,7 @@ else:
 
         st.divider()
 
-        # 📊 실시간 차트 시각화
+        # 📊 실시간 Plotly 차트 시각화
         st.subheader(txt["chart_title"])
         fig = go.Figure()
 
@@ -734,7 +714,8 @@ else:
         fig.update_layout(
             template=(
                 "plotly_white"
-                if st.session_state.theme in ["라이트 모드", "Light Mode"]
+                if "라이트" in st.session_state.theme
+                or "Light" in st.session_state.theme
                 else "plotly_dark"
             ),
             paper_bgcolor=card_bg,
@@ -762,7 +743,7 @@ else:
 
         st.divider()
 
-        # 장중 시세 조작 버튼
+        # 시세 조작 제어 버튼
         st.subheader(txt["control_header"])
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
@@ -819,16 +800,6 @@ else:
 
         # 매수 / 매도 인터페이스
         st.subheader(txt["trade_header"])
-        if st.session_state.trade_msg:
-            msg_type, msg_text = st.session_state.trade_msg
-            if msg_type == "warning":
-                st.warning(msg_text)
-            elif msg_type == "success":
-                st.success(msg_text)
-            elif msg_type == "error":
-                st.error(msg_text)
-            st.session_state.trade_msg = None
-
         t_col1, t_col2 = st.columns(2)
 
         with t_col1:
