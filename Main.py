@@ -178,13 +178,9 @@ TEXT_PACK = {
         "top_loser": "📉 최고 하락:",
         "tab_exchange": "📊 거래소 (주식/코인)",
         "tab_flex": "🏠 자산 소비 & 플렉스",
-        "tab_mint": "🪙 신규 종목 상장",
         "tab_portfolio": "💼 내 포트폴리오",
         "tab_news": "📰 전체 속보 기록",
-        "category_filter": "카테고리 선택",
-        "all": "전체 보기",
         "select_stock": "종목 선택",
-        "chart_title": "📈 종목 시세 차트",
         "won": "원",
         "next_day": "🌙 다음 날로 ➔ (시세 변동)",
         "day_str": "일차",
@@ -223,13 +219,9 @@ TEXT_PACK = {
         "top_loser": "📉 Top Loser:",
         "tab_exchange": "📊 Exchange",
         "tab_flex": "🏠 Shopping",
-        "tab_mint": "🪙 Mint Asset",
         "tab_portfolio": "💼 Portfolio",
         "tab_news": "📰 News Log",
-        "category_filter": "Category",
-        "all": "All",
         "select_stock": "Select Asset",
-        "chart_title": "📈 Asset Price Chart",
         "won": "KRW",
         "next_day": "🌙 Next Day ➔",
         "day_str": "Day",
@@ -292,7 +284,7 @@ lang = st.session_state.get("language", "한국어")
 txt = TEXT_PACK["한국어"] if lang == "한국어" else TEXT_PACK["English"]
 
 # ==========================================
-# 3. 사이드바 - 상시 설정창 (팔아먹은 설정 복구!)
+# 3. 사이드바 - 상시 설정창
 # ==========================================
 with st.sidebar:
     st.header(txt["setting_header"])
@@ -331,7 +323,10 @@ with st.sidebar:
 
     st.divider()
     if st.button(
-        txt["reset_game"], type="secondary", use_container_width=True
+        txt["reset_game"],
+        key="sidebar_reset_btn",
+        type="secondary",
+        use_container_width=True,
     ):
         init_game_session(selected_diff)
         st.session_state.game_started = True
@@ -508,7 +503,10 @@ if not st.session_state.game_started:
     st.title(txt["title"])
     st.info("👈 왼쪽 사이드바에서 난이도, 테마, 차트 형태를 설정한 후 시작하세요!")
     if st.button(
-        txt["start_game"], type="primary", use_container_width=True
+        txt["start_game"],
+        key="main_start_game_btn",
+        type="primary",
+        use_container_width=True,
     ):
         init_game_session(st.session_state.get("difficulty_select", "보통"))
         st.session_state.game_started = True
@@ -549,12 +547,14 @@ else:
             selected_ticker = st.selectbox(
                 txt["select_stock"],
                 list(st.session_state.coins.keys()),
+                key="exchange_select_ticker",
                 format_func=lambda x: f"{st.session_state.coins[x]['name']} ({x})",
             )
         with c2:
             current_chart_type = st.radio(
                 "📊 실시간 차트 형태 선택",
                 [txt["chart_bar"], txt["chart_line"]],
+                key="exchange_chart_type_radio",
                 horizontal=True,
             )
 
@@ -563,9 +563,6 @@ else:
         up_c = st.session_state.up_color
         down_c = st.session_state.down_color
 
-        # ==========================================
-        # ★ 차트 버그 수정 영역 ★
-        # ==========================================
         fig = go.Figure()
         x_days = [f"{d}일" for d in range(1, len(history) + 1)]
 
@@ -575,14 +572,11 @@ else:
         y_bottom = max(0, min_p - p_margin)
         y_top = max_p + p_margin
 
-        # 1) 막대 그래프 (Bar Chart) - base 파라미터로 진짜 독립된 기둥 막대 표현
         if "막대" in current_chart_type or "Bar" in current_chart_type:
             bar_colors = [
                 up_c if history[i] >= history[max(0, i - 1)] else down_c
                 for i in range(len(history))
             ]
-
-            # 핵심: base를 y_bottom으로 지정하여 0원부터 높이 채우지 않고, 지정 스케일 하단부터 바가 솟도록 설정
             bar_heights = [p - y_bottom for p in history]
 
             fig.add_trace(
@@ -597,8 +591,6 @@ else:
                     customdata=history,
                 )
             )
-
-        # 2) 꺾은선 그래프 (Line Chart)
         else:
             line_c = up_c if history[-1] >= history[0] else down_c
             fig.add_trace(
@@ -624,7 +616,6 @@ else:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # 매수/매도 컨트롤
         st.divider()
         my_data = st.session_state.portfolio.get(
             selected_ticker, {"qty": 0.0, "avg_price": 0.0}
@@ -636,19 +627,26 @@ else:
             st.write(f"현재가: **{coin_data['price']:,.2f} {txt['won']}**")
 
             b_btn1, b_btn2, b_btn3 = st.columns(3)
-            b_btn1.button("+10", on_click=add_buy_qty, args=(10.0,))
+            b_btn1.button(
+                "+10",
+                key="buy_add_10_btn",
+                on_click=add_buy_qty,
+                args=(10.0,),
+            )
             b_btn2.button(
                 "🚀 MAX",
+                key="buy_max_btn",
                 on_click=set_buy_max,
                 args=(coin_data["price"],),
             )
-            b_btn3.button("🔄 리셋", on_click=reset_buy_qty)
+            b_btn3.button("🔄 리셋", key="buy_reset_btn", on_click=reset_buy_qty)
 
             st.number_input(
                 txt["buy_qty"], min_value=0.0, key="buy_qty"
             )
             st.button(
                 txt["btn_buy"],
+                key="buy_execute_btn",
                 type="primary",
                 use_container_width=True,
                 on_click=execute_buy,
@@ -664,15 +662,17 @@ else:
             s_btn1, s_btn2, s_btn3 = st.columns(3)
             s_btn1.button(
                 "+10",
+                key="sell_add_10_btn",
                 on_click=add_sell_qty,
                 args=(10.0, my_data["qty"]),
             )
             s_btn2.button(
                 "🔥 MAX",
+                key="sell_max_btn",
                 on_click=set_sell_max,
                 args=(my_data["qty"],),
             )
-            s_btn3.button("🔄 리셋", on_click=reset_sell_qty)
+            s_btn3.button("🔄 리셋", key="sell_reset_btn", on_click=reset_sell_qty)
 
             st.number_input(
                 txt["sell_qty"],
@@ -682,6 +682,7 @@ else:
             )
             st.button(
                 txt["btn_sell"],
+                key="sell_execute_btn",
                 type="primary",
                 use_container_width=True,
                 on_click=execute_sell,
@@ -690,7 +691,10 @@ else:
 
         st.divider()
         if st.button(
-            txt["next_day"], type="primary", use_container_width=True
+            txt["next_day"],
+            key="next_day_action_btn",
+            type="primary",
+            use_container_width=True,
         ):
             next_day_market()
             st.rerun()
@@ -702,7 +706,7 @@ else:
             with g_cols[idx % 2]:
                 st.markdown(f"**{item['icon']} {item['name']}**")
                 st.write(f"가격: **{item['price']:,.0f}원** | {item['desc']}")
-                if st.button(f"구매하기 ({item['name']})", key=f"buy_{k}"):
+                if st.button(f"구매하기 ({item['name']})", key=f"buy_luxury_{k}"):
                     if st.session_state.cash >= item["price"]:
                         st.session_state.cash -= item["price"]
                         st.session_state.owned_items[k] = (
