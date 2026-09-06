@@ -19,6 +19,12 @@ if "game_started" not in st.session_state:
     st.session_state.game_started = False
 if "opening_done" not in st.session_state:
     st.session_state.opening_done = False
+if "game_over" not in st.session_state:
+    st.session_state.game_over = False
+if "game_cleared" not in st.session_state:
+    st.session_state.game_cleared = False
+if "ending_type" not in st.session_state:
+    st.session_state.ending_type = None
 if "theme" not in st.session_state:
     st.session_state.theme = "라이트 모드 (기본)"
 if "chart_type" not in st.session_state:
@@ -55,47 +61,44 @@ DIFFICULTIES = {
 GAME_MODES = {
     "🌱 캐주얼 모드": {
         "cash": 30000000,
+        "target_asset": 100000000,  # 목표: 1억 원
         "volatility": 0.03,
         "event_prob": 0.10,
-        "desc": "📊 낮은 변동성 | 편안하게 적응하기 좋은 모드",
+        "desc": "📊 낮은 변동성 | 🎯 100일 내 목표 자산: 1억 원",
         "intro_title": "☕ 여유로운 첫걸음, 자산가 가문의 유산",
         "intro_story": """
         은퇴한 월가 트레이더 삼촌이 당신에게 씨앗 돈을 건넸습니다.
         
         "얘야, 시장은 급하게 서두르는 사람의 돈을 느긋한 사람에게 옮기는 곳이란다. 
-        큰 위험 부담 없이 천천히 주식과 코인 시장의 흐름을 익혀보려무나."
-        
-        당신은 편안한 환경에서 차분하게 첫 투자를 시작합니다.
+        100일 동안 천천히 주식과 코인 시장의 흐름을 익혀 1억 원의 자산을 달성해보려무나."
         """,
     },
     "⚔️ 라이벌 경쟁 모드": {
         "cash": 10000000,
+        "target_asset": 1000000000,  # 목표: 10억 원
         "volatility": 0.05,
         "event_prob": 0.25,
-        "desc": "⚔️ AI 트레이더들과 실시간 자산 순위 다툼",
+        "desc": "⚔️ AI 트레이더들과 실시간 순위 다툼 | 🎯 100일 내 목표 자산: 10억 원",
         "intro_title": "🏆 챔피언십 리그: 월가 신진 트레이더 대전",
         "intro_story": """
         전 세계 초대형 AI 트레이더들이 참가하는 글로벌 투자 서바이벌에 초대받았습니다.
         상대는 가치투자의 귀재, 초단타 AI, 혁신 기술 투자자입니다.
         
-        "랭킹 1위를 차지해 실력을 증명하고 글로벌 투자 시장의 왕좌를 차지하십시오!"
-        
-        자산 순위표의 정상에 오르기 위한 치열한 라이벌전이 시작됩니다.
+        "100일 내에 10억 원을 달성하고 랭킹 1위를 차지하여 왕좌에 오르십시오!"
         """,
     },
     "🌪️ 핫불&하락장 (이벤트 모드)": {
         "cash": 5000000,
+        "target_asset": 500000000,  # 목표: 5억 원
         "volatility": 0.09,
         "event_prob": 0.45,
-        "desc": "🚨 금리 변동, 코인 해킹 등 대형 시장 쇼크 빈발",
+        "desc": "🚨 대형 시장 쇼크 빈발 | 🎯 100일 내 목표 자산: 5억 원",
         "intro_title": "🌪️ 대폭락과 대폭등, 혼돈의 금융 시장",
         "intro_story": """
-        글로벌 금리 인상 쇼크와 대형 거래소의 해킹 악재가 소용돌이치는 최악의 경제 위기 상황.
+        글로벌 금리 인상 쇼크와 대형 거래소의 해킹 악재가 소용돌이치는 최악의 위기 상황.
         수많은 투자자들이 손실을 입고 떠나가는 가운데, 당신은 시장에 뛰어듭니다.
         
-        "위기 속에 거대한 기회가 있다. 극심한 변동성을 이겨내고 시장의 전설이 될 수 있을 것인가?"
-        
-        예측 불가능한 폭풍우 속으로 들어갈 준비를 마쳤습니다.
+        "위기 속에 거대한 기회가 있다. 100일 동안 극심한 변동성을 이겨내고 5억 원을 달성하십시오!"
         """,
     },
 }
@@ -175,11 +178,14 @@ def init_game_session():
 
     st.session_state.current_mode = mode_name
     st.session_state.current_difficulty = diff_name
+    st.session_state.target_asset = mode_config["target_asset"]
     st.session_state.cash = final_cash
     st.session_state.initial_cash = final_cash
     st.session_state.volatility = final_volatility
     st.session_state.event_prob = final_event_prob
     st.session_state.day = 1
+    st.session_state.max_days = 100
+    st.session_state.game_over = False
     st.session_state.game_cleared = False
     st.session_state.ending_type = None
 
@@ -211,13 +217,35 @@ def check_achievement(key):
         st.session_state.cash += reward
         st.toast(f"🏆 [{mode_name}] 업적 달성! [{mode_achievements[key]['title']}] (+{reward:,.0f}원 수령)", icon="🎉")
 
-def check_endings(tot_asset):
-    if len(st.session_state.owned_items) >= 10 and not st.session_state.game_cleared:
+def check_game_status(tot_asset):
+    if st.session_state.game_over or st.session_state.game_cleared:
+        return
+
+    min_stock_price = min(coin["price"] for coin in st.session_state.coins.values())
+    
+    # 1. 완전 파산 (보유 자산이 최소 매수 가능 주가 미만)
+    if tot_asset < min_stock_price:
+        st.session_state.game_over = True
+        st.session_state.ending_type = "BANKRUPT"
+        return
+
+    # 2. 사치품 Master 클리어
+    if len(st.session_state.owned_items) >= 10:
         st.session_state.game_cleared = True
         st.session_state.ending_type = "LUXURY_MASTER"
-    elif tot_asset >= 100000000000 and not st.session_state.game_cleared:
+        return
+
+    # 3. 목표 자산 달성 클리어
+    if tot_asset >= st.session_state.target_asset:
         st.session_state.game_cleared = True
-        st.session_state.ending_type = "BILLIONAIRE"
+        st.session_state.ending_type = "GOAL_REACHED"
+        return
+
+    # 4. 기간 만료 (100일 도달했으나 목표 자산 미달)
+    if st.session_state.day >= st.session_state.max_days:
+        st.session_state.game_over = True
+        st.session_state.ending_type = "TIME_OUT"
+        return
 
 def add_buy_qty(val): st.session_state.buy_qty += val
 def set_buy_max(price):
@@ -360,6 +388,7 @@ with st.sidebar:
     if st.session_state.game_started and st.session_state.opening_done:
         st.write(f"🎮 **모드**: {st.session_state.get('current_mode')}")
         st.write(f"🎚️ **난이도**: {st.session_state.get('current_difficulty')}")
+        st.write(f"🎯 **목표 자산**: {st.session_state.get('target_asset', 0):,.0f} 원")
         st.divider()
         st.selectbox("🌐 언어 선택", ["한국어", "English"], key="language")
         st.selectbox("🎨 화면 테마 설정", ["라이트 모드 (기본)", "다크 모드", "올블랙 모드", "블루 모드"], key="theme")
@@ -371,6 +400,8 @@ with st.sidebar:
         if st.button("🔄 게임 초기화 (설정으로)", type="secondary", use_container_width=True):
             st.session_state.game_started = False
             st.session_state.opening_done = False
+            st.session_state.game_over = False
+            st.session_state.game_cleared = False
             st.rerun()
     else:
         st.info("💡 시작 화면에서 설정을 변경할 수 있습니다.")
@@ -417,7 +448,7 @@ elif st.session_state.game_started and not st.session_state.opening_done:
 
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown(f"# {mode_info['intro_title']}")
-    st.caption(f"선택한 난이도: **{diff_name}**")
+    st.caption(f"선택한 난이도: **{diff_name}** | 목표 자산: **{st.session_state.target_asset:,.0f}원** (기한: 100일)")
     st.divider()
 
     st.markdown(
@@ -430,7 +461,7 @@ elif st.session_state.game_started and not st.session_state.opening_done:
     )
 
     st.write("")
-    st.info(f"💰 **난이도가 적용된 초기 투자 자금**: {st.session_state.cash:,.0f} 원")
+    st.info(f"💰 **초기 투자 자금**: {st.session_state.cash:,.0f} 원")
 
     st.divider()
     if st.button("💼 시장에 입장하여 거래 시작하기 ➔", type="primary", use_container_width=True):
@@ -443,24 +474,49 @@ else:
     tot_asset = st.session_state.cash + tot_val
     roi = ((tot_asset - st.session_state.initial_cash) / st.session_state.initial_cash) * 100
     
-    if tot_asset >= 100000000:
-        check_achievement("CASUAL_100M")
-    if tot_asset >= 50000000:
-        check_achievement("EVENT_50M")
+    if tot_asset >= 100000000: check_achievement("CASUAL_100M")
+    if tot_asset >= 50000000: check_achievement("EVENT_50M")
 
-    check_endings(tot_asset)
+    # 게임 상태 평가 (파산, 클리어, 시간 초과)
+    check_game_status(tot_asset)
 
+    # === [결과 처리: 게임 오버 모달 연출] ===
+    if st.session_state.get("game_over", False):
+        st.error("🚨 **GAME OVER - 플레이 종료**")
+        if st.session_state.ending_type == "BANKRUPT":
+            st.subheader("💸 파산 신청서 접수됨")
+            st.write(f"모든 자산을 잃었습니다. (최종 잔액: {tot_asset:,.0f}원)")
+            st.caption("무리한 대형 하락장 감수 또는 악재로 인해 투자금을 모두 소진했습니다.")
+        elif st.session_state.ending_type == "TIME_OUT":
+            st.subheader("⏳ 약정 기간(100일) 종료")
+            st.write(f"최종 자산: **{tot_asset:,.0f}원** (목표 자산: {st.session_state.target_asset:,.0f}원)")
+            st.caption("목표 일수 내에 제시된 목표 자산을 달성하지 못했습니다.")
+
+        st.divider()
+        if st.button("🔄 처음부터 다시 도전하기", type="primary", use_container_width=True):
+            st.session_state.game_started = False
+            st.session_state.opening_done = False
+            st.session_state.game_over = False
+            st.session_state.game_cleared = False
+            st.rerun()
+        st.stop()  # 이하 거래 기능 비활성화
+
+    # === [결과 처리: 클리어 승리 모달 연출] ===
     if st.session_state.get("game_cleared", False):
         st.balloons()
         if st.session_state.ending_type == "LUXURY_MASTER":
             st.success("👑 **[SUCCESS] 자본주의의 신 엔딩 달성!**")
             st.write("축하합니다! 10종의 모든 사치품을 수집하여 시장의 절대 지배자가 되었습니다.")
-        elif st.session_state.ending_type == "BILLIONAIRE":
-            st.success("🏆 **[SUCCESS] 1,000억 빌리어네어 엔딩 달성!**")
-            st.write(f"축하합니다! 총 자산 {tot_asset:,.0f}원에 도달하여 월가 대부호의 반열에 올랐습니다.")
-        if st.button("🔄 새로운 회차 시작하기", type="primary"):
+        elif st.session_state.ending_type == "GOAL_REACHED":
+            st.success("🏆 **[SUCCESS] 최종 목표 자산 달성 성공!**")
+            st.write(f"축하합니다! {st.session_state.day}일 만에 목표 자산 **{st.session_state.target_asset:,.0f}원**을 돌파하셨습니다.")
+        
+        st.write(f"📊 **최종 자산**: {tot_asset:,.0f}원 | **수익률**: {roi:+.2f}%")
+        if st.button("🔄 새로운 회차 시작하기", type="primary", use_container_width=True):
             st.session_state.game_started = False
             st.session_state.opening_done = False
+            st.session_state.game_over = False
+            st.session_state.game_cleared = False
             st.rerun()
         st.divider()
 
@@ -469,7 +525,7 @@ else:
         st.warning(f"🚨 **돌발 이슈 발동**: {st.session_state.current_event['title']} ({st.session_state.current_event['msg']})")
 
     m1, m2, m3, m4, m5 = st.columns(5)
-    m1.metric("진행", f"{st.session_state.day}일차")
+    m1.metric("진행 기한", f"{st.session_state.day} / {st.session_state.max_days} 일차")
     m2.metric("보유 현금", f"{st.session_state.cash:,.0f}원")
     m3.metric("평가 금액", f"{tot_val:,.0f}원")
     m4.metric("총 자산", f"{tot_asset:,.0f}원")
