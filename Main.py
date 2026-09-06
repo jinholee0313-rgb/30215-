@@ -32,77 +32,107 @@ DIFFICULTY_SETTINGS = {
     },
 }
 
-# 💡 종목을 총 10개로 확대 구성
+# 💡 카테고리 > 세부분야(섹터) > 개별 종목 구조 적용
 DEFAULT_COINS = {
-    # 🇰🇷 한국 주식 (4개)
-    "K-SEMI": {
-        "name": "한국반도체 스타플랜트",
+    # 🇰🇷 한국 주식 - [반도체]
+    "K-NEON": {
+        "name": "네온체스트",
         "category": "🇰🇷 한국 주식",
+        "sector": "반도체",
         "price": 78500.0,
         "history": [78500.0],
         "change": 0.0,
     },
-    "K-BIO": {
-        "name": "한신바이오 제노믹스",
+    "K-RAON": {
+        "name": "라온반도체",
         "category": "🇰🇷 한국 주식",
+        "sector": "반도체",
+        "price": 52000.0,
+        "history": [52000.0],
+        "change": 0.0,
+    },
+    # 🇰🇷 한국 주식 - [바이오]
+    "K-BIO": {
+        "name": "한신바이오",
+        "category": "🇰🇷 한국 주식",
+        "sector": "바이오",
         "price": 42000.0,
         "history": [42000.0],
         "change": 0.0,
     },
+    "K-CELL": {
+        "name": "셀리온제약",
+        "category": "🇰🇷 한국 주식",
+        "sector": "바이오",
+        "price": 28500.0,
+        "history": [28500.0],
+        "change": 0.0,
+    },
+    # 🇰🇷 한국 주식 - [2차전지]
     "K-BATTERY": {
         "name": "네오 차세대 배터리",
         "category": "🇰🇷 한국 주식",
+        "sector": "2차전지",
         "price": 125000.0,
         "history": [125000.0],
         "change": 0.0,
     },
-    "K-GAME": {
-        "name": "하이퍼 인터랙티브 게임즈",
-        "category": "🇰🇷 한국 주식",
-        "price": 34500.0,
-        "history": [34500.0],
-        "change": 0.0,
-    },
-    # 🇺🇸 미국 주식 (4개)
+    # 🇺🇸 미국 주식 - [AI / 빅테크]
     "US-AI": {
-        "name": "실리콘밸리 AI솔루션",
+        "name": "실리콘밸리 AI",
         "category": "🇺🇸 미국 주식",
+        "sector": "AI / 빅테크",
         "price": 185000.0,
         "history": [185000.0],
         "change": 0.0,
     },
+    "US-MIND": {
+        "name": "퀀텀마인드",
+        "category": "🇺🇸 미국 주식",
+        "sector": "AI / 빅테크",
+        "price": 210000.0,
+        "history": [210000.0],
+        "change": 0.0,
+    },
+    # 🇺🇸 미국 주식 - [우주/항공]
     "US-SPACE": {
         "name": "네오에어로 스페이스",
         "category": "🇺🇸 미국 주식",
+        "sector": "우주/항공",
         "price": 310000.0,
         "history": [310000.0],
         "change": 0.0,
     },
-    "US-CLOUD": {
-        "name": "오로라 클라우드 컴퓨팅",
+    "US-ORBIT": {
+        "name": "오르빗 탐사선",
         "category": "🇺🇸 미국 주식",
-        "price": 420000.0,
-        "history": [420000.0],
+        "sector": "우주/항공",
+        "price": 95000.0,
+        "history": [95000.0],
         "change": 0.0,
     },
-    "US-EV": {
-        "name": "글로벌 모빌리티 EV",
-        "category": "🇺🇸 미국 주식",
-        "price": 245000.0,
-        "history": [245000.0],
-        "change": 0.0,
-    },
-    # 🪙 가상자산 (2개)
+    # 🪙 가상자산 - [메인넷]
     "CRYPTO-X": {
-        "name": "하이퍼체인 메인넷",
+        "name": "하이퍼체인",
         "category": "🪙 가상자산",
+        "sector": "메인넷",
         "price": 48000000.0,
         "history": [48000000.0],
         "change": 0.0,
     },
-    "CRYPTO-Y": {
-        "name": "디파이 프로토콜 코인",
+    "CRYPTO-ETH": {
+        "name": "에테르 프로토콜",
         "category": "🪙 가상자산",
+        "sector": "메인넷",
+        "price": 3500000.0,
+        "history": [3500000.0],
+        "change": 0.0,
+    },
+    # 🪙 가상자산 - [디파이]
+    "CRYPTO-Y": {
+        "name": "덱스파이 코인",
+        "category": "🪙 가상자산",
+        "sector": "디파이",
         "price": 1250000.0,
         "history": [1250000.0],
         "change": 0.0,
@@ -536,30 +566,43 @@ else:
 
         st.divider()
 
-        # 2. 종목 카테고리 & 종목 선택
-        cat_col, ticker_col = st.columns(2)
-        with cat_col:
+        # 2. 카테고리 & 세부분야(섹터) 2단계 필터
+        c_filter1, c_filter2, c_filter3 = st.columns(3)
+        
+        with c_filter1:
             selected_cat = st.selectbox(
-                "📂 종목 카테고리",
+                "📂 자산 카테고리",
                 ["전체", "🇰🇷 한국 주식", "🇺🇸 미국 주식", "🪙 가상자산"],
                 key="cat_filter",
             )
 
+        # 선택한 카테고리에 맞는 세부분야 목록 추출
         if selected_cat == "전체":
-            filtered_tickers = list(st.session_state.coins.keys())
+            available_sectors = ["전체"] + sorted(list({v.get("sector", "기타") for v in st.session_state.coins.values()}))
         else:
-            filtered_tickers = [
-                k
-                for k, v in st.session_state.coins.items()
-                if v["category"] == selected_cat
-            ]
+            available_sectors = ["전체"] + sorted(list({v.get("sector", "기타") for v in st.session_state.coins.values() if v["category"] == selected_cat}))
 
-        with ticker_col:
+        with c_filter2:
+            selected_sector = st.selectbox(
+                "🏷️ 세부 분야 (섹터)",
+                available_sectors,
+                key="sector_filter",
+            )
+
+        # 필터링된 종목 선택 목록 생성
+        filtered_tickers = []
+        for k, v in st.session_state.coins.items():
+            cat_match = (selected_cat == "전체") or (v["category"] == selected_cat)
+            sector_match = (selected_sector == "전체") or (v.get("sector", "기타") == selected_sector)
+            if cat_match and sector_match:
+                filtered_tickers.append(k)
+
+        with c_filter3:
             selected_ticker = st.selectbox(
                 "📌 종목 선택",
                 filtered_tickers,
                 key="exchange_select_ticker",
-                format_func=lambda x: f"{st.session_state.coins[x]['name']} ({x})",
+                format_func=lambda x: f"[{st.session_state.coins[x].get('sector', '기타')}] {st.session_state.coins[x]['name']} ({x})",
             )
 
         st.divider()
@@ -571,10 +614,12 @@ else:
         history = coin_data["history"]
 
         with c_graph:
-            badge_html = render_badge(coin_data["category"], "#3B82F6")
+            cat_badge = render_badge(coin_data["category"], "#3B82F6")
+            sector_badge = render_badge(coin_data.get("sector", "기타"), "#10B981")
+            
             st.markdown(
                 f"<div style='display: flex; align-items: center; margin-bottom: 10px;'>"
-                f"<h3 style='margin: 0; padding: 0;'>📊 {coin_data['name']} 차트</h3>{badge_html}"
+                f"<h3 style='margin: 0; padding: 0;'>📊 {coin_data['name']} 차트</h3>{cat_badge}{sector_badge}"
                 f"</div>",
                 unsafe_allow_html=True,
             )
@@ -802,6 +847,7 @@ else:
                     {
                         "티커": t,
                         "종목명": st.session_state.coins[t]["name"],
+                        "세부분야": st.session_state.coins[t].get("sector", "기타"),
                         "보유 수량": d["qty"],
                         "평단가": f"{d['avg_price']:,.2f}원",
                         "현재가": f"{cp:,.2f}원",
@@ -819,12 +865,13 @@ else:
         with m_col1:
             new_ticker = st.text_input("티커 (예: NEW-COIN)", key="mint_ticker_input")
             new_name = st.text_input("종목명", key="mint_name_input")
+            new_sector = st.text_input("세부분야 (예: 반도체, AI)", value="일반", key="mint_sector_input")
         with m_col2:
             new_price = st.number_input(
                 "상장 가격(원)", value=10000.0, key="mint_price_input"
             )
             new_cat = st.selectbox(
-                "카테고리",
+                "자산 카테고리",
                 ["🇰🇷 한국 주식", "🇺🇸 미국 주식", "🪙 가상자산"],
                 key="mint_cat_input",
             )
@@ -834,6 +881,7 @@ else:
                 st.session_state.coins[new_ticker] = {
                     "name": new_name,
                     "category": new_cat,
+                    "sector": new_sector if new_sector else "일반",
                     "price": float(new_price),
                     "history": [float(new_price)],
                     "change": 0.0,
