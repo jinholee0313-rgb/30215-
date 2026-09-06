@@ -13,7 +13,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# 난이도 옵션 설정
 DIFFICULTY_SETTINGS = {
     "쉬움": {
         "cash": 10000000,
@@ -35,7 +34,6 @@ DIFFICULTY_SETTINGS = {
     },
 }
 
-# 현실적인 카테고리 + 실제 기업 같은 가상 종목 라인업
 DEFAULT_COINS = {
     "K-SEMI": {
         "name": "한국반도체 스타플랜트",
@@ -120,7 +118,6 @@ TEXT_PACK = {
         "title": "📈 글로벌 모의 주식 & 가상자산 트레이딩 시뮬레이터",
         "setting_header": "🎮 게임 초기 설정",
         "diff_select": "난이도 선택",
-        "diff_info_title": "ℹ️ 선택한 난이도 정보",
         "lang_select": "언어 선택 (Language)",
         "theme_select": "화면 테마 설정",
         "theme_light": "라이트 모드 (기본)",
@@ -128,9 +125,6 @@ TEXT_PACK = {
         "theme_black": "올블랙 모드",
         "theme_blue": "블루 모드",
         "theme_custom": "커스텀 색상",
-        "custom_bg": "배경색",
-        "custom_text": "글자색",
-        "custom_card": "카드/테이블 배경색",
         "chart_header": "🎨 차트 커스텀 설정",
         "chart_type": "차트 형태 선택",
         "chart_line": "꺾은선 그래프 (Line)",
@@ -145,24 +139,19 @@ TEXT_PACK = {
         "tab_mint": "🪙 신규 종목 상장 (민팅)",
         "tab_portfolio": "💼 내 포트폴리오",
         "tab_news": "📰 전체 속보 기록",
-        "filter_header": "🔍 종목 검색 및 필터",
         "category_filter": "카테고리 선택",
         "all": "전체 보기",
         "select_stock": "종목 선택",
         "chart_title": "📈 실시간 시세 차트 & 속보",
         "news_box_title": "📰 관련 종목 속보",
-        "turn": "회차 (턴)",
-        "price": "가격 (원)",
         "won": "원",
-        "control_header": "⏱️ 시간 흐름 제어",
         "next_day": "🌙 다음 날로 ➔ (시세 변동)",
-        "asset_header": "💰 자산 현황 요약",
         "progress": "진행 상황",
         "day_str": "일차",
         "cash": "보유 현금",
         "portfolio_val": "총 평가 금액",
         "total_assets": "총 자산",
-        "roi": "총 수익률",
+        "roi": "전체 수익률",
         "trade_header": "🛒 매수 및 매도",
         "buy_header": "🟢 매수 (Buy)",
         "sell_header": "🔴 매도 (Sell)",
@@ -173,6 +162,9 @@ TEXT_PACK = {
         "btn_buy": "🟢 매수하기",
         "btn_sell": "🔴 매도하기",
         "my_qty": "보유 수량",
+        "avg_price": "매수 평단가",
+        "stock_val": "평가 금액",
+        "stock_roi": "종목 수익률",
         "unit": "주/개",
         "mint_header": "✨ 신규 종목 상장 신청",
         "stock_name": "종목명",
@@ -188,8 +180,10 @@ TEXT_PACK = {
         "col_name": "종목명",
         "col_category": "카테고리",
         "col_qty": "보유 수량",
+        "col_avg": "평단가",
         "col_price": "현재가",
         "col_val": "평가 금액",
+        "col_roi": "수익률",
         "no_port": "보유 중인 주식/코인이 없습니다.",
         "all_news_header": "📰 전체 속보 및 뉴스 기록",
     },
@@ -197,7 +191,6 @@ TEXT_PACK = {
         "title": "📈 Global Stock & Crypto Trading Simulator",
         "setting_header": "🎮 Initial Game Settings",
         "diff_select": "Select Difficulty",
-        "diff_info_title": "ℹ️ Difficulty Details",
         "lang_select": "Select Language",
         "theme_select": "Theme Settings",
         "theme_light": "Light Mode (Default)",
@@ -205,9 +198,6 @@ TEXT_PACK = {
         "theme_black": "All-Black Mode",
         "theme_blue": "Blue Mode",
         "theme_custom": "Custom Theme",
-        "custom_bg": "Background Color",
-        "custom_text": "Text Color",
-        "custom_card": "Card Background",
         "chart_header": "🎨 Chart Customization",
         "chart_type": "Select Chart Type",
         "chart_line": "Line Chart",
@@ -222,18 +212,13 @@ TEXT_PACK = {
         "tab_mint": "🪙 Mint New Stock",
         "tab_portfolio": "💼 My Portfolio",
         "tab_news": "📰 All News Logs",
-        "filter_header": "🔍 Search & Filter",
         "category_filter": "Category",
         "all": "All",
         "select_stock": "Select Asset",
         "chart_title": "📈 Real-Time Chart & News",
         "news_box_title": "📰 Asset Breaking News",
-        "turn": "Turn",
-        "price": "Price (KRW)",
         "won": "KRW",
-        "control_header": "⏱️ Time Control",
         "next_day": "🌙 Next Day ➔ (Update Market)",
-        "asset_header": "💰 Asset Summary",
         "progress": "Progress",
         "day_str": "Day",
         "cash": "Available Cash",
@@ -250,6 +235,9 @@ TEXT_PACK = {
         "btn_buy": "🟢 Execute Buy",
         "btn_sell": "🔴 Execute Sell",
         "my_qty": "Owned Quantity",
+        "avg_price": "Avg Buy Price",
+        "stock_val": "Asset Value",
+        "stock_roi": "Asset ROI",
         "unit": "Units",
         "mint_header": "✨ Listing Request",
         "stock_name": "Asset Name",
@@ -265,8 +253,10 @@ TEXT_PACK = {
         "col_name": "Name",
         "col_category": "Category",
         "col_qty": "Quantity",
+        "col_avg": "Avg Price",
         "col_price": "Current Price",
         "col_val": "Total Value",
+        "col_roi": "ROI",
         "no_port": "You do not own any assets yet.",
         "all_news_header": "📰 Global Breaking News Logs",
     },
@@ -308,7 +298,11 @@ def init_game_session(selected_diff="보통"):
     st.session_state.volatility = diff_config["volatility"]
     st.session_state.day = 1
     st.session_state.coins = pd.Series(DEFAULT_COINS).to_dict()
-    st.session_state.portfolio = {ticker: 0.0 for ticker in DEFAULT_COINS}
+
+    # 포트폴리오 수량 및 평단가 저장 구조 개편
+    st.session_state.portfolio = {
+        ticker: {"qty": 0.0, "avg_price": 0.0} for ticker in DEFAULT_COINS
+    }
     st.session_state.news_log = []
     st.session_state.buy_qty = 0.0
     st.session_state.sell_qty = 0.0
@@ -382,10 +376,23 @@ def execute_buy(ticker):
         show_trade_dialog("보유 현금이 부족합니다!", "error")
         return
 
-    st.session_state.cash -= total_cost
-    st.session_state.portfolio[ticker] = (
-        st.session_state.portfolio.get(ticker, 0.0) + qty
+    # 매수 평단가 자동 계산 로직
+    curr_data = st.session_state.portfolio.get(
+        ticker, {"qty": 0.0, "avg_price": 0.0}
     )
+    curr_qty = curr_data["qty"]
+    curr_avg = curr_data["avg_price"]
+
+    new_qty = curr_qty + qty
+    new_avg = (
+        ((curr_qty * curr_avg) + total_cost) / new_qty if new_qty > 0 else 0.0
+    )
+
+    st.session_state.cash -= total_cost
+    st.session_state.portfolio[ticker] = {
+        "qty": new_qty,
+        "avg_price": new_avg,
+    }
     st.session_state.buy_qty = 0.0
     show_trade_dialog(
         f"🟢 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매수 완료!",
@@ -397,7 +404,11 @@ def execute_sell(ticker):
     qty = st.session_state.sell_qty
     price = st.session_state.coins[ticker]["price"]
     total_revenue = qty * price
-    my_qty = st.session_state.portfolio.get(ticker, 0.0)
+
+    curr_data = st.session_state.portfolio.get(
+        ticker, {"qty": 0.0, "avg_price": 0.0}
+    )
+    my_qty = curr_data["qty"]
 
     if qty <= 0:
         show_trade_dialog("매도할 수량을 입력해주세요.", "warning")
@@ -407,8 +418,14 @@ def execute_sell(ticker):
         show_trade_dialog("보유한 수량보다 많이 매도할 수 없습니다!", "error")
         return
 
+    new_qty = my_qty - qty
     st.session_state.cash += total_revenue
-    st.session_state.portfolio[ticker] -= qty
+
+    if new_qty <= 0:
+        st.session_state.portfolio[ticker] = {"qty": 0.0, "avg_price": 0.0}
+    else:
+        st.session_state.portfolio[ticker]["qty"] = new_qty
+
     st.session_state.sell_qty = 0.0
     show_trade_dialog(
         f"🔴 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료!",
@@ -421,7 +438,6 @@ def next_day_market():
     volatility = st.session_state.volatility
     time_str = f"Day {st.session_state.day}"
 
-    # 1) 주가 개별 업데이트
     ticker_changes = {}
     for ticker, data in st.session_state.coins.items():
         change_rate = random.uniform(-volatility, volatility)
@@ -438,7 +454,6 @@ def next_day_market():
         data["history"].append(new_price)
         ticker_changes[ticker] = change_rate
 
-    # 2) 개편된 뉴스 발생 로직 (70% 확률로 발생, 발생 시 2개 이상 종목에 동시 발생)
     has_news_today = random.random() < 0.7
 
     if has_news_today:
@@ -536,14 +551,6 @@ st.markdown(
             border: 1px solid {border_color};
             padding: 12px;
             border-radius: 10px;
-        }}
-        .news-card {{
-            background-color: {card_bg};
-            border: 1px solid {border_color};
-            border-radius: 10px;
-            padding: 14px;
-            height: 250px;
-            overflow-y: auto;
         }}
     </style>
     """,
@@ -693,7 +700,20 @@ else:
             )
 
         coin_data = st.session_state.coins[selected_ticker]
-        my_qty = st.session_state.portfolio.get(selected_ticker, 0.0)
+        my_asset_data = st.session_state.portfolio.get(
+            selected_ticker, {"qty": 0.0, "avg_price": 0.0}
+        )
+        my_qty = my_asset_data["qty"]
+        my_avg = my_asset_data["avg_price"]
+
+        # 개별 종목 수익률 계산
+        stock_val = my_qty * coin_data["price"]
+        stock_cost = my_qty * my_avg
+        stock_roi = (
+            ((stock_val - stock_cost) / stock_cost * 100)
+            if stock_cost > 0
+            else 0.0
+        )
 
         st.divider()
 
@@ -706,6 +726,7 @@ else:
             up_c = st.session_state.up_color
             down_c = st.session_state.down_color
 
+            # 차트 변동 색상 판정 로직 보완 (전일 대비 변동으로 색상 부여)
             if st.session_state.chart_type in [
                 "막대 그래프 (Bar)",
                 "Bar Chart",
@@ -722,7 +743,11 @@ else:
                     )
                 )
             else:
-                line_color = up_c if history[-1] >= history[0] else down_c
+                line_color = (
+                    up_c
+                    if len(history) > 1 and history[-1] >= history[-2]
+                    else down_c
+                )
                 fig.add_trace(
                     go.Scatter(
                         y=history,
@@ -765,6 +790,15 @@ else:
 
         st.divider()
 
+        # 선택 종목에 대한 보유 현황 실시간 요약
+        p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+        p_col1.metric(txt["my_qty"], f"{my_qty:,.2f} {txt['unit']}")
+        p_col2.metric(txt["avg_price"], f"{my_avg:,.2f} {txt['won']}")
+        p_col3.metric(txt["stock_val"], f"{stock_val:,.0f} {txt['won']}")
+        p_col4.metric(txt["stock_roi"], f"{stock_roi:+.2f} %")
+
+        st.divider()
+
         c_btn1, c_btn2 = st.columns(2)
         with c_btn1:
             if st.button(
@@ -789,7 +823,7 @@ else:
         initial_start_cash = st.session_state.get("initial_cash", 5000000.0)
 
         total_coin_val = sum(
-            st.session_state.portfolio.get(t, 0)
+            st.session_state.portfolio.get(t, {"qty": 0.0})["qty"]
             * st.session_state.coins[t]["price"]
             for t in st.session_state.coins
         )
@@ -933,16 +967,25 @@ else:
                         "history": [float(start_price)],
                         "change": 0.0,
                     }
-                    st.session_state.portfolio[new_ticker] = 0.0
+                    st.session_state.portfolio[new_ticker] = {
+                        "qty": 0.0,
+                        "avg_price": 0.0,
+                    }
                     st.success(f"🎉 {txt['mint_success']}")
                     st.rerun()
 
     with tab3:
         st.subheader(txt["port_header"])
         portfolio_data = []
-        for ticker, qty in st.session_state.portfolio.items():
+        for ticker, data in st.session_state.portfolio.items():
+            qty = data["qty"]
+            avg_p = data["avg_price"]
             if qty > 0:
                 current_p = st.session_state.coins[ticker]["price"]
+                val = qty * current_p
+                cost = qty * avg_p
+                item_roi = ((val - cost) / cost * 100) if cost > 0 else 0.0
+
                 portfolio_data.append(
                     {
                         txt["col_ticker"]: ticker,
@@ -953,8 +996,10 @@ else:
                             "category"
                         ],
                         txt["col_qty"]: f"{qty:,.2f} {txt['unit']}",
+                        txt["col_avg"]: f"{avg_p:,.2f} {txt['won']}",
                         txt["col_price"]: f"{current_p:,.2f} {txt['won']}",
-                        txt["col_val"]: f"{(qty * current_p):,.0f} {txt['won']}",
+                        txt["col_val"]: f"{val:,.0f} {txt['won']}",
+                        txt["col_roi"]: f"{item_roi:+.2f}%",
                     }
                 )
 
