@@ -32,7 +32,6 @@ DIFFICULTY_SETTINGS = {
     },
 }
 
-# 💡 세부분야(섹터) 10개 구성 및 분야별 다중 종목 배치
 DEFAULT_COINS = {
     # 🇰🇷 [1] 한국 주식 - 반도체
     "K-NEON": {
@@ -465,40 +464,52 @@ def next_day_market():
 
 
 # ==========================================
-# 5. 테마 CSS / 뱃지 헬퍼
+# 5. 테마 연동 동적 CSS (사이드바 & 버튼 정밀 제어)
 # ==========================================
 active_theme = st.session_state.get(
     "sb_theme", st.session_state.get("theme", "라이트 모드 (기본)")
 )
 
 if "다크" in active_theme:
-    bg_color, text_color, card_bg, border_color = (
-        "#121212",
-        "#E0E0E0",
-        "#1E1E1E",
-        "#333333",
-    )
+    bg_color = "#121212"
+    sidebar_bg = "#1A1A1A"
+    text_color = "#E0E0E0"
+    card_bg = "#242424"
+    border_color = "#3A3A3A"
+    btn_primary_bg = "#2563EB"
+    btn_primary_text = "#FFFFFF"
+    btn_sec_bg = "#2D2D2D"
+    btn_sec_text = "#E0E0E0"
 elif "올블랙" in active_theme:
-    bg_color, text_color, card_bg, border_color = (
-        "#000000",
-        "#FFFFFF",
-        "#111111",
-        "#222222",
-    )
+    bg_color = "#000000"
+    sidebar_bg = "#0B0B0B"
+    text_color = "#FFFFFF"
+    card_bg = "#121212"
+    border_color = "#282828"
+    btn_primary_bg = "#333333"
+    btn_primary_text = "#FFFFFF"
+    btn_sec_bg = "#1A1A1A"
+    btn_sec_text = "#CCCCCC"
 elif "블루" in active_theme:
-    bg_color, text_color, card_bg, border_color = (
-        "#0F172A",
-        "#F8FAFC",
-        "#1E293B",
-        "#334155",
-    )
-else:
-    bg_color, text_color, card_bg, border_color = (
-        "#F8F9FA",
-        "#212529",
-        "#FFFFFF",
-        "#E9ECEF",
-    )
+    bg_color = "#0F172A"
+    sidebar_bg = "#1E293B"
+    text_color = "#F8FAFC"
+    card_bg = "#334155"
+    border_color = "#475569"
+    btn_primary_bg = "#0EA5E9"
+    btn_primary_text = "#FFFFFF"
+    btn_sec_bg = "#1E293B"
+    btn_sec_text = "#F8FAFC"
+else:  # 라이트 모드
+    bg_color = "#F8F9FA"
+    sidebar_bg = "#FFFFFF"
+    text_color = "#212529"
+    card_bg = "#FFFFFF"
+    border_color = "#E9ECEF"
+    btn_primary_bg = "#228BE6"
+    btn_primary_text = "#FFFFFF"
+    btn_sec_bg = "#F1F3F5"
+    btn_sec_text = "#212529"
 
 def render_badge(text, bg_c="#E03131", text_c="#FFFFFF"):
     return f'<span style="background-color: {bg_c}; color: {text_c}; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-left: 6px; display: inline-block; vertical-align: middle; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">{text}</span>'
@@ -506,15 +517,31 @@ def render_badge(text, bg_c="#E03131", text_c="#FFFFFF"):
 st.markdown(
     f"""
     <style>
+        /* 메인 배경 및 글자색 */
         .stApp {{
             background-color: {bg_color};
             color: {text_color};
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
         }}
+        
+        /* 💡 사이드바(설정창) 배경 및 경계선 동기화 */
+        section[data-testid="stSidebar"] {{
+            background-color: {sidebar_bg} !important;
+            border-right: 1px solid {border_color} !important;
+        }}
+        section[data-testid="stSidebar"] .stMarkdown, 
+        section[data-testid="stSidebar"] h1, 
+        section[data-testid="stSidebar"] h2, 
+        section[data-testid="stSidebar"] h3, 
+        section[data-testid="stSidebar"] label {{
+            color: {text_color} !important;
+        }}
+        
         .stMarkdown, .stText, h1, h2, h3, h4, label {{
             color: {text_color} !important;
         }}
         
+        /* 메트릭 카드 테마 */
         div[data-testid="stMetric"] {{
             background-color: {card_bg};
             border: 1px solid {border_color};
@@ -528,25 +555,41 @@ st.markdown(
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         }}
         
+        /* 💡 버튼 스타일 세부 조정 (Primary / Secondary) */
         div.stButton > button {{
             border-radius: 12px !important;
             font-weight: 600 !important;
-            border: none !important;
+            border: 1px solid {border_color} !important;
             transition: all 0.2s ease !important;
+        }}
+        div.stButton > button[kind="primary"] {{
+            background-color: {btn_primary_bg} !important;
+            color: {btn_primary_text} !important;
+            border: none !important;
+        }}
+        div.stButton > button[kind="secondary"] {{
+            background-color: {btn_sec_bg} !important;
+            color: {btn_sec_text} !important;
         }}
         div.stButton > button:hover {{
             transform: scale(1.02);
-            opacity: 0.95;
+            opacity: 0.9;
         }}
         
-        div[data-baseweb="input"] {{
+        /* 💡 입력창 및 선택 박스 배경/테두리 스타일 맞춤 */
+        div[data-baseweb="input"], div[data-baseweb="select"] > div {{
+            background-color: {card_bg} !important;
+            border-color: {border_color} !important;
+            color: {text_color} !important;
             border-radius: 12px !important;
         }}
         
+        /* 탭 스타일 */
         button[data-baseweb="tab"] {{
             font-size: 16px !important;
             font-weight: 700 !important;
             padding: 10px 18px !important;
+            color: {text_color} !important;
         }}
     </style>
     """,
@@ -957,7 +1000,7 @@ else:
                 key="mint_cat_input",
             )
 
-        if st.button("🚀 거래소에 신규 상장하기", key="mint_submit_btn"):
+        if st.button("🚀 거래소에 신규 상장하기", key="mint_submit_btn", type="primary"):
             if new_ticker and new_name and new_ticker not in st.session_state.coins:
                 st.session_state.coins[new_ticker] = {
                     "name": new_name,
