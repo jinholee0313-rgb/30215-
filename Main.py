@@ -847,10 +847,20 @@ else:
 
                 st.divider()
 
-                st.subheader(txt["chart_title"])
+                # 실시간 차트 형태 선택 토글 추가
+                c_title_col, c_type_col = st.columns([2, 1])
+                with c_title_col:
+                    st.subheader(txt["chart_title"])
+                with c_type_col:
+                    current_chart_type = st.radio(
+                        "📊 차트 타입",
+                        [txt["chart_line"], txt["chart_bar"]],
+                        horizontal=True,
+                        key="active_chart_type",
+                    )
+
                 col_chart, col_news = st.columns([1.3, 1])
 
-                # [수정] 차트 틀(Window)은 계속 출력하되, 1일차에는 그리지 않고 2일차부터 막대/선 표시
                 with col_chart:
                     history = coin_data["history"]
                     up_c = st.session_state.up_color
@@ -858,48 +868,57 @@ else:
 
                     fig = go.Figure()
 
-                    # 데이터 기록이 2개 이상(2일차 이후)일 때만 그래프 트레이스 추가
                     if len(history) > 1:
-                        if st.session_state.chart_type in [
-                            "막대 그래프 (Bar)",
-                            "Bar Chart",
-                        ]:
+                        x_days = [f"{d}일차" for d in range(1, len(history) + 1)]
+                        min_p = min(history)
+                        max_p = max(history)
+                        p_diff = (max_p - min_p) if max_p != min_p else min_p * 0.05
+                        
+                        # Y축 스케일을 가격 변동 범위에 맞게 조절
+                        y_min = max(0, min_p - p_diff * 0.2)
+                        y_max = max_p + p_diff * 0.2
+
+                        # 1) 막대 그래프일 때 (기둥 높낮이 및 양봉/음봉 색상 구분)
+                        if "막대" in current_chart_type or "Bar" in current_chart_type:
                             bar_colors = [
                                 up_c if history[i] >= history[i - 1] else down_c
                                 for i in range(1, len(history))
                             ]
+                            # 첫 날 색상 설정
+                            bar_colors.insert(0, up_c)
+
                             fig.add_trace(
                                 go.Bar(
-                                    x=list(range(2, len(history) + 1)),
-                                    y=history[1:],
+                                    x=x_days,
+                                    y=history,
                                     name=selected_ticker,
                                     marker_color=bar_colors,
+                                    width=0.4,
                                 )
                             )
+                            fig.update_layout(yaxis=dict(range=[y_min, y_max]))
+
+                        # 2) 꺾은선 그래프일 때 (연속 추세선과 마커 구분)
                         else:
-                            for i in range(1, len(history)):
-                                seg_color = (
-                                    up_c
-                                    if history[i] >= history[i - 1]
-                                    else down_c
+                            line_color = up_c if history[-1] >= history[0] else down_c
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=x_days,
+                                    y=history,
+                                    mode="lines+markers",
+                                    line=dict(color=line_color, width=3),
+                                    marker=dict(size=7, color=line_color),
+                                    name=selected_ticker,
                                 )
-                                fig.add_trace(
-                                    go.Scatter(
-                                        x=[i - 1, i],
-                                        y=[history[i - 1], history[i]],
-                                        mode="lines+markers",
-                                        line=dict(color=seg_color, width=3),
-                                        marker=dict(color=seg_color, size=6),
-                                        showlegend=False,
-                                    )
-                                )
+                            )
+                            fig.update_layout(yaxis=dict(range=[y_min, y_max]))
 
                     fig.update_layout(
                         paper_bgcolor=card_bg,
                         plot_bgcolor=card_bg,
                         font=dict(color=text_color),
                         margin=dict(l=10, r=10, t=10, b=10),
-                        height=250,
+                        height=260,
                         xaxis=dict(gridcolor=border_color),
                         yaxis=dict(gridcolor=border_color),
                     )
@@ -959,7 +978,6 @@ else:
                 )
                 p_col4.metric(txt["stock_roi"], roi_display)
 
-                # 매수/매도 섹션 바로 위 컨트롤 버튼 위치 유지
                 st.divider()
                 c_btn1, c_btn2 = st.columns(2)
                 with c_btn1:
