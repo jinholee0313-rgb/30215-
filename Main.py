@@ -114,25 +114,13 @@ BEAR_NEWS = [
 # ==========================================
 # 2. 세션 상태 (Session State) 초기화
 # ==========================================
-if "language" not in st.session_state:
-    st.session_state.language = "한국어"
-if "theme" not in st.session_state:
-    st.session_state.theme = "라이트 모드 (기본)"
-if "chart_type" not in st.session_state:
-    st.session_state.chart_type = "막대 그래프 (Bar)"
-if "difficulty" not in st.session_state:
-    st.session_state.difficulty = "보통"
-if "up_color" not in st.session_state:
-    st.session_state.up_color = "#E03131"
-if "down_color" not in st.session_state:
-    st.session_state.down_color = "#1971C2"
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
 
 
 def init_game_session():
     diff_config = DIFFICULTY_SETTINGS.get(
-        st.session_state.difficulty, DIFFICULTY_SETTINGS["보통"]
+        st.session_state.get("difficulty", "보통"), DIFFICULTY_SETTINGS["보통"]
     )
     st.session_state.initial_cash = float(diff_config["cash"])
     st.session_state.cash = float(diff_config["cash"])
@@ -146,6 +134,13 @@ def init_game_session():
     st.session_state.news_log = []
     st.session_state.buy_qty = 0.0
     st.session_state.sell_qty = 0.0
+
+    # 초기 화면에서 선택한 설정을 사이드바 위젯 Key로 인계
+    st.session_state.sb_language = st.session_state.get("language", "한국어")
+    st.session_state.sb_theme = st.session_state.get("theme", "라이트 모드 (기본)")
+    st.session_state.sb_chart_type = st.session_state.get("chart_type", "막대 그래프 (Bar)")
+    st.session_state.sb_up_color = st.session_state.get("up_color", "#E03131")
+    st.session_state.sb_down_color = st.session_state.get("down_color", "#1971C2")
 
 
 # ==========================================
@@ -301,10 +296,8 @@ def next_day_market():
 # ==========================================
 # 5. 테마 CSS 설정
 # ==========================================
-active_theme = (
-    st.session_state.sb_theme
-    if st.session_state.game_started and "sb_theme" in st.session_state
-    else st.session_state.theme
+active_theme = st.session_state.get(
+    "sb_theme", st.session_state.get("theme", "라이트 모드 (기본)")
 )
 
 if "다크" in active_theme:
@@ -391,12 +384,12 @@ if not st.session_state.game_started:
 
     col_color1, col_color2 = st.columns(2)
     with col_color1:
-        st.color_picker("🔴 상승 색상", key="up_color")
+        st.color_picker("🔴 상승 색상", value="#E03131", key="up_color")
     with col_color2:
-        st.color_picker("🔵 하락 색상", key="down_color")
+        st.color_picker("🔵 하락 색상", value="#1971C2", key="down_color")
 
-    diff_info = DIFFICULTY_SETTINGS[st.session_state.difficulty]
-    st.info(f"**[{st.session_state.difficulty} 모드 선택됨]** — {diff_info['desc']}")
+    diff_info = DIFFICULTY_SETTINGS[st.session_state.get("difficulty", "보통")]
+    st.info(f"**[{st.session_state.get('difficulty', '보통')} 모드 선택됨]** — {diff_info['desc']}")
 
     st.divider()
     if st.button(
@@ -413,15 +406,9 @@ if not st.session_state.game_started:
 else:
     st.title("📈 트레이딩 대시보드")
 
-    active_chart_type = st.session_state.get(
-        "sb_chart_type", st.session_state.chart_type
-    )
-    active_up_color = st.session_state.get(
-        "sb_up_color", st.session_state.up_color
-    )
-    active_down_color = st.session_state.get(
-        "sb_down_color", st.session_state.down_color
-    )
+    active_chart_type = st.session_state.get("sb_chart_type", "막대 그래프 (Bar)")
+    active_up_color = st.session_state.get("sb_up_color", "#E03131")
+    active_down_color = st.session_state.get("sb_down_color", "#1971C2")
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
         [
@@ -434,9 +421,7 @@ else:
     )
 
     with tab1:
-        # ----------------------------------------------------
-        # 1. 인기 항목 (상단 배치)
-        # ----------------------------------------------------
+        # 1. 인기 항목
         sorted_stocks = sorted(
             st.session_state.coins.items(),
             key=lambda x: x[1]["change"],
@@ -455,9 +440,7 @@ else:
 
         st.divider()
 
-        # ----------------------------------------------------
         # 2. 종목 카테고리 & 종목 선택
-        # ----------------------------------------------------
         cat_col, ticker_col = st.columns(2)
         with cat_col:
             selected_cat = st.selectbox(
@@ -485,9 +468,7 @@ else:
 
         st.divider()
 
-        # ----------------------------------------------------
-        # 3. 그래프 & 뉴스 (좌우 분할 배치)
-        # ----------------------------------------------------
+        # 3. 그래프 & 뉴스
         c_graph, c_news = st.columns([2, 1])
 
         coin_data = st.session_state.coins[selected_ticker]
@@ -590,9 +571,7 @@ else:
 
         st.divider()
 
-        # ----------------------------------------------------
         # 4. 보유 자산 수익률
-        # ----------------------------------------------------
         tot_val = sum(
             st.session_state.portfolio[t]["qty"]
             * st.session_state.coins[t]["price"]
@@ -612,9 +591,7 @@ else:
 
         st.divider()
 
-        # ----------------------------------------------------
         # 5. 다음 날로 가기
-        # ----------------------------------------------------
         if st.button(
             "🌙 다음 날로 가기 ➔ (시세 변동 반영)",
             key="next_day_action_btn",
@@ -626,9 +603,7 @@ else:
 
         st.divider()
 
-        # ----------------------------------------------------
-        # 6. 매수 / 매도 (+1, +10, +50, +100, 올인, 0으로 돌아가기 버튼 포함)
-        # ----------------------------------------------------
+        # 6. 매수 / 매도
         my_data = st.session_state.portfolio.get(
             selected_ticker, {"qty": 0.0, "avg_price": 0.0}
         )
@@ -638,7 +613,6 @@ else:
             st.markdown("### 🟢 매수")
             st.write(f"현재가: **{coin_data['price']:,.2f} 원**")
 
-            # 수량 조절 버튼 (+1, +10, +50 / +100, 올인, 0으로)
             b_row1_1, b_row1_2, b_row1_3 = st.columns(3)
             b_row1_1.button("+1", key="buy_add_1", on_click=add_buy_qty, args=(1.0,))
             b_row1_2.button("+10", key="buy_add_10", on_click=add_buy_qty, args=(10.0,))
@@ -665,7 +639,6 @@ else:
             st.markdown("### 🔴 매도")
             st.write(f"보유 수량: **{my_data['qty']:,.2f} 주/개**")
 
-            # 수량 조절 버튼 (+1, +10, +50 / +100, 올인, 0으로)
             s_row1_1, s_row1_2, s_row1_3 = st.columns(3)
             s_row1_1.button("+1", key="sell_add_1", on_click=add_sell_qty, args=(1.0, my_data["qty"]))
             s_row1_2.button("+10", key="sell_add_10", on_click=add_sell_qty, args=(10.0, my_data["qty"]))
