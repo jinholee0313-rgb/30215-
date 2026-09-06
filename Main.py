@@ -850,17 +850,16 @@ else:
                 st.subheader(txt["chart_title"])
                 col_chart, col_news = st.columns([1.3, 1])
 
-                # [수정] 1일차에는 차트를 표시하지 않고 2일차 시세 변동 후부터 생성
+                # [수정] 차트 틀(Window)은 계속 출력하되, 1일차에는 그리지 않고 2일차부터 막대/선 표시
                 with col_chart:
                     history = coin_data["history"]
                     up_c = st.session_state.up_color
                     down_c = st.session_state.down_color
 
-                    if len(history) <= 1:
-                        st.info("🌙 아래의 '다음 날로 ➔' 버튼을 눌러 시세 변동이 시작되면 차트가 표시됩니다.")
-                    else:
-                        fig = go.Figure()
+                    fig = go.Figure()
 
+                    # 데이터 기록이 2개 이상(2일차 이후)일 때만 그래프 트레이스 추가
+                    if len(history) > 1:
                         if st.session_state.chart_type in [
                             "막대 그래프 (Bar)",
                             "Bar Chart",
@@ -895,16 +894,16 @@ else:
                                     )
                                 )
 
-                        fig.update_layout(
-                            paper_bgcolor=card_bg,
-                            plot_bgcolor=card_bg,
-                            font=dict(color=text_color),
-                            margin=dict(l=10, r=10, t=10, b=10),
-                            height=250,
-                            xaxis=dict(gridcolor=border_color),
-                            yaxis=dict(gridcolor=border_color),
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
+                    fig.update_layout(
+                        paper_bgcolor=card_bg,
+                        plot_bgcolor=card_bg,
+                        font=dict(color=text_color),
+                        margin=dict(l=10, r=10, t=10, b=10),
+                        height=250,
+                        xaxis=dict(gridcolor=border_color),
+                        yaxis=dict(gridcolor=border_color),
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
 
                 with col_news:
                     st.markdown(
@@ -960,7 +959,7 @@ else:
                 )
                 p_col4.metric(txt["stock_roi"], roi_display)
 
-                # [수정] 매수/매도 섹션 바로 위로 이동된 컨트롤 버튼들
+                # 매수/매도 섹션 바로 위 컨트롤 버튼 위치 유지
                 st.divider()
                 c_btn1, c_btn2 = st.columns(2)
                 with c_btn1:
@@ -1204,7 +1203,7 @@ else:
 
     st.divider()
 
-    # 상단/하단 요약 대시보드 메트릭
+    # 하단 총 자산 요약 대시보드
     initial_start_cash = st.session_state.get("initial_cash", 5000000.0)
     total_coin_val = sum(
         st.session_state.portfolio.get(t, {"qty": 0.0})["qty"]
