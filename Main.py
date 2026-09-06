@@ -117,8 +117,8 @@ def init_game_session():
     st.session_state.sb_language = st.session_state.get("language", "한국어")
     st.session_state.sb_theme = st.session_state.get("theme", "다크 모드")
     st.session_state.sb_chart_type = st.session_state.get("chart_type", "꺾은선 그래프 (Line)")
-    st.session_state.sb_up_color = st.session_state.get("up_color", "#10B981")
-    st.session_state.sb_down_color = st.session_state.get("down_color", "#EF4444")
+    st.session_state.sb_up_color = st.session_state.get("up_color", "#EF4444")
+    st.session_state.sb_down_color = st.session_state.get("down_color", "#2563EB")
 
 def check_achievement(key):
     if key in ACHIEVEMENTS_MASTER and not st.session_state.unlocked_achievements.get(key, False):
@@ -164,7 +164,7 @@ def execute_buy(ticker):
     st.session_state.portfolio[ticker] = {"qty": new_qty, "avg_price": new_avg}
     st.session_state.buy_qty = 0.0
     check_achievement("FIRST_BUY")
-    st.toast(f"🟢 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매수 완료!", icon="✅")
+    st.toast(f"🔴 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매수 완료!", icon="✅")
 
 def execute_sell(ticker):
     qty = st.session_state.sell_qty
@@ -176,7 +176,7 @@ def execute_sell(ticker):
     st.session_state.cash += qty * curr_price
     st.session_state.portfolio[ticker]["qty"] = max(0.0, curr_data["qty"] - qty)
     st.session_state.sell_qty = 0.0
-    st.toast(f"🔴 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료!", icon="✅")
+    st.toast(f"🔵 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료!", icon="✅")
 
 def next_day_market():
     st.session_state.day += 1
@@ -258,8 +258,8 @@ with st.sidebar:
         st.selectbox("🎨 화면 테마 설정", ["다크 모드", "라이트 모드 (기본)", "올블랙 모드", "블루 모드"], key="sb_theme")
         st.selectbox("📊 그래프 형태", ["꺾은선 그래프 (Line)", "막대 그래프 (Bar)"], key="sb_chart_type")
         col_u, col_d = st.columns(2)
-        with col_u: st.color_picker("🔴 상승 색상", key="sb_up_color")
-        with col_d: st.color_picker("🔵 하락 색상", key="sb_down_color")
+        with col_u: st.color_picker("🔴 상승 색상", value="#EF4444", key="sb_up_color")
+        with col_d: st.color_picker("🔵 하락 색상", value="#2563EB", key="sb_down_color")
         st.divider()
         if st.button("🔄 게임 초기화 (설정으로)", type="secondary", use_container_width=True):
             st.session_state.game_started = False
@@ -308,8 +308,8 @@ if not st.session_state.game_started:
         st.selectbox("📊 그래프 형태", ["꺾은선 그래프 (Line)", "막대 그래프 (Bar)"], key="chart_type")
 
     col_u, col_d = st.columns(2)
-    with col_u: st.color_picker("🔴 상승 색상", value="#10B981", key="up_color")
-    with col_d: st.color_picker("🔵 하락 색상", value="#EF4444", key="down_color")
+    with col_u: st.color_picker("🔴 상승 색상", value="#EF4444", key="up_color")
+    with col_d: st.color_picker("🔵 하락 색상", value="#2563EB", key="down_color")
 
     mode_info = GAME_MODES[st.session_state.get("mode_select", "⚔️ 라이벌 경쟁 모드")]
     st.info(f"**[{st.session_state.get('mode_select')}]** — {mode_info['desc']}")
@@ -376,8 +376,8 @@ else:
         with c_graph:
             st.markdown(f"### 📊 {coin_data['name']} 차트 ({selected_ticker})")
             fig = go.Figure()
-            active_up = st.session_state.get("sb_up_color", "#10B981")
-            active_down = st.session_state.get("sb_down_color", "#EF4444")
+            active_up = st.session_state.get("sb_up_color", "#EF4444")
+            active_down = st.session_state.get("sb_down_color", "#2563EB")
             
             if "막대" in st.session_state.get("sb_chart_type", "꺾은선"):
                 bar_colors = [active_up if (i == 0 or history[i] >= history[i - 1]) else active_down for i in range(len(history))]
@@ -409,7 +409,7 @@ else:
         b_col, s_col = st.columns(2)
 
         with b_col:
-            st.markdown(f"### 🟢 매수 (현재가: {coin_data['price']:,.2f} 원)")
+            st.markdown(f"### 🔴 매수 (현재가: {coin_data['price']:,.2f} 원)")
             r1_1, r1_2, r1_3 = st.columns(3)
             r1_1.button("+1", key="b1", on_click=add_buy_qty, args=(1.0,))
             r1_2.button("+10", key="b10", on_click=add_buy_qty, args=(10.0,))
@@ -421,10 +421,10 @@ else:
             r2_3.button("🔄 리셋", key="bclr", on_click=reset_buy_qty)
 
             st.number_input("매수 수량", min_value=0.0, key="buy_qty")
-            st.button("🟢 매수 실행", type="primary", use_container_width=True, on_click=execute_buy, args=(selected_ticker,))
+            st.button("🔴 매수 실행", type="primary", use_container_width=True, on_click=execute_buy, args=(selected_ticker,))
 
         with s_col:
-            st.markdown(f"### 🔴 매도 (보유: {my_data['qty']:,.2f} 주)")
+            st.markdown(f"### 🔵 매도 (보유: {my_data['qty']:,.2f} 주)")
             sr1_1, sr1_2, sr1_3 = st.columns(3)
             sr1_1.button("+1", key="s1", on_click=add_sell_qty, args=(1.0, my_data["qty"]))
             sr1_2.button("+10", key="s10", on_click=add_sell_qty, args=(10.0, my_data["qty"]))
@@ -436,7 +436,7 @@ else:
             sr2_3.button("🔄 리셋", key="sclr", on_click=reset_sell_qty)
 
             st.number_input("매도 수량", min_value=0.0, max_value=float(my_data["qty"]), key="sell_qty")
-            st.button("🔴 매도 실행", type="primary", use_container_width=True, on_click=execute_sell, args=(selected_ticker,))
+            st.button("🔵 매도 실행", type="primary", use_container_width=True, on_click=execute_sell, args=(selected_ticker,))
 
         if st.session_state.get("auto_play_toggle", False):
             time.sleep(1.5)
