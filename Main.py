@@ -18,19 +18,19 @@ DIFFICULTY_SETTINGS = {
         "cash": 10000000,
         "volatility": 0.03,
         "desc_ko": "💰 **시작 자금**: 1,000만 원\n📊 **일일 변동성**: ±3% (낮은 위험)\n\n🌱 넉넉한 시작 자금과 낮은 시세 변동성으로 초보자가 안정적으로 투자 감각을 익히기 좋습니다.",
-        "desc_en": "💰 **Starting Cash**: 10,000,000 KRW\n📊 **Daily Volatility**: ±3% (Low Risk)\n\n🌱 Generous capital and low market volatility, perfect for beginners.",
+        "desc_en": "💰 **Starting Cash**: 10,000,000 KRW\n📊 **Daily Volatility**: ±3% (Low Risk)",
     },
     "보통": {
         "cash": 5000000,
         "volatility": 0.05,
         "desc_ko": "💰 **시작 자금**: 500만 원\n📊 **일일 변동성**: ±5% (표준 위험)\n\n⚖️ 적절한 시작 자금과 표준 변동성으로 균형 잡힌 실전 트레이딩을 즐길 수 있습니다.",
-        "desc_en": "💰 **Starting Cash**: 5,000,000 KRW\n📊 **Daily Volatility**: ±5% (Standard Risk)\n\n⚖️ Balanced initial capital and standard volatility for realistic trading.",
+        "desc_en": "💰 **Starting Cash**: 5,000,000 KRW\n📊 **Daily Volatility**: ±5% (Standard Risk)",
     },
     "어려움": {
         "cash": 2000000,
         "volatility": 0.08,
         "desc_ko": "💰 **시작 자금**: 200만 원\n📊 **일일 변동성**: ±8% (높은 위험)\n\n🔥 적은 시작 자금과 급격한 시세 변동성으로 파산 위험이 매우 높은 하이리스크 모드입니다.",
-        "desc_en": "💰 **Starting Cash**: 2,000,000 KRW\n📊 **Daily Volatility**: ±8% (High Risk)\n\n🔥 High risk mode with small capital and aggressive market fluctuations.",
+        "desc_en": "💰 **Starting Cash**: 2,000,000 KRW\n📊 **Daily Volatility**: ±8% (High Risk)",
     },
 }
 
@@ -93,6 +93,58 @@ DEFAULT_COINS = {
     },
 }
 
+# 구매 가능한 플렉스(Flex) 아이템 목록
+LUXURY_SHOP = {
+    "ITEM_1": {
+        "name": "입문용 전기 자전거",
+        "price": 1500000,
+        "icon": "🚲",
+        "desc": "출퇴근길을 쾌적하게 만들어주는 친환경 자전거",
+    },
+    "ITEM_2": {
+        "name": "최신형 스마트폰 & 태블릿",
+        "price": 3500000,
+        "icon": "📱",
+        "desc": "트레이딩 호가창을 끊김 없이 보게 해주는 트레이더 필수템",
+    },
+    "ITEM_3": {
+        "name": "신형 국산 세단",
+        "price": 45000000,
+        "icon": "🚗",
+        "desc": "첫 투자 수익으로 마련한 승차감 좋은 데일리 드라이브 카",
+    },
+    "ITEM_4": {
+        "name": "럭셔리 럭셔리 워치",
+        "price": 120000000,
+        "icon": "⌚",
+        "desc": "손목 위에서 빛나는 성공한 트레이더의 상징",
+    },
+    "ITEM_5": {
+        "name": "해외 서킷용 스포츠카",
+        "price": 350000000,
+        "icon": "🏎️",
+        "desc": "시원한 배기음으로 스트레스를 날려주는 슈퍼 드림카",
+    },
+    "ITEM_6": {
+        "name": "한강뷰 고급 아파트",
+        "price": 2500000000,
+        "icon": "🏙️",
+        "desc": "야경을 내려다보며 차 한 잔의 여유를 즐기는 랜드마크 주거지",
+    },
+    "ITEM_7": {
+        "name": "강남 테헤란로 꼬마빌딩",
+        "price": 15000000000,
+        "icon": "🏢",
+        "desc": "매월 안정적인 임대 수익을 안겨주는 빌딩주 입성",
+    },
+    "ITEM_8": {
+        "name": "개인 전용 비즈니스 제트기",
+        "price": 60000000000,
+        "icon": "🛩️",
+        "desc": "전 세계 주요 증시 현장으로 바로 날아갈 수 있는 전용기",
+    },
+}
+
 BULL_NEWS = [
     "대규모 수주 계약 체결 발표로 강한 매수세 유입",
     "혁신 기술 특허 등록 완료 소식에 주가 급등",
@@ -136,7 +188,8 @@ TEXT_PACK = {
         "top_gainer": "🚀 최고 상승:",
         "top_loser": "📉 최고 하락:",
         "tab_exchange": "📊 거래소 (주식/코인)",
-        "tab_mint": "🪙 신규 종목 상장 (민팅)",
+        "tab_flex": "🏠 자산 소비 & 플렉스",
+        "tab_mint": "🪙 신규 종목 상장",
         "tab_portfolio": "💼 내 포트폴리오",
         "tab_news": "📰 전체 속보 기록",
         "category_filter": "카테고리 선택",
@@ -194,7 +247,7 @@ TEXT_PACK = {
         "diff_select": "Select Difficulty",
         "lang_select": "Select Language",
         "theme_select": "Theme Settings",
-        "theme_light": "Light Mode (Default)",
+        "theme_light": "Light Mode",
         "theme_dark": "Dark Mode",
         "theme_black": "All-Black Mode",
         "theme_blue": "Blue Mode",
@@ -206,10 +259,11 @@ TEXT_PACK = {
         "up_color": "Bullish Color",
         "down_color": "Bearish Color",
         "start_game": "🚀 Start Game",
-        "reset_game": "🔄 Reset (Back to Start)",
+        "reset_game": "🔄 Reset",
         "top_gainer": "🚀 Top Gainer:",
         "top_loser": "📉 Top Loser:",
         "tab_exchange": "📊 Exchange",
+        "tab_flex": "🏠 Luxury & Shopping",
         "tab_mint": "🪙 Mint New Stock",
         "tab_portfolio": "💼 My Portfolio",
         "tab_news": "📰 All News Logs",
@@ -219,7 +273,7 @@ TEXT_PACK = {
         "chart_title": "📈 Selected Asset Chart & News",
         "news_box_title": "📰 Asset Breaking News",
         "won": "KRW",
-        "next_day": "🌙 Next Day ➔ (Update Market)",
+        "next_day": "🌙 Next Day ➔",
         "progress": "Progress",
         "day_str": "Day",
         "cash": "Available Cash",
@@ -245,7 +299,7 @@ TEXT_PACK = {
         "stock_name": "Asset Name",
         "ticker_symbol": "Ticker Symbol",
         "select_category": "Select Category",
-        "start_price": "Initial Listing Price (KRW)",
+        "start_price": "Initial Listing Price",
         "btn_mint": "✨ List Asset",
         "mint_success": "Asset successfully listed!",
         "err_empty": "Please fill in all fields.",
@@ -274,9 +328,9 @@ if "theme" not in st.session_state:
 if "chart_type" not in st.session_state:
     st.session_state.chart_type = "꺾은선 그래프 (Line)"
 if "up_color" not in st.session_state:
-    st.session_state.up_color = "#E03131"
+    st.session_state.up_color = "#E03131"  # 빨강
 if "down_color" not in st.session_state:
-    st.session_state.down_color = "#1971C2"
+    st.session_state.down_color = "#1971C2"  # 파랑
 if "custom_bg" not in st.session_state:
     st.session_state.custom_bg = "#FFFFFF"
 if "custom_text" not in st.session_state:
@@ -286,6 +340,8 @@ if "custom_card" not in st.session_state:
 
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
+if "game_over" not in st.session_state:
+    st.session_state.game_over = False
 if "difficulty" not in st.session_state:
     st.session_state.difficulty = "보통"
 
@@ -304,9 +360,11 @@ def init_game_session(selected_diff="보통"):
     st.session_state.portfolio = {
         ticker: {"qty": 0.0, "avg_price": 0.0} for ticker in DEFAULT_COINS
     }
+    st.session_state.owned_items = {}
     st.session_state.news_log = []
     st.session_state.buy_qty = 0.0
     st.session_state.sell_qty = 0.0
+    st.session_state.game_over = False
 
 
 lang = (
@@ -320,7 +378,7 @@ txt = TEXT_PACK[lang]
 # ==========================================
 # 3. Streamlit @st.dialog 모달 알림창
 # ==========================================
-@st.dialog("🔔 거래 알림")
+@st.dialog("🔔 트레이딩 알림")
 def show_trade_dialog(msg, status="info"):
     if status == "success":
         st.success(msg)
@@ -335,7 +393,7 @@ def show_trade_dialog(msg, status="info"):
 
 
 # ==========================================
-# 4. 수량 조절 및 거래/시간 진행 로직
+# 4. 거래 & 구매 & 게임 진행 관련 함수
 # ==========================================
 def add_buy_qty(val):
     st.session_state.buy_qty += val
@@ -433,68 +491,125 @@ def execute_sell(ticker):
     )
 
 
+def buy_luxury_item(item_key):
+    item = LUXURY_SHOP[item_key]
+    cost = item["price"]
+
+    if st.session_state.cash < cost:
+        show_trade_dialog("구매 자금이 부족합니다!", "error")
+        return
+
+    st.session_state.cash -= cost
+    st.session_state.owned_items[item_key] = (
+        st.session_state.owned_items.get(item_key, 0) + 1
+    )
+    show_trade_dialog(
+        f"🎉 [{item['name']}] 구매 성공! 나의 소장품에 추가되었습니다.",
+        "success",
+    )
+
+
 def next_day_market():
     st.session_state.day += 1
     volatility = st.session_state.volatility
     time_str = f"Day {st.session_state.day}"
 
     ticker_changes = {}
-    for ticker, data in st.session_state.coins.items():
+    delisted_tickers = []
+
+    # 1. 시세 변동 및 상장폐지 체크
+    for ticker, data in list(st.session_state.coins.items()):
         change_rate = random.uniform(-volatility, volatility)
 
-        if random.random() < 0.2:
-            change_rate = random.choice([0.15, 0.25, -0.15, -0.25])
+        # 15% 확률로 큰 폭 변동
+        if random.random() < 0.15:
+            change_rate = random.choice([0.18, 0.28, -0.22, -0.35])
 
         new_price = round(data["price"] * (1 + change_rate), 2)
-        if new_price < 0.01:
-            new_price = 0.01
+
+        # 상장 폐지 조건: 주가가 1,000원 미만으로 락인되거나 극단적 하락 시
+        if new_price < 500.0 and random.random() < 0.4:
+            delisted_tickers.append(ticker)
+            continue
 
         data["change"] = change_rate * 100
         data["price"] = new_price
         data["history"].append(new_price)
         ticker_changes[ticker] = change_rate
 
-    has_news_today = random.random() < 0.7
+    # 상장폐지 종목 처리
+    for ticker in delisted_tickers:
+        del_name = st.session_state.coins[ticker]["name"]
+        del st.session_state.coins[ticker]
 
-    if has_news_today:
-        significant_tickers = [
-            t for t, change in ticker_changes.items() if abs(change) >= 0.03
-        ]
+        # 보유 중이던 수량 및 자산 소멸
+        if ticker in st.session_state.portfolio:
+            st.session_state.portfolio[ticker] = {"qty": 0.0, "avg_price": 0.0}
 
-        if len(significant_tickers) >= 2:
-            selected_news_tickers = significant_tickers
-        else:
-            num_to_pick = random.randint(
-                2, min(4, len(st.session_state.coins))
-            )
-            selected_news_tickers = random.sample(
-                list(st.session_state.coins.keys()), num_to_pick
-            )
+        st.session_state.news_log.insert(
+            0,
+            {
+                "time": time_str,
+                "ticker": ticker,
+                "name": del_name,
+                "tag": "💀 상장폐지",
+                "msg": f"[{del_name}] 주가가 한계치 이하로 폭락하여 거래소에서 최종 상장폐지(파산)되었습니다.",
+            },
+        )
 
-        for ticker in selected_news_tickers:
-            data = st.session_state.coins[ticker]
-            change_rate = ticker_changes[ticker]
+    # 2. 속보 생성
+    if st.session_state.coins:
+        has_news_today = random.random() < 0.75
+        if has_news_today:
+            significant_tickers = [
+                t
+                for t, change in ticker_changes.items()
+                if abs(change) >= 0.03 and t in st.session_state.coins
+            ]
 
-            if change_rate > 0.03:
-                news_txt = random.choice(BULL_NEWS)
-                status_tag = "🚀 호재"
-            elif change_rate < -0.03:
-                news_txt = random.choice(BEAR_NEWS)
-                status_tag = "📉 악재"
+            if len(significant_tickers) >= 1:
+                selected_news_tickers = significant_tickers
             else:
-                news_txt = random.choice(FLAT_NEWS)
-                status_tag = "☀️ 보합"
+                selected_news_tickers = random.sample(
+                    list(st.session_state.coins.keys()),
+                    min(2, len(st.session_state.coins)),
+                )
 
-            st.session_state.news_log.insert(
-                0,
-                {
-                    "time": time_str,
-                    "ticker": ticker,
-                    "name": data["name"],
-                    "tag": status_tag,
-                    "msg": news_txt,
-                },
-            )
+            for ticker in selected_news_tickers:
+                data = st.session_state.coins[ticker]
+                change_rate = ticker_changes.get(ticker, 0.0)
+
+                if change_rate > 0.03:
+                    news_txt = random.choice(BULL_NEWS)
+                    status_tag = "🚀 호재"
+                elif change_rate < -0.03:
+                    news_txt = random.choice(BEAR_NEWS)
+                    status_tag = "📉 악재"
+                else:
+                    news_txt = random.choice(FLAT_NEWS)
+                    status_tag = "☀️ 보합"
+
+                st.session_state.news_log.insert(
+                    0,
+                    {
+                        "time": time_str,
+                        "ticker": ticker,
+                        "name": data["name"],
+                        "tag": status_tag,
+                        "msg": news_txt,
+                    },
+                )
+
+    # 3. 게임 오버 조건 검사 (총 자산이 10만 원 미만)
+    total_stock_val = sum(
+        st.session_state.portfolio.get(t, {"qty": 0.0})["qty"]
+        * st.session_state.coins[t]["price"]
+        for t in st.session_state.coins
+    )
+    total_assets = st.session_state.cash + total_stock_val
+
+    if total_assets < 100000.0:
+        st.session_state.game_over = True
 
 
 # ==========================================
@@ -565,14 +680,10 @@ if not st.session_state.game_started:
     st.subheader(txt["setting_header"])
 
     diff_col1, diff_col2 = st.columns([1, 1.2])
-
     with diff_col1:
         selected_diff = st.selectbox(
-            txt["diff_select"],
-            list(DIFFICULTY_SETTINGS.keys()),
-            index=1,
+            txt["diff_select"], list(DIFFICULTY_SETTINGS.keys()), index=1
         )
-
     with diff_col2:
         diff_info = DIFFICULTY_SETTINGS[selected_diff]
         info_text = (
@@ -622,7 +733,30 @@ if not st.session_state.game_started:
         st.rerun()
 
 # ==========================================
-# 7. 화면 2: 메인 트레이딩 게임 화면
+# 7. 화면 2: 게임 오버 (Game Over) 화면
+# ==========================================
+elif st.session_state.game_over:
+    st.error("💀 GAME OVER - 파산하셨습니다!")
+    st.markdown(
+        f"""
+    ### 💸 총 자산이 10만 원 이하로 감소하여 투자를 진행할 수 없습니다.
+    - **최종 진행 일수**: {st.session_state.day}일차
+    - **남은 현금**: {st.session_state.cash:,.0f} 원
+    
+    무리한 투자나 종목 상장폐지로 인해 모든 자산을 잃었습니다. 다시 도전하여 부자가 되어보세요!
+    """
+    )
+    if st.button(
+        "🔄 새 게임으로 재도전하기",
+        type="primary",
+        use_container_width=True,
+    ):
+        st.session_state.game_started = False
+        st.session_state.game_over = False
+        st.rerun()
+
+# ==========================================
+# 8. 화면 3: 메인 트레이딩 게임 화면
 # ==========================================
 else:
     col_title, col_btn = st.columns([4, 1])
@@ -630,36 +764,38 @@ else:
         st.title(txt["title"])
     with col_btn:
         if st.button(
-            txt["reset_game"],
-            key="reset_btn_top",
-            use_container_width=True,
+            txt["reset_game"], key="reset_btn_top", use_container_width=True
         ):
             st.session_state.game_started = False
             st.rerun()
 
-    sorted_stocks = sorted(
-        st.session_state.coins.items(),
-        key=lambda x: x[1]["change"],
-        reverse=True,
-    )
-    top_gainer_ticker, top_gainer_data = sorted_stocks[0]
-    top_loser_ticker, top_loser_data = sorted_stocks[-1]
+    if st.session_state.coins:
+        sorted_stocks = sorted(
+            st.session_state.coins.items(),
+            key=lambda x: x[1]["change"],
+            reverse=True,
+        )
+        top_gainer_ticker, top_gainer_data = sorted_stocks[0]
+        top_loser_ticker, top_loser_data = sorted_stocks[-1]
 
-    rank_col1, rank_col2 = st.columns(2)
-    with rank_col1:
-        st.info(
-            f"{txt['top_gainer']} {top_gainer_data['name']} ({top_gainer_ticker}) | **{top_gainer_data['change']:+.2f}%**"
-        )
-    with rank_col2:
-        st.error(
-            f"{txt['top_loser']} {top_loser_data['name']} ({top_loser_ticker}) | **{top_loser_data['change']:+.2f}%**"
-        )
+        rank_col1, rank_col2 = st.columns(2)
+        with rank_col1:
+            st.info(
+                f"{txt['top_gainer']} {top_gainer_data['name']} ({top_gainer_ticker}) | **{top_gainer_data['change']:+.2f}%**"
+            )
+        with rank_col2:
+            st.error(
+                f"{txt['top_loser']} {top_loser_data['name']} ({top_loser_ticker}) | **{top_loser_data['change']:+.2f}%**"
+            )
+    else:
+        st.warning("⚠️ 현재 모든 종목이 상장폐지되었습니다! 신규 종목을 민팅해주세요.")
 
     st.divider()
 
-    tab1, tab2, tab3, tab4 = st.tabs(
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
         [
             txt["tab_exchange"],
+            txt["tab_flex"],
             txt["tab_mint"],
             txt["tab_portfolio"],
             txt["tab_news"],
@@ -667,294 +803,307 @@ else:
     )
 
     with tab1:
-        categories = [txt["all"]] + sorted(
-            list(
-                set(
-                    item["category"]
-                    for item in st.session_state.coins.values()
+        if not st.session_state.coins:
+            st.info("거래 가능한 종목이 없습니다.")
+        else:
+            categories = [txt["all"]] + sorted(
+                list(
+                    set(
+                        item["category"]
+                        for item in st.session_state.coins.values()
+                    )
                 )
             )
-        )
-        f_col1, f_col2 = st.columns([1, 2])
-        with f_col1:
-            selected_category = st.selectbox(
-                txt["category_filter"], categories
-            )
+            f_col1, f_col2 = st.columns([1, 2])
+            with f_col1:
+                selected_category = st.selectbox(
+                    txt["category_filter"], categories
+                )
 
-        filtered_tickers = (
-            list(st.session_state.coins.keys())
-            if selected_category == txt["all"]
-            else [
-                t
-                for t, d in st.session_state.coins.items()
-                if d["category"] == selected_category
-            ]
-        )
-
-        with f_col2:
-            selected_ticker = st.selectbox(
-                txt["select_stock"],
-                filtered_tickers,
-                key="selected_ticker",
-                format_func=lambda x: f"[{st.session_state.coins[x]['category']}] {st.session_state.coins[x]['name']} ({x}) - {st.session_state.coins[x]['price']:,.2f}{txt['won']} ({st.session_state.coins[x]['change']:+.2f}%)",
-            )
-
-        coin_data = st.session_state.coins[selected_ticker]
-        my_asset_data = st.session_state.portfolio.get(
-            selected_ticker, {"qty": 0.0, "avg_price": 0.0}
-        )
-        my_qty = my_asset_data["qty"]
-        my_avg = my_asset_data["avg_price"]
-
-        # 종목 상장가 대비 누적 상승률 계산
-        initial_price = coin_data["history"][0]
-        cumulative_change = (
-            (coin_data["price"] - initial_price) / initial_price
-        ) * 100
-
-        # 개별 종목 내 투자 수익률 계산
-        stock_val = my_qty * coin_data["price"]
-        stock_cost = my_qty * my_avg
-        stock_roi = (
-            ((stock_val - stock_cost) / stock_cost * 100)
-            if stock_cost > 0
-            else 0.0
-        )
-
-        st.divider()
-
-        st.subheader(txt["chart_title"])
-        col_chart, col_news = st.columns([1.3, 1])
-
-        with col_chart:
-            fig = go.Figure()
-            history = coin_data["history"]
-            up_c = st.session_state.up_color
-            down_c = st.session_state.down_color
-
-            if st.session_state.chart_type in [
-                "막대 그래프 (Bar)",
-                "Bar Chart",
-            ]:
-                bar_colors = [
-                    up_c
-                    if i == 0 or history[i] >= history[i - 1]
-                    else down_c
-                    for i in range(len(history))
+            filtered_tickers = (
+                list(st.session_state.coins.keys())
+                if selected_category == txt["all"]
+                else [
+                    t
+                    for t, d in st.session_state.coins.items()
+                    if d["category"] == selected_category
                 ]
-                fig.add_trace(
-                    go.Bar(
-                        y=history, name=selected_ticker, marker_color=bar_colors
-                    )
-                )
+            )
+
+            if not filtered_tickers:
+                st.write("선택한 카테고리에 해당하는 종목이 없습니다.")
             else:
-                line_color = (
-                    up_c
-                    if len(history) > 1 and history[-1] >= history[-2]
-                    else down_c
-                )
-                fig.add_trace(
-                    go.Scatter(
-                        y=history,
-                        mode="lines+markers",
-                        name=selected_ticker,
-                        line=dict(color=line_color, width=2.5),
+                with f_col2:
+                    selected_ticker = st.selectbox(
+                        txt["select_stock"],
+                        filtered_tickers,
+                        key="selected_ticker",
+                        format_func=lambda x: f"[{st.session_state.coins[x]['category']}] {st.session_state.coins[x]['name']} ({x}) - {st.session_state.coins[x]['price']:,.2f}{txt['won']} ({st.session_state.coins[x]['change']:+.2f}%)",
                     )
+
+                coin_data = st.session_state.coins[selected_ticker]
+                my_asset_data = st.session_state.portfolio.get(
+                    selected_ticker, {"qty": 0.0, "avg_price": 0.0}
+                )
+                my_qty = my_asset_data["qty"]
+                my_avg = my_asset_data["avg_price"]
+
+                initial_price = coin_data["history"][0]
+                cumulative_change = (
+                    (coin_data["price"] - initial_price) / initial_price
+                ) * 100
+
+                stock_val = my_qty * coin_data["price"]
+                stock_cost = my_qty * my_avg
+                stock_roi = (
+                    ((stock_val - stock_cost) / stock_cost * 100)
+                    if stock_cost > 0
+                    else 0.0
                 )
 
-            fig.update_layout(
-                paper_bgcolor=card_bg,
-                plot_bgcolor=card_bg,
-                font=dict(color=text_color),
-                margin=dict(l=10, r=10, t=10, b=10),
-                height=250,
-                xaxis=dict(gridcolor=border_color),
-                yaxis=dict(gridcolor=border_color),
-            )
-            st.plotly_chart(fig, use_container_width=True)
+                st.divider()
 
-        with col_news:
-            st.markdown(
-                f"**{txt['news_box_title']} ({coin_data['name']})**"
-            )
-            stock_news = [
-                n
-                for n in st.session_state.news_log
-                if n.get("ticker") == selected_ticker
-            ]
+                st.subheader(txt["chart_title"])
+                col_chart, col_news = st.columns([1.3, 1])
 
-            if stock_news:
-                latest = stock_news[0]
-                st.info(
-                    f"**[{latest['time']}] {latest['tag']}**\n\n{latest['msg']}"
+                with col_chart:
+                    fig = go.Figure()
+                    history = coin_data["history"]
+                    up_c = st.session_state.up_color
+                    down_c = st.session_state.down_color
+
+                    if st.session_state.chart_type in [
+                        "막대 그래프 (Bar)",
+                        "Bar Chart",
+                    ]:
+                        bar_colors = [
+                            up_c
+                            if i == 0 or history[i] >= history[i - 1]
+                            else down_c
+                            for i in range(len(history))
+                        ]
+                        fig.add_trace(
+                            go.Bar(
+                                y=history,
+                                name=selected_ticker,
+                                marker_color=bar_colors,
+                            )
+                        )
+                    else:
+                        if len(history) == 1:
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=[0],
+                                    y=history,
+                                    mode="markers",
+                                    marker=dict(color=up_c, size=8),
+                                    showlegend=False,
+                                )
+                            )
+                        else:
+                            for i in range(1, len(history)):
+                                seg_color = (
+                                    up_c
+                                    if history[i] >= history[i - 1]
+                                    else down_c
+                                )
+                                fig.add_trace(
+                                    go.Scatter(
+                                        x=[i - 1, i],
+                                        y=[history[i - 1], history[i]],
+                                        mode="lines+markers",
+                                        line=dict(color=seg_color, width=3),
+                                        marker=dict(color=seg_color, size=6),
+                                        showlegend=False,
+                                    )
+                                )
+
+                    fig.update_layout(
+                        paper_bgcolor=card_bg,
+                        plot_bgcolor=card_bg,
+                        font=dict(color=text_color),
+                        margin=dict(l=10, r=10, t=10, b=10),
+                        height=250,
+                        xaxis=dict(gridcolor=border_color),
+                        yaxis=dict(gridcolor=border_color),
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+
+                with col_news:
+                    st.markdown(
+                        f"**{txt['news_box_title']} ({coin_data['name']})**"
+                    )
+                    stock_news = [
+                        n
+                        for n in st.session_state.news_log
+                        if n.get("ticker") == selected_ticker
+                    ]
+
+                    if stock_news:
+                        latest = stock_news[0]
+                        st.info(
+                            f"**[{latest['time']}] {latest['tag']}**\n\n{latest['msg']}"
+                        )
+                    else:
+                        st.caption(
+                            f"[{coin_data['name']}] 종목에 대한 최신 속보가 없습니다."
+                        )
+
+                    with st.expander("이전 속보 기록 보기"):
+                        if len(stock_news) > 1:
+                            for n in stock_news[1:5]:
+                                st.write(
+                                    f"- `{n['time']}` {n['tag']}: {n['msg']}"
+                                )
+                        else:
+                            st.write("이전 속보 기록이 존재하지 않습니다.")
+
+                st.divider()
+
+                st.markdown(
+                    f"#### 📊 `{coin_data['name']}` 종목 및 투자 현황"
                 )
-            else:
-                st.caption(
-                    f"[{coin_data['name']}] 종목에 대한 최신 속보가 없습니다."
+                p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+
+                p_col1.metric(
+                    txt["stock_price_change"],
+                    f"{cumulative_change:+.2f} %",
+                    delta=f"{coin_data['change']:+.2f}% (전일 대비)",
+                )
+                p_col2.metric(txt["my_qty"], f"{my_qty:,.2f} {txt['unit']}")
+                p_col3.metric(
+                    txt["avg_price"],
+                    f"{my_avg:,.2f} {txt['won']}"
+                    if my_qty > 0
+                    else "미보유 (0 원)",
                 )
 
-            with st.expander("이전 속보 기록 보기"):
-                if len(stock_news) > 1:
-                    for n in stock_news[1:5]:
-                        st.write(f"- `{n['time']}` {n['tag']}: {n['msg']}")
-                else:
-                    st.write("이전 속보 기록이 존재하지 않습니다.")
+                roi_display = (
+                    f"{stock_roi:+.2f} %" if my_qty > 0 else "미보유 (0.00 %)"
+                )
+                p_col4.metric(txt["stock_roi"], roi_display)
 
-        st.divider()
+                st.divider()
 
-        # [수정 포인트] 종목 자산 변동률과 내 투자 수익률을 직관적으로 보완
-        st.markdown(f"#### 📊 `{coin_data['name']}` 종목 및 투자 현황")
-        p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+                st.subheader(
+                    f"🛒 {coin_data['name']} ({selected_ticker}) 매수 및 매도"
+                )
+                t_col1, t_col2 = st.columns(2)
 
-        p_col1.metric(
-            txt["stock_price_change"],
-            f"{cumulative_change:+.2f} %",
-            delta=f"{coin_data['change']:+.2f}% (전일 대비)",
-        )
-        p_col2.metric(txt["my_qty"], f"{my_qty:,.2f} {txt['unit']}")
-        p_col3.metric(
-            txt["avg_price"],
-            f"{my_avg:,.2f} {txt['won']}" if my_qty > 0 else "미보유 (0 원)",
-        )
+                with t_col1:
+                    st.markdown(f"### {txt['buy_header']}")
+                    b_btn1, b_btn2, b_btn3, b_btn4, b_btn5 = st.columns(5)
+                    b_btn1.button(
+                        "+10", key="b_10", on_click=add_buy_qty, args=(10.0,)
+                    )
+                    b_btn2.button(
+                        "+50", key="b_50", on_click=add_buy_qty, args=(50.0,)
+                    )
+                    b_btn3.button(
+                        "+100", key="b_100", on_click=add_buy_qty, args=(100.0,)
+                    )
+                    b_btn4.button(
+                        "🚀 MAX",
+                        key="b_max",
+                        on_click=set_buy_max,
+                        args=(coin_data["price"],),
+                    )
+                    b_btn5.button("🔄 0", key="b_reset", on_click=reset_buy_qty)
 
-        roi_display = (
-            f"{stock_roi:+.2f} %" if my_qty > 0 else "미보유 (0.00 %)"
-        )
-        p_col4.metric(txt["stock_roi"], roi_display)
+                    buy_amount = st.number_input(
+                        txt["buy_qty"], min_value=0.0, key="buy_qty"
+                    )
+                    st.write(
+                        f"{txt['needed_amount']}: **{(buy_amount * coin_data['price']):,.2f} {txt['won']}**"
+                    )
 
-        st.divider()
+                    st.button(
+                        txt["btn_buy"],
+                        key="btn_execute_buy_action",
+                        type="primary",
+                        use_container_width=True,
+                        on_click=execute_buy,
+                        args=(selected_ticker,),
+                    )
 
-        c_btn1, c_btn2 = st.columns(2)
-        with c_btn1:
-            if st.button(
-                txt["next_day"],
-                key="btn_next_day_control",
-                type="primary",
-                use_container_width=True,
-            ):
-                next_day_market()
-                st.rerun()
-        with c_btn2:
-            if st.button(
-                txt["reset_game"],
-                key="reset_btn_bottom",
-                use_container_width=True,
-            ):
-                st.session_state.game_started = False
-                st.rerun()
+                with t_col2:
+                    st.markdown(f"### {txt['sell_header']}")
+                    st.write(f"{txt['my_qty']}: **{my_qty:,.2f} {txt['unit']}**")
 
-        st.divider()
+                    s_btn1, s_btn2, s_btn3, s_btn4, s_btn5 = st.columns(5)
+                    s_btn1.button(
+                        "+10",
+                        key="s_10",
+                        on_click=add_sell_qty,
+                        args=(10.0, my_qty),
+                    )
+                    s_btn2.button(
+                        "+50",
+                        key="s_50",
+                        on_click=add_sell_qty,
+                        args=(50.0, my_qty),
+                    )
+                    s_btn3.button(
+                        "+100",
+                        key="s_100",
+                        on_click=add_sell_qty,
+                        args=(100.0, my_qty),
+                    )
+                    s_btn4.button(
+                        "🔥 MAX",
+                        key="s_max",
+                        on_click=set_sell_max,
+                        args=(my_qty,),
+                    )
+                    s_btn5.button("🔄 0", key="s_reset", on_click=reset_sell_qty)
 
-        initial_start_cash = st.session_state.get("initial_cash", 5000000.0)
+                    sell_amount = st.number_input(
+                        txt["sell_qty"],
+                        min_value=0.0,
+                        max_value=float(my_qty),
+                        key="sell_qty",
+                    )
+                    st.write(
+                        f"{txt['expected_amount']}: **{(sell_amount * coin_data['price']):,.2f} {txt['won']}**"
+                    )
 
-        total_coin_val = sum(
-            st.session_state.portfolio.get(t, {"qty": 0.0})["qty"]
-            * st.session_state.coins[t]["price"]
-            for t in st.session_state.coins
-        )
-        total_assets = st.session_state.cash + total_coin_val
-        roi = (
-            (total_assets - initial_start_cash) / initial_start_cash
-        ) * 100
+                    st.button(
+                        txt["btn_sell"],
+                        key="btn_execute_sell_action",
+                        type="primary",
+                        use_container_width=True,
+                        on_click=execute_sell,
+                        args=(selected_ticker,),
+                    )
 
-        col1, col2, col3, col4, col5 = st.columns(5)
-        col1.metric(
-            txt["progress"], f"{st.session_state.day}{txt['day_str']}"
-        )
-        col2.metric(
-            txt["cash"], f"{st.session_state.cash:,.0f} {txt['won']}"
-        )
-        col3.metric(
-            txt["portfolio_val"], f"{total_coin_val:,.0f} {txt['won']}"
-        )
-        col4.metric(
-            txt["total_assets"], f"{total_assets:,.0f} {txt['won']}"
-        )
-        col5.metric(txt["roi"], f"{roi:+.2f} %")
-
-        st.divider()
-
-        st.subheader(f"🛒 {coin_data['name']} ({selected_ticker}) 매수 및 매도")
-        t_col1, t_col2 = st.columns(2)
-
-        with t_col1:
-            st.markdown(f"### {txt['buy_header']}")
-            b_btn1, b_btn2, b_btn3, b_btn4, b_btn5 = st.columns(5)
-            b_btn1.button(
-                "+10", key="b_10", on_click=add_buy_qty, args=(10.0,)
-            )
-            b_btn2.button(
-                "+50", key="b_50", on_click=add_buy_qty, args=(50.0,)
-            )
-            b_btn3.button(
-                "+100", key="b_100", on_click=add_buy_qty, args=(100.0,)
-            )
-            b_btn4.button(
-                "🚀 MAX",
-                key="b_max",
-                on_click=set_buy_max,
-                args=(coin_data["price"],),
-            )
-            b_btn5.button("🔄 0", key="b_reset", on_click=reset_buy_qty)
-
-            buy_amount = st.number_input(
-                txt["buy_qty"], min_value=0.0, key="buy_qty"
-            )
-            st.write(
-                f"{txt['needed_amount']}: **{(buy_amount * coin_data['price']):,.2f} {txt['won']}**"
-            )
-
-            st.button(
-                txt["btn_buy"],
-                key="btn_execute_buy_action",
-                type="primary",
-                use_container_width=True,
-                on_click=execute_buy,
-                args=(selected_ticker,),
-            )
-
-        with t_col2:
-            st.markdown(f"### {txt['sell_header']}")
-            st.write(f"{txt['my_qty']}: **{my_qty:,.2f} {txt['unit']}**")
-
-            s_btn1, s_btn2, s_btn3, s_btn4, s_btn5 = st.columns(5)
-            s_btn1.button(
-                "+10", key="s_10", on_click=add_sell_qty, args=(10.0, my_qty)
-            )
-            s_btn2.button(
-                "+50", key="s_50", on_click=add_sell_qty, args=(50.0, my_qty)
-            )
-            s_btn3.button(
-                "+100",
-                key="s_100",
-                on_click=add_sell_qty,
-                args=(100.0, my_qty),
-            )
-            s_btn4.button(
-                "🔥 MAX", key="s_max", on_click=set_sell_max, args=(my_qty,)
-            )
-            s_btn5.button("🔄 0", key="s_reset", on_click=reset_sell_qty)
-
-            sell_amount = st.number_input(
-                txt["sell_qty"],
-                min_value=0.0,
-                max_value=float(my_qty),
-                key="sell_qty",
-            )
-            st.write(
-                f"{txt['expected_amount']}: **{(sell_amount * coin_data['price']):,.2f} {txt['won']}**"
-            )
-
-            st.button(
-                txt["btn_sell"],
-                key="btn_execute_sell_action",
-                type="primary",
-                use_container_width=True,
-                on_click=execute_sell,
-                args=(selected_ticker,),
-            )
-
+    # 신규 추가 탭: 부동산 & 사치품 구매 (Flex Shop)
     with tab2:
+        st.subheader("💎 자산 플렉스(Flex) & 사치품 상점")
+        st.caption(
+            "주식으로 번 돈으로 자신만의 자산을 늘려보세요! 자동차부터 건물까지 구매할 수 있습니다."
+        )
+
+        grid_cols = st.columns(2)
+        for idx, (item_key, item) in enumerate(LUXURY_SHOP.items()):
+            col = grid_cols[idx % 2]
+            with col:
+                st.markdown(f"### {item['icon']} {item['name']}")
+                st.write(f"💵 가격: **{item['price']:,.0f} 원**")
+                st.caption(item["desc"])
+
+                owned_cnt = st.session_state.owned_items.get(item_key, 0)
+                if owned_cnt > 0:
+                    st.success(f"✅ 현재 보유 수량: {owned_cnt}개")
+
+                st.button(
+                    f"🛒 구매하기 ({item['price']:,.0f}원)",
+                    key=f"buy_item_{item_key}",
+                    on_click=buy_luxury_item,
+                    args=(item_key,),
+                )
+                st.divider()
+
+    with tab3:
         st.subheader(txt["mint_header"])
         with st.form("mint_form"):
             new_coin_name = st.text_input(txt["stock_name"], "NEW STOCK")
@@ -999,13 +1148,15 @@ else:
                     st.success(f"🎉 {txt['mint_success']}")
                     st.rerun()
 
-    with tab3:
+    with tab4:
         st.subheader(txt["port_header"])
+
+        # 1. 주식/코인 보유 현황
         portfolio_data = []
         for ticker, data in st.session_state.portfolio.items():
             qty = data["qty"]
             avg_p = data["avg_price"]
-            if qty > 0:
+            if qty > 0 and ticker in st.session_state.coins:
                 current_p = st.session_state.coins[ticker]["price"]
                 val = qty * current_p
                 cost = qty * avg_p
@@ -1035,9 +1186,65 @@ else:
         else:
             st.info(txt["no_port"])
 
-    with tab4:
+        st.divider()
+
+        # 2. 실물 자산 및 소장품 현황
+        st.subheader("🏙️ 보유 부동산 및 플렉스 자산")
+        owned_any_item = False
+        for k, cnt in st.session_state.owned_items.items():
+            if cnt > 0:
+                owned_any_item = True
+                item = LUXURY_SHOP[k]
+                st.write(
+                    f"- **{item['icon']} {item['name']}**: {cnt}개 보유 (총 가치: {item['price']*cnt:,.0f} 원)"
+                )
+
+        if not owned_any_item:
+            st.caption("아직 구매한 부동산이나 플렉스 상품이 없습니다.")
+
+    with tab5:
         st.subheader(txt["all_news_header"])
         for news in st.session_state.news_log:
             st.write(
                 f"- **[{news['time']}] {news['name']} ({news['tag']})**: {news['msg']}"
             )
+
+    # 하단 진행 controls
+    st.divider()
+    c_btn1, c_btn2 = st.columns(2)
+    with c_btn1:
+        if st.button(
+            txt["next_day"],
+            key="btn_next_day_control",
+            type="primary",
+            use_container_width=True,
+        ):
+            next_day_market()
+            st.rerun()
+    with c_btn2:
+        if st.button(
+            txt["reset_game"], key="reset_btn_bottom", use_container_width=True
+        ):
+            st.session_state.game_started = False
+            st.rerun()
+
+    st.divider()
+
+    # 상단 요약 대시보드 메트릭
+    initial_start_cash = st.session_state.get("initial_cash", 5000000.0)
+    total_coin_val = sum(
+        st.session_state.portfolio.get(t, {"qty": 0.0})["qty"]
+        * st.session_state.coins[t]["price"]
+        for t in st.session_state.coins
+    )
+    total_assets = st.session_state.cash + total_coin_val
+    roi = ((total_assets - initial_start_cash) / initial_start_cash) * 100
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.metric(txt["progress"], f"{st.session_state.day}{txt['day_str']}")
+    col2.metric(txt["cash"], f"{st.session_state.cash:,.0f} {txt['won']}")
+    col3.metric(
+        txt["portfolio_val"], f"{total_coin_val:,.0f} {txt['won']}"
+    )
+    col4.metric(txt["total_assets"], f"{total_assets:,.0f} {txt['won']}")
+    col5.metric(txt["roi"], f"{roi:+.2f} %")
