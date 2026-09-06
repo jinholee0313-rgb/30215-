@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ==========================================
-# 1. 페이지 기본 설정 및 기본 테마 지정 (라이트 모드)
+# 1. 페이지 기본 설정 및 기본 테마 지정
 # ==========================================
 st.set_page_config(
     page_title="주식 & 가상화폐 트레이딩 시뮬레이터",
@@ -13,11 +13,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# 난이도 설정 데이터
+# 난이도 기본 데이터 (기본값: 보통)
 DIFFICULTY_SETTINGS = {
-    "쉬움": {"cash": 10000000, "volatility": 0.03},
     "보통": {"cash": 5000000, "volatility": 0.05},
-    "어려움": {"cash": 1000000, "volatility": 0.08},
 }
 
 # 기본 종목 리스트
@@ -73,32 +71,28 @@ FLAT_NEWS = [
     "시장 모멘텀 부족으로 보합권 내 소폭 등락 지속",
 ]
 
-# 다국어 텍스트 패키지
+# 다국어 텍스트 패키지 (시작/설정창 항목 이모지 제거)
 TEXT_PACK = {
     "한국어": {
         "title": "📈 모의 주식 & 가상화폐 트레이딩 시뮬레이터",
-        "setting_header": "⚙️ 게임 초기 설정",
-        "lang_select": "🌐 언어 선택 (Language)",
-        "diff_select": "🎯 난이도 선택",
-        "diff_easy": "🌱 쉬움 (자본금 1,000만원 / 변동성 낮음)",
-        "diff_normal": "⚖️ 보통 (자본금 500만원 / 변동성 보통)",
-        "diff_hard": "🔥 어려움 (자본금 100만원 / 변동성 높음)",
-        "theme_select": "🎨 화면 테마 설정",
-        "theme_light": "☀️ 라이트 모드 (기본)",
-        "theme_dark": "🌙 다크 모드",
-        "theme_black": "🖤 올블랙 모드",
-        "theme_blue": "🔵 블루 모드",
-        "theme_custom": "🌈 커스텀 색상",
+        "setting_header": "게임 초기 설정",
+        "lang_select": "언어 선택 (Language)",
+        "theme_select": "화면 테마 설정",
+        "theme_light": "라이트 모드 (기본)",
+        "theme_dark": "다크 모드",
+        "theme_black": "올블랙 모드",
+        "theme_blue": "블루 모드",
+        "theme_custom": "커스텀 색상",
         "custom_bg": "배경색",
         "custom_text": "글자색",
         "custom_card": "카드/테이블 배경색",
-        "chart_header": "📊 차트 커스텀 설정",
+        "chart_header": "차트 커스텀 설정",
         "chart_type": "차트 형태 선택",
         "chart_line": "꺾은선 그래프 (Line)",
         "chart_bar": "막대 그래프 (Bar)",
         "up_color": "상승(양봉) 색상",
         "down_color": "하락(음봉) 색상",
-        "start_game": "🚀 게임 시작하기",
+        "start_game": "게임 시작하기",
         "back_to_start": "⚙️ 게임 설정으로",
         "reset_game": "🔄 다시하기 (게임 초기화)",
         "top_gainer": "🚀 최고 상승:",
@@ -157,28 +151,24 @@ TEXT_PACK = {
     },
     "English": {
         "title": "📈 Stock & Crypto Trading Simulator",
-        "setting_header": "⚙️ Initial Game Settings",
-        "lang_select": "🌐 Select Language",
-        "diff_select": "🎯 Select Difficulty",
-        "diff_easy": "🌱 Easy (Cash: 10M KRW / Low Volatility)",
-        "diff_normal": "⚖️ Normal (Cash: 5M KRW / Normal Volatility)",
-        "diff_hard": "🔥 Hard (Cash: 1M KRW / High Volatility)",
-        "theme_select": "🎨 Theme Settings",
-        "theme_light": "☀️ Light Mode (Default)",
-        "theme_dark": "🌙 Dark Mode",
-        "theme_black": "🖤 All-Black Mode",
-        "theme_blue": "🔵 Blue Mode",
-        "theme_custom": "🌈 Custom Theme",
+        "setting_header": "Initial Game Settings",
+        "lang_select": "Select Language",
+        "theme_select": "Theme Settings",
+        "theme_light": "Light Mode (Default)",
+        "theme_dark": "Dark Mode",
+        "theme_black": "All-Black Mode",
+        "theme_blue": "Blue Mode",
+        "theme_custom": "Custom Theme",
         "custom_bg": "Background Color",
         "custom_text": "Text Color",
         "custom_card": "Card Background",
-        "chart_header": "📊 Chart Customization",
+        "chart_header": "Chart Customization",
         "chart_type": "Select Chart Type",
         "chart_line": "Line Chart",
         "chart_bar": "Bar Chart",
         "up_color": "Bullish Color",
         "down_color": "Bearish Color",
-        "start_game": "🚀 Start Game",
+        "start_game": "Start Game",
         "back_to_start": "⚙️ Back to Settings",
         "reset_game": "🔄 Reset / Retry",
         "top_gainer": "🚀 Top Gainer:",
@@ -243,15 +233,13 @@ TEXT_PACK = {
 if "language" not in st.session_state:
     st.session_state.language = "한국어"
 if "theme" not in st.session_state:
-    st.session_state.theme = "☀️ 라이트 모드 (기본)"
-if "difficulty" not in st.session_state:
-    st.session_state.difficulty = "🌱 쉬움 (자본금 1,000만원 / 변동성 낮음)"
+    st.session_state.theme = "라이트 모드 (기본)"
 if "chart_type" not in st.session_state:
     st.session_state.chart_type = "꺾은선 그래프 (Line)"
 if "up_color" not in st.session_state:
-    st.session_state.up_color = "#E03131"  # 상승 빨간색
+    st.session_state.up_color = "#E03131"
 if "down_color" not in st.session_state:
-    st.session_state.down_color = "#1971C2"  # 하락 파란색
+    st.session_state.down_color = "#1971C2"
 if "custom_bg" not in st.session_state:
     st.session_state.custom_bg = "#FFFFFF"
 if "custom_text" not in st.session_state:
@@ -264,14 +252,7 @@ if "game_started" not in st.session_state:
 
 
 def init_game_session():
-    diff_key = st.session_state.get("difficulty", "보통")
-    if "쉬움" in diff_key or "Easy" in diff_key:
-        cash_val = DIFFICULTY_SETTINGS["쉬움"]["cash"]
-    elif "어려움" in diff_key or "Hard" in diff_key:
-        cash_val = DIFFICULTY_SETTINGS["어려움"]["cash"]
-    else:
-        cash_val = DIFFICULTY_SETTINGS["보통"]["cash"]
-
+    cash_val = DIFFICULTY_SETTINGS["보통"]["cash"]
     st.session_state.cash = float(cash_val)
     st.session_state.day = 1
     st.session_state.coins = pd.Series(DEFAULT_COINS).to_dict()
@@ -384,23 +365,13 @@ def execute_sell(ticker):
 
 
 def next_day_market():
-    """'다음 날로' 버튼을 누를 때만 날짜와 시세가 함께 변동하도록 보장"""
     st.session_state.day += 1
-
-    diff_key = st.session_state.get("difficulty", "보통")
-    if "쉬움" in diff_key or "Easy" in diff_key:
-        volatility = DIFFICULTY_SETTINGS["쉬움"]["volatility"]
-    elif "어려움" in diff_key or "Hard" in diff_key:
-        volatility = DIFFICULTY_SETTINGS["어려움"]["volatility"]
-    else:
-        volatility = DIFFICULTY_SETTINGS["보통"]["volatility"]
-
+    volatility = DIFFICULTY_SETTINGS["보통"]["volatility"]
     time_str = f"Day {st.session_state.day}"
 
     for ticker, data in st.session_state.coins.items():
         change_rate = random.uniform(-volatility, volatility)
 
-        # 특수 뉴스 이벤트 발생 여부
         if random.random() < 0.2:
             change_rate = random.choice([0.15, 0.25, -0.15, -0.25])
 
@@ -412,7 +383,6 @@ def next_day_market():
         data["price"] = new_price
         data["history"].append(new_price)
 
-        # 뉴스 로그 생성
         if change_rate > 0.05:
             news_txt = random.choice(BULL_NEWS)
             status_tag = "🚀 호재"
@@ -466,7 +436,7 @@ elif "커스텀" in theme_choice or "Custom" in theme_choice:
     text_color = st.session_state.custom_text
     card_bg = st.session_state.custom_card
     border_color = "#CCCCCC"
-else:  # 기본값: 라이트 모드
+else:
     bg_color, text_color, card_bg, border_color = (
         "#FFFFFF",
         "#212529",
@@ -504,7 +474,7 @@ st.markdown(
 )
 
 # ==========================================
-# 6. 화면 1: 게임 설정 / 시작 화면 (2x2 그리드)
+# 6. 화면 1: 게임 설정 / 시작 화면 (이모지 제외, 난이도 제거)
 # ==========================================
 if not st.session_state.game_started:
     st.title(txt["title"])
@@ -523,20 +493,11 @@ if not st.session_state.game_started:
         ]
         st.selectbox(txt["theme_select"], theme_options, key="theme")
 
-    row2_col1, row2_col2 = st.columns(2)
-    with row2_col1:
-        diff_options = [
-            txt["diff_easy"],
-            txt["diff_normal"],
-            txt["diff_hard"],
-        ]
-        st.selectbox(txt["diff_select"], diff_options, key="difficulty")
-    with row2_col2:
-        st.selectbox(
-            txt["chart_type"],
-            [txt["chart_line"], txt["chart_bar"]],
-            key="chart_type",
-        )
+    st.selectbox(
+        txt["chart_type"],
+        [txt["chart_line"], txt["chart_bar"]],
+        key="chart_type",
+    )
 
     st.divider()
     st.subheader(txt["chart_header"])
@@ -562,7 +523,6 @@ if not st.session_state.game_started:
 # 7. 화면 2: 메인 트레이딩 게임 화면
 # ==========================================
 else:
-    # 상단 버튼 (설정으로 / 다시하기)
     col_title, col_btn1, col_btn2 = st.columns([3, 1, 1])
     with col_title:
         st.title(txt["title"])
@@ -583,7 +543,6 @@ else:
             init_game_session()
             st.rerun()
 
-    # 급상승 / 급락 실시간 위젯
     sorted_stocks = sorted(
         st.session_state.coins.items(),
         key=lambda x: x[1]["change"],
@@ -604,7 +563,6 @@ else:
 
     st.divider()
 
-    # 메인 탭
     tab1, tab2, tab3, tab4 = st.tabs(
         [
             txt["tab_exchange"],
@@ -614,7 +572,6 @@ else:
         ]
     )
 
-    # TAB 1: 거래소
     with tab1:
         categories = [txt["all"]] + sorted(
             list(
@@ -653,7 +610,6 @@ else:
 
         st.divider()
 
-        # 📊 차트 세로 길이 축소 & 옆에 뉴스 창 나란히 배치
         st.subheader(txt["chart_title"])
         col_chart, col_news = st.columns([1.3, 1])
 
@@ -689,7 +645,6 @@ else:
                     )
                 )
 
-            # 차트 높이 축소 설정 (height=250)
             fig.update_layout(
                 paper_bgcolor=card_bg,
                 plot_bgcolor=card_bg,
@@ -723,7 +678,6 @@ else:
 
         st.divider()
 
-        # ⏱️ 시간 흐름 제어 버튼 (다음 날로 / 다시하기) - 고유 key 부여
         c_btn1, c_btn2 = st.columns(2)
         with c_btn1:
             if st.button(
@@ -745,17 +699,7 @@ else:
 
         st.divider()
 
-        # 자산 요약
-        diff_key = st.session_state.get("difficulty", "보통")
-        initial_start_cash = (
-            DIFFICULTY_SETTINGS["쉬움"]["cash"]
-            if "쉬움" in diff_key or "Easy" in diff_key
-            else (
-                DIFFICULTY_SETTINGS["어려움"]["cash"]
-                if "어려움" in diff_key or "Hard" in diff_key
-                else DIFFICULTY_SETTINGS["보통"]["cash"]
-            )
-        )
+        initial_start_cash = DIFFICULTY_SETTINGS["보통"]["cash"]
 
         total_coin_val = sum(
             st.session_state.portfolio.get(t, 0)
@@ -784,7 +728,6 @@ else:
 
         st.divider()
 
-        # 매수/매도 인터페이스
         st.subheader(txt["trade_header"])
         t_col1, t_col2 = st.columns(2)
 
@@ -865,7 +808,6 @@ else:
                 args=(selected_ticker,),
             )
 
-    # TAB 2: 민팅 (신규 상장)
     with tab2:
         st.subheader(txt["mint_header"])
         with st.form("mint_form"):
@@ -907,7 +849,6 @@ else:
                     st.success(f"🎉 {txt['mint_success']}")
                     st.rerun()
 
-    # TAB 3: 포트폴리오
     with tab3:
         st.subheader(txt["port_header"])
         portfolio_data = []
@@ -936,7 +877,6 @@ else:
         else:
             st.info(txt["no_port"])
 
-    # TAB 4: 전체 뉴스 기록
     with tab4:
         st.subheader(txt["all_news_header"])
         for news in st.session_state.news_log:
