@@ -144,7 +144,7 @@ def init_game_session():
 
 
 # ==========================================
-# 3. 사이드바 (게임 진행 중 사용)
+# 3. 사이드바
 # ==========================================
 with st.sidebar:
     st.header("⚙️ 실시간 설정")
@@ -185,7 +185,7 @@ with st.sidebar:
 
 
 # ==========================================
-# 4. 트레이딩 & 수량 조절 콜백 함수
+# 4. 트레이딩 & 시장 계산 콜백 함수
 # ==========================================
 def add_buy_qty(val):
     st.session_state.buy_qty += val
@@ -265,6 +265,8 @@ def next_day_market():
     volatility = st.session_state.volatility
     time_str = f"Day {st.session_state.day}"
 
+    has_news = False
+
     for ticker, data in st.session_state.coins.items():
         change_rate = random.uniform(-volatility, volatility)
         if random.random() < 0.15:
@@ -275,28 +277,45 @@ def next_day_market():
         data["price"] = new_price
         data["history"].append(new_price)
 
-        if change_rate > 0.04:
+        # 💡 변동 기준을 ±1%로 설정하여 속보가 매일 업데이트되도록 구현
+        if change_rate > 0.01:
             st.session_state.news_log.insert(
                 0,
                 {
                     "time": time_str,
                     "name": data["name"],
-                    "msg": random.choice(BULL_NEWS),
+                    "msg": random.choice(BULL_NEWS) + f" (▲ {data['change']:+.2f}%)",
                 },
             )
-        elif change_rate < -0.04:
+            has_news = True
+        elif change_rate < -0.01:
             st.session_state.news_log.insert(
                 0,
                 {
                     "time": time_str,
                     "name": data["name"],
-                    "msg": random.choice(BEAR_NEWS),
+                    "msg": random.choice(BEAR_NEWS) + f" (▼ {data['change']:+.2f}%)",
                 },
             )
+            has_news = True
+
+    # 변동폭이 너무 적어 뉴스가 누락될 경우 하루 1개 무조건 보장 생성
+    if not has_news:
+        sample_ticker = random.choice(list(st.session_state.coins.keys()))
+        sample_data = st.session_state.coins[sample_ticker]
+        msg = random.choice(BULL_NEWS) if sample_data["change"] >= 0 else random.choice(BEAR_NEWS)
+        st.session_state.news_log.insert(
+            0,
+            {
+                "time": time_str,
+                "name": sample_data["name"],
+                "msg": msg + f" ({sample_data['change']:+.2f}%)",
+            },
+        )
 
 
 # ==========================================
-# 5. 테마 & 고급 카드 CSS / 뱃지 헬퍼
+# 5. 테마 CSS / 뱃지 헬퍼
 # ==========================================
 active_theme = st.session_state.get(
     "sb_theme", st.session_state.get("theme", "라이트 모드 (기본)")
@@ -591,7 +610,7 @@ else:
                     yaxis=dict(gridcolor=border_color, showgrid=True),
                     annotations=[
                         {
-                            "text": "1일 차에는 변동 데이터가 없습니다.<br>'다음 날로 가기' 또는 '자동 날짜 진행'을 누르세요.",
+                            "text": "1일 차에는 변동 데이터가 없습니다.<br>'다음 날로 가기' 또는 '자동 날짜 진행'을 이용하세요.",
                             "xref": "paper",
                             "yref": "paper",
                             "showarrow": False,
@@ -713,7 +732,7 @@ else:
                 args=(selected_ticker,),
             )
 
-        # 자동 진행 토글 활성화 시 루프 실행
+        # 자동 진행 스위치 활성화 시 루프 실행
         if st.session_state.get("auto_play_toggle", False):
             time.sleep(1.5)
             next_day_market()
@@ -794,5 +813,8 @@ else:
 
     with tab5:
         st.subheader("📰 실시간 속보 기록")
-        for log in st.session_state.news_log:
-            st.write(f"- `{log['time']}` **[{log['name']}]** {log['msg']}")
+        if st.session_state.news_log:
+            for log in st.session_state.news_log:
+                st.write(f"- `{log['time']}` **[{log['name']}]** {log['msg']}")
+        else:
+            st.info("아직 누적된 속보가 없습니다. 날짜를 넘기면 뉴스가 기록됩니다.")
