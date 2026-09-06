@@ -14,15 +14,37 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# [신규] 난이도 설정 항목
+DIFFICULTIES = {
+    "🟢 쉬움 (Easy)": {
+        "cash_mult": 1.5,
+        "vol_mult": 0.8,
+        "event_mult": 0.7,
+        "desc": "💰 시작 자금 +50% | 📉 변동성 -20% | 🛡️ 악재 확률 감소",
+    },
+    "🟡 보통 (Normal)": {
+        "cash_mult": 1.0,
+        "vol_mult": 1.0,
+        "event_mult": 1.0,
+        "desc": "⚖️ 기본 표준 난이도",
+    },
+    "🔴 어려움 (Hard)": {
+        "cash_mult": 0.7,
+        "vol_mult": 1.3,
+        "event_mult": 1.4,
+        "desc": "💸 시작 자금 -30% | 📈 변동성 +30% | ⚠️ 악재 빈번 발생",
+    },
+}
+
 GAME_MODES = {
     "🌱 캐주얼 모드": {
         "cash": 30000000,
         "volatility": 0.03,
         "event_prob": 0.10,
-        "desc": "💰 시작 자금: 3,000만 원 | 📊 낮은 변동성 | 편안하게 적응하기 좋은 모드",
+        "desc": "📊 낮은 변동성 | 편안하게 적응하기 좋은 모드",
         "intro_title": "☕ 여유로운 첫걸음, 자산가 가문의 유산",
         "intro_story": """
-        은퇴한 월가 트레이더 삼촌이 당신에게 3,000만 원의 씨앗 돈을 건넸습니다.
+        은퇴한 월가 트레이더 삼촌이 당신에게 씨앗 돈을 건넸습니다.
         
         "얘야, 시장은 급하게 서두르는 사람의 돈을 느긋한 사람에게 옮기는 곳이란다. 
         큰 위험 부담 없이 천천히 주식과 코인 시장의 흐름을 익혀보려무나."
@@ -34,11 +56,11 @@ GAME_MODES = {
         "cash": 10000000,
         "volatility": 0.05,
         "event_prob": 0.25,
-        "desc": "💰 시작 자금: 1,000만 원 | ⚔️ AI 트레이더들과 실시간 자산 순위 다툼",
+        "desc": "⚔️ AI 트레이더들과 실시간 자산 순위 다툼",
         "intro_title": "🏆 챔피언십 리그: 월가 신진 트레이더 대전",
         "intro_story": """
         전 세계 초대형 AI 트레이더들이 참가하는 글로벌 투자 서바이벌에 초대받았습니다.
-        주어진 자금은 1,000만 원. 상대는 가치투자의 귀재, 초단타 AI, 혁신 기술 투자자입니다.
+        상대는 가치투자의 귀재, 초단타 AI, 혁신 기술 투자자입니다.
         
         "랭킹 1위를 차지해 실력을 증명하고 글로벌 투자 시장의 왕좌를 차지하십시오!"
         
@@ -49,11 +71,11 @@ GAME_MODES = {
         "cash": 5000000,
         "volatility": 0.09,
         "event_prob": 0.45,
-        "desc": "💰 시작 자금: 500만 원 | 🚨 금리 변동, 코인 해킹 등 대형 시장 쇼크 빈발",
+        "desc": "🚨 금리 변동, 코인 해킹 등 대형 시장 쇼크 빈발",
         "intro_title": "🌪️ 대폭락과 대폭등, 혼돈의 금융 시장",
         "intro_story": """
         글로벌 금리 인상 쇼크와 대형 거래소의 해킹 악재가 소용돌이치는 최악의 경제 위기 상황.
-        수많은 투자자들이 손실을 입고 떠나가는 가운데, 당신은 남은 500만 원으로 시장에 뛰어듭니다.
+        수많은 투자자들이 손실을 입고 떠나가는 가운데, 당신은 시장에 뛰어듭니다.
         
         "위기 속에 거대한 기회가 있다. 극심한 변동성을 이겨내고 시장의 전설이 될 수 있을 것인가?"
         
@@ -131,13 +153,22 @@ if "opening_done" not in st.session_state:
 
 def init_game_session():
     mode_name = st.session_state.get("mode_select", "⚔️ 라이벌 경쟁 모드")
+    diff_name = st.session_state.get("difficulty_select", "🟡 보통 (Normal)")
+    
     mode_config = GAME_MODES.get(mode_name, GAME_MODES["⚔️ 라이벌 경쟁 모드"])
+    diff_config = DIFFICULTIES.get(diff_name, DIFFICULTIES["🟡 보통 (Normal)"])
+
+    # 난이도 배율 반영
+    final_cash = float(mode_config["cash"] * diff_config["cash_mult"])
+    final_volatility = mode_config["volatility"] * diff_config["vol_mult"]
+    final_event_prob = min(0.9, mode_config["event_prob"] * diff_config["event_mult"])
 
     st.session_state.current_mode = mode_name
-    st.session_state.cash = float(mode_config["cash"])
-    st.session_state.initial_cash = float(mode_config["cash"])
-    st.session_state.volatility = mode_config["volatility"]
-    st.session_state.event_prob = mode_config["event_prob"]
+    st.session_state.current_difficulty = diff_name
+    st.session_state.cash = final_cash
+    st.session_state.initial_cash = final_cash
+    st.session_state.volatility = final_volatility
+    st.session_state.event_prob = final_event_prob
     st.session_state.day = 1
     st.session_state.game_cleared = False
     st.session_state.ending_type = None
@@ -155,9 +186,9 @@ def init_game_session():
     st.session_state.sell_qty = 0.0
 
     st.session_state.rivals = {
-        "워렌 버핏 AI (가치투자)": {"cash": mode_config["cash"] * 1.2, "style": "safe"},
-        "단타 래빗 (초단타)": {"cash": mode_config["cash"] * 0.9, "style": "high_risk"},
-        "돈나무 언니 (혁신성장)": {"cash": mode_config["cash"] * 1.0, "style": "growth"},
+        "워렌 버핏 AI (가치투자)": {"cash": final_cash * 1.2, "style": "safe"},
+        "단타 래빗 (초단타)": {"cash": final_cash * 0.9, "style": "high_risk"},
+        "돈나무 언니 (혁신성장)": {"cash": final_cash * 1.0, "style": "growth"},
     }
 
     st.session_state.sb_language = st.session_state.get("language", "한국어")
@@ -299,6 +330,9 @@ def next_day_market():
 with st.sidebar:
     st.header("⚙️ 게임 설정")
     if st.session_state.game_started and st.session_state.opening_done:
+        st.write(f"🎮 **모드**: {st.session_state.get('current_mode')}")
+        st.write(f"🎚️ **난이도**: {st.session_state.get('current_difficulty')}")
+        st.divider()
         st.selectbox("🌐 언어 선택", ["한국어", "English"], key="sb_language")
         st.selectbox("🎨 화면 테마 설정", ["다크 모드", "라이트 모드 (기본)", "올블랙 모드", "블루 모드"], key="sb_theme")
         st.selectbox("📊 그래프 형태", ["꺾은선 그래프 (Line)", "막대 그래프 (Bar)"], key="sb_chart_type")
@@ -342,7 +376,7 @@ st.markdown(
 # 5. 메인 레이아웃 및 3단계 상태 관리
 # ==========================================
 
-# [단계 1] 시작 화면 설정
+# [단계 1] 시작 화면 설정 (난이도 추가)
 if not st.session_state.game_started:
     st.title("📈 글로벌 모의 주식 & 가상자산 시뮬레이터")
     st.divider()
@@ -350,17 +384,21 @@ if not st.session_state.game_started:
     c1, c2 = st.columns(2)
     with c1:
         st.selectbox("🎯 게임 모드 선택", list(GAME_MODES.keys()), key="mode_select")
+        st.selectbox("🎚️ 난이도 선택", list(DIFFICULTIES.keys()), index=1, key="difficulty_select") # 난이도 선택 추가
         st.selectbox("🌐 언어 선택", ["한국어", "English"], key="language")
     with c2:
         st.selectbox("🎨 화면 테마 설정", ["다크 모드", "라이트 모드 (기본)", "올블랙 모드", "블루 모드"], key="theme")
         st.selectbox("📊 그래프 형태", ["꺾은선 그래프 (Line)", "막대 그래프 (Bar)"], key="chart_type")
 
-    col_u, col_d = st.columns(2)
-    with col_u: st.color_picker("🔴 상승 색상", value="#EF4444", key="up_color")
-    with col_d: st.color_picker("🔵 하락 색상", value="#2563EB", key="down_color")
+        col_u, col_d = st.columns(2)
+        with col_u: st.color_picker("🔴 상승 색상", value="#EF4444", key="up_color")
+        with col_d: st.color_picker("🔵 하락 색상", value="#2563EB", key="down_color")
 
     mode_info = GAME_MODES[st.session_state.get("mode_select", "⚔️ 라이벌 경쟁 모드")]
-    st.info(f"**[{st.session_state.get('mode_select')}]** — {mode_info['desc']}")
+    diff_info = DIFFICULTIES[st.session_state.get("difficulty_select", "🟡 보통 (Normal)")]
+
+    st.divider()
+    st.info(f"📌 **모드 안내**: {mode_info['desc']}\n\n⚙️ **난이도 혜택**: {diff_info['desc']}")
 
     st.divider()
     if st.button("🚀 스토리 시작하기", type="primary", use_container_width=True):
@@ -371,10 +409,12 @@ if not st.session_state.game_started:
 # [단계 2] 모드별 스토리 오프닝 연출
 elif st.session_state.game_started and not st.session_state.opening_done:
     mode_name = st.session_state.current_mode
+    diff_name = st.session_state.current_difficulty
     mode_info = GAME_MODES[mode_name]
 
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown(f"# {mode_info['intro_title']}")
+    st.caption(f"선택한 난이도: **{diff_name}**")
     st.divider()
 
     st.markdown(
@@ -387,7 +427,7 @@ elif st.session_state.game_started and not st.session_state.opening_done:
     )
 
     st.write("")
-    st.info(f"💰 **초기 투자 자금**: {st.session_state.cash:,.0f} 원")
+    st.info(f"💰 **난이도가 적용된 초기 투자 자금**: {st.session_state.cash:,.0f} 원")
 
     st.divider()
     if st.button("💼 시장에 입장하여 거래 시작하기 ➔", type="primary", use_container_width=True):
