@@ -302,7 +302,7 @@ def show_trade_dialog(msg, status="info"):
         st.error(msg)
     else:
         st.info(msg)
-    if st.button("확인", use_container_width=True):
+    if st.button("확인", key="dialog_confirm_btn", use_container_width=True):
         st.rerun()
 
 
@@ -549,7 +549,10 @@ if not st.session_state.game_started:
     st.divider()
 
     if st.button(
-        txt["start_game"], type="primary", use_container_width=True
+        txt["start_game"],
+        key="btn_start_game_main",
+        type="primary",
+        use_container_width=True,
     ):
         init_game_session()
         st.session_state.game_started = True
@@ -564,11 +567,19 @@ else:
     with col_title:
         st.title(txt["title"])
     with col_btn1:
-        if st.button(txt["back_to_start"], use_container_width=True):
+        if st.button(
+            txt["back_to_start"],
+            key="btn_back_to_start_top",
+            use_container_width=True,
+        ):
             st.session_state.game_started = False
             st.rerun()
     with col_btn2:
-        if st.button(txt["reset_game"], use_container_width=True):
+        if st.button(
+            txt["reset_game"],
+            key="reset_btn_top",
+            use_container_width=True,
+        ):
             init_game_session()
             st.rerun()
 
@@ -642,7 +653,7 @@ else:
 
         st.divider()
 
-        # 📊 [핵심] 차트 세로 길이 축소 & 옆에 뉴스 창 나란히 배치 (Grid Layout)
+        # 📊 차트 세로 길이 축소 & 옆에 뉴스 창 나란히 배치
         st.subheader(txt["chart_title"])
         col_chart, col_news = st.columns([1.3, 1])
 
@@ -712,16 +723,23 @@ else:
 
         st.divider()
 
-        # ⏱️ 시간 흐름 제어 버튼 (다음 날로 / 다시하기)
+        # ⏱️ 시간 흐름 제어 버튼 (다음 날로 / 다시하기) - 고유 key 부여
         c_btn1, c_btn2 = st.columns(2)
         with c_btn1:
             if st.button(
-                txt["next_day"], type="primary", use_container_width=True
+                txt["next_day"],
+                key="btn_next_day_control",
+                type="primary",
+                use_container_width=True,
             ):
                 next_day_market()
                 st.rerun()
         with c_btn2:
-            if st.button(txt["reset_game"], use_container_width=True):
+            if st.button(
+                txt["reset_game"],
+                key="reset_btn_bottom",
+                use_container_width=True,
+            ):
                 init_game_session()
                 st.rerun()
 
@@ -799,6 +817,7 @@ else:
 
             st.button(
                 txt["btn_buy"],
+                key="btn_execute_buy_action",
                 type="primary",
                 use_container_width=True,
                 on_click=execute_buy,
@@ -839,6 +858,7 @@ else:
 
             st.button(
                 txt["btn_sell"],
+                key="btn_execute_sell_action",
                 type="primary",
                 use_container_width=True,
                 on_click=execute_sell,
