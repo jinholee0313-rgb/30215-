@@ -216,31 +216,31 @@ LUXURY_SHOP = {
         "name": "입문용 전기 자전거",
         "price": 1500000,
         "icon": "🚲",
-        "desc": "출퇴근길을 쾌적하게 만들어주는 친환경 자전거",
+        "desc": "출퇴근길 호재 버프! [전 종목 상승률 +1.0%p]",
     },
     "ITEM_2": {
         "name": "최신형 스마트폰 & 태블릿",
         "price": 3500000,
         "icon": "📱",
-        "desc": "트레이딩 호가창을 끊김 없이 보게 해주는 필수템",
+        "desc": "초고속 정보 수집 버프! [전 종목 상승률 +1.0%p]",
     },
     "ITEM_3": {
         "name": "신형 국산 세단",
         "price": 45000000,
         "icon": "🚗",
-        "desc": "첫 투자 수익으로 마련한 승차감 좋은 데일리 카",
+        "desc": "VIP 네트워킹 호재 버프! [전 종목 상승률 +1.0%p]",
     },
     "ITEM_4": {
         "name": "럭셔리 워치",
         "price": 120000000,
         "icon": "⌚",
-        "desc": "손목 위에서 빛나는 성공한 트레이더의 상징",
+        "desc": "성공한 트레이더 신뢰 버프! [전 종목 상승률 +1.0%p]",
     },
     "ITEM_5": {
         "name": "한강뷰 고급 아파트",
         "price": 2500000000,
         "icon": "🏙️",
-        "desc": "야경을 내려다보며 여유를 즐기는 랜드마크 주거지",
+        "desc": "랜드마크 자산가 호재 버프! [전 종목 상승률 +1.0%p]",
     },
 }
 
@@ -272,7 +272,7 @@ def init_game_session():
     st.session_state.portfolio = {
         ticker: {"qty": 0.0, "avg_price": 0.0} for ticker in DEFAULT_COINS
     }
-    st.session_state.owned_items = {}
+    st.session_state.owned_items = {}  # 보유 사치품 관리 (종목 키: True)
     st.session_state.news_log = []
     st.session_state.buy_qty = 0.0
     st.session_state.sell_qty = 0.0
@@ -280,8 +280,8 @@ def init_game_session():
     st.session_state.sb_language = st.session_state.get("language", "한국어")
     st.session_state.sb_theme = st.session_state.get("theme", "라이트 모드 (기본)")
     st.session_state.sb_chart_type = st.session_state.get("chart_type", "막대 그래프 (Bar)")
-    st.session_state.sb_up_color = st.session_state.get("up_color", "#E03131")    # 빨강 (상승)
-    st.session_state.sb_down_color = st.session_state.get("down_color", "#1971C2")  # 파랑 (하락)
+    st.session_state.sb_up_color = st.session_state.get("up_color", "#E03131")    # 빨강
+    st.session_state.sb_down_color = st.session_state.get("down_color", "#1971C2")  # 파랑
 
 
 # ==========================================
@@ -406,14 +406,21 @@ def next_day_market():
     volatility = st.session_state.volatility
     time_str = f"Day {st.session_state.day}"
 
+    # 💡 [사치품 호재 효과 적용] 보유 사치품 1개당 매일 상승률 +1.0%p 보너스
+    owned_luxury_count = len(st.session_state.owned_items)
+    luxury_buff = owned_luxury_count * 0.01  # 개당 +1% 상승향 버프
+
     has_news = False
 
     for ticker, data in st.session_state.coins.items():
-        change_rate = random.uniform(-volatility, volatility)
-        if random.random() < 0.15:
-            change_rate = random.choice([0.15, 0.25, -0.20, -0.30])
+        # 기본 무작위 변동에 사치품 호재 버프(luxury_buff)가 추가됨
+        change_rate = random.uniform(-volatility + luxury_buff, volatility + luxury_buff)
+        
+        # 호재 버프가 많을수록 급등 확률 상승
+        if random.random() < (0.15 + owned_luxury_count * 0.03):
+            change_rate = random.choice([0.15, 0.25, -0.15, -0.20]) + luxury_buff
 
-        new_price = round(data["price"] * (1 + change_rate), 2)
+        new_price = max(1.0, round(data["price"] * (1 + change_rate), 2))
         data["change"] = change_rate * 100
         data["price"] = new_price
         data["history"].append(new_price)
@@ -641,7 +648,6 @@ else:
     st.title("📈 트레이딩 대시보드")
 
     active_chart_type = st.session_state.get("sb_chart_type", st.session_state.get("chart_type", "막대 그래프 (Bar)"))
-    # 상승 = 빨간색(#E03131), 하락 = 파란색(#1971C2)
     active_up_color = st.session_state.get("sb_up_color", st.session_state.get("up_color", "#E03131"))
     active_down_color = st.session_state.get("sb_down_color", st.session_state.get("down_color", "#1971C2"))
 
@@ -739,7 +745,7 @@ else:
                 y_bottom = max(0, min_p - p_margin)
                 y_top = max_p + p_margin
 
-                # 💡 전일 대비 상승 시 빨강(active_up_color), 하락 시 파랑(active_down_color)
+                # 전일 대비 상승 시 빨강, 하락 시 파랑
                 bar_colors = [
                     active_up_color if (i == 0 or history[i] >= history[i - 1]) else active_down_color
                     for i in range(len(history))
@@ -759,7 +765,6 @@ else:
                         )
                     )
                 else:
-                    # 💡 꺾은선 그래프: 날짜별(구간별)로 상승하면 빨강 선/점, 하락하면 파랑 선/점으로 개별 바인딩
                     for i in range(1, len(history)):
                         seg_color = active_up_color if history[i] >= history[i - 1] else active_down_color
                         fig.add_trace(
@@ -918,23 +923,43 @@ else:
             next_day_market()
             st.rerun()
 
+    # 💡 [2] 사치품 상점 : 1회 한정 구매 & 호재 효과 설명 안내
     with tab2:
-        st.subheader("💎 사치품 상점")
+        st.subheader("💎 사치품 상점 (종목당 1회 한정 구매)")
+        owned_cnt = len(st.session_state.owned_items)
+        st.info(
+            f"💡 **사치품 호재 버프 시스템**: 현재 **{owned_cnt}개** 보유 중! "
+            f"(사치품 1개당 매일 모든 종목에 **+1.0%p 주가 상승 호재 보너스** 부여 중)"
+        )
+        
         g_cols = st.columns(2)
         for idx, (k, item) in enumerate(LUXURY_SHOP.items()):
             with g_cols[idx % 2]:
                 st.markdown(f"**{item['icon']} {item['name']}**")
                 st.write(f"가격: **{item['price']:,.0f}원** | {item['desc']}")
-                if st.button(f"구매하기 ({item['name']})", key=f"buy_luxury_{k}"):
-                    if st.session_state.cash >= item["price"]:
-                        st.session_state.cash -= item["price"]
-                        st.session_state.owned_items[k] = (
-                            st.session_state.owned_items.get(k, 0) + 1
-                        )
-                        st.balloons()
-                        st.toast("🎉 구매 성공!", icon="🎁")
-                    else:
-                        st.toast("❌ 잔액 부족!", icon="⚠️")
+                
+                is_owned = k in st.session_state.owned_items
+                if is_owned:
+                    st.button(
+                        f"✅ 보유 중 (구매 완료)",
+                        key=f"buy_luxury_{k}",
+                        disabled=True,
+                        use_container_width=True,
+                    )
+                else:
+                    if st.button(
+                        f"구매하기 ({item['name']})",
+                        key=f"buy_luxury_{k}",
+                        use_container_width=True,
+                    ):
+                        if st.session_state.cash >= item["price"]:
+                            st.session_state.cash -= item["price"]
+                            st.session_state.owned_items[k] = True
+                            st.balloons()
+                            st.toast(f"🎉 {item['name']} 구매 완료! 전 종목 호재 버프가 강화됩니다!", icon="🎁")
+                            st.rerun()
+                        else:
+                            st.toast("❌ 잔액이 부족합니다!", icon="⚠️")
 
     with tab3:
         st.subheader("💼 내 포트폴리오")
