@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ==========================================
-# 1. 페이지 기본 설정 및 기본 테마 지정
+# 1. 페이지 기본 설정 및 기본 데이터
 # ==========================================
 st.set_page_config(
     page_title="주식 & 가상화폐 트레이딩 시뮬레이터",
@@ -13,12 +13,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# 난이도 기본 데이터 (기본값: 보통)
+# 난이도 옵션 설정
 DIFFICULTY_SETTINGS = {
+    "쉬움": {"cash": 10000000, "volatility": 0.03},
     "보통": {"cash": 5000000, "volatility": 0.05},
+    "어려움": {"cash": 2000000, "volatility": 0.08},
 }
 
-# 기본 종목 리스트
 DEFAULT_COINS = {
     "HYUNDAI": {
         "name": "현대자동차",
@@ -50,7 +51,6 @@ DEFAULT_COINS = {
     },
 }
 
-# 상황별 속보 문구 풀
 BULL_NEWS = [
     "기관 투자자 대규모 자금 유입 발표로 매수세 유입",
     "현물 ETF 순유입액 신고가 달성하며 강한 반등",
@@ -71,11 +71,11 @@ FLAT_NEWS = [
     "시장 모멘텀 부족으로 보합권 내 소폭 등락 지속",
 ]
 
-# 다국어 텍스트 패키지 (시작/설정창 항목 이모지 제거)
 TEXT_PACK = {
     "한국어": {
         "title": "📈 모의 주식 & 가상화폐 트레이딩 시뮬레이터",
         "setting_header": "게임 초기 설정",
+        "diff_select": "난이도 선택",
         "lang_select": "언어 선택 (Language)",
         "theme_select": "화면 테마 설정",
         "theme_light": "라이트 모드 (기본)",
@@ -93,8 +93,7 @@ TEXT_PACK = {
         "up_color": "상승(양봉) 색상",
         "down_color": "하락(음봉) 색상",
         "start_game": "게임 시작하기",
-        "back_to_start": "⚙️ 게임 설정으로",
-        "reset_game": "🔄 다시하기 (게임 초기화)",
+        "reset_game": "🔄 다시하기 (시작 화면으로)",
         "top_gainer": "🚀 최고 상승:",
         "top_loser": "📉 최고 하락:",
         "tab_exchange": "📊 거래소 (주식/코인)",
@@ -152,6 +151,7 @@ TEXT_PACK = {
     "English": {
         "title": "📈 Stock & Crypto Trading Simulator",
         "setting_header": "Initial Game Settings",
+        "diff_select": "Select Difficulty",
         "lang_select": "Select Language",
         "theme_select": "Theme Settings",
         "theme_light": "Light Mode (Default)",
@@ -169,8 +169,7 @@ TEXT_PACK = {
         "up_color": "Bullish Color",
         "down_color": "Bearish Color",
         "start_game": "Start Game",
-        "back_to_start": "⚙️ Back to Settings",
-        "reset_game": "🔄 Reset / Retry",
+        "reset_game": "🔄 Reset (Back to Start)",
         "top_gainer": "🚀 Top Gainer:",
         "top_loser": "📉 Top Loser:",
         "tab_exchange": "📊 Exchange",
@@ -249,11 +248,18 @@ if "custom_card" not in st.session_state:
 
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
+if "difficulty" not in st.session_state:
+    st.session_state.difficulty = "보통"
 
 
-def init_game_session():
-    cash_val = DIFFICULTY_SETTINGS["보통"]["cash"]
-    st.session_state.cash = float(cash_val)
+def init_game_session(selected_diff="보통"):
+    diff_config = DIFFICULTY_SETTINGS.get(
+        selected_diff, DIFFICULTY_SETTINGS["보통"]
+    )
+    st.session_state.difficulty = selected_diff
+    st.session_state.initial_cash = float(diff_config["cash"])
+    st.session_state.cash = float(diff_config["cash"])
+    st.session_state.volatility = diff_config["volatility"]
     st.session_state.day = 1
     st.session_state.coins = pd.Series(DEFAULT_COINS).to_dict()
     st.session_state.portfolio = {ticker: 0.0 for ticker in DEFAULT_COINS}
@@ -366,7 +372,7 @@ def execute_sell(ticker):
 
 def next_day_market():
     st.session_state.day += 1
-    volatility = DIFFICULTY_SETTINGS["보통"]["volatility"]
+    volatility = st.session_state.volatility
     time_str = f"Day {st.session_state.day}"
 
     for ticker, data in st.session_state.coins.items():
@@ -474,11 +480,17 @@ st.markdown(
 )
 
 # ==========================================
-# 6. 화면 1: 게임 설정 / 시작 화면 (이모지 제외, 난이도 제거)
+# 6. 화면 1: 게임 설정 / 시작 화면 (난이도 선택 포함)
 # ==========================================
 if not st.session_state.game_started:
     st.title(txt["title"])
     st.subheader(txt["setting_header"])
+
+    selected_diff = st.selectbox(
+        txt["diff_select"],
+        list(DIFFICULTY_SETTINGS.keys()),
+        index=1,
+    )
 
     row1_col1, row1_col2 = st.columns(2)
     with row1_col1:
@@ -515,32 +527,24 @@ if not st.session_state.game_started:
         type="primary",
         use_container_width=True,
     ):
-        init_game_session()
+        init_game_session(selected_diff)
         st.session_state.game_started = True
         st.rerun()
 
 # ==========================================
-# 7. 화면 2: 메인 트레이딩 게임 화면
+# 7. 화면 2: 메인 트레이딩 게임 화면 (다시하기 시 시작창으로 이동)
 # ==========================================
 else:
-    col_title, col_btn1, col_btn2 = st.columns([3, 1, 1])
+    col_title, col_btn = st.columns([4, 1])
     with col_title:
         st.title(txt["title"])
-    with col_btn1:
-        if st.button(
-            txt["back_to_start"],
-            key="btn_back_to_start_top",
-            use_container_width=True,
-        ):
-            st.session_state.game_started = False
-            st.rerun()
-    with col_btn2:
+    with col_btn:
         if st.button(
             txt["reset_game"],
             key="reset_btn_top",
             use_container_width=True,
         ):
-            init_game_session()
+            st.session_state.game_started = False
             st.rerun()
 
     sorted_stocks = sorted(
@@ -694,12 +698,12 @@ else:
                 key="reset_btn_bottom",
                 use_container_width=True,
             ):
-                init_game_session()
+                st.session_state.game_started = False
                 st.rerun()
 
         st.divider()
 
-        initial_start_cash = DIFFICULTY_SETTINGS["보통"]["cash"]
+        initial_start_cash = st.session_state.get("initial_cash", 5000000.0)
 
         total_coin_val = sum(
             st.session_state.portfolio.get(t, 0)
