@@ -1,4 +1,5 @@
 import random
+import time
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -330,7 +331,6 @@ else:
         "#E9ECEF",
     )
 
-# 줄바꿈 없는 뱃지 태그 반환 (코드 블록 오인 방지)
 def render_badge(text, bg_c="#E03131", text_c="#FFFFFF"):
     return f'<span style="background-color: {bg_c}; color: {text_c}; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-left: 6px; display: inline-block; vertical-align: middle; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">{text}</span>'
 
@@ -346,7 +346,6 @@ st.markdown(
             color: {text_color} !important;
         }}
         
-        /* 세련된 메트릭 카드 UI */
         div[data-testid="stMetric"] {{
             background-color: {card_bg};
             border: 1px solid {border_color};
@@ -360,7 +359,6 @@ st.markdown(
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         }}
         
-        /* 버튼 커스텀 */
         div.stButton > button {{
             border-radius: 12px !important;
             font-weight: 600 !important;
@@ -372,12 +370,10 @@ st.markdown(
             opacity: 0.95;
         }}
         
-        /* 입력창 커스텀 */
         div[data-baseweb="input"] {{
             border-radius: 12px !important;
         }}
         
-        /* Tab 바 커스텀 */
         button[data-baseweb="tab"] {{
             font-size: 16px !important;
             font-weight: 700 !important;
@@ -393,7 +389,7 @@ st.markdown(
 # 6. 메인 화면
 # ==========================================
 
-# A. 초기 설정 화면 (2x2 그리드)
+# A. 초기 설정 화면
 if not st.session_state.game_started:
     st.title("📈 글로벌 모의 주식 & 가상자산 트레이딩 시뮬레이터")
     st.divider()
@@ -595,7 +591,7 @@ else:
                     yaxis=dict(gridcolor=border_color, showgrid=True),
                     annotations=[
                         {
-                            "text": "1일 차에는 변동 데이터가 없습니다.<br>'다음 날로 가기'를 누르면 차트가 생성됩니다.",
+                            "text": "1일 차에는 변동 데이터가 없습니다.<br>'다음 날로 가기' 또는 '자동 날짜 진행'을 누르세요.",
                             "xref": "paper",
                             "yref": "paper",
                             "showarrow": False,
@@ -641,15 +637,20 @@ else:
 
         st.divider()
 
-        # 5. 다음 날로 가기
-        if st.button(
-            "🌙 다음 날로 가기 ➔ (시세 변동 반영)",
-            key="next_day_action_btn",
-            type="primary",
-            use_container_width=True,
-        ):
-            next_day_market()
-            st.rerun()
+        # 5. 다음 날로 가기 & 자동 진행 컨트롤
+        next_col1, next_col2 = st.columns([3, 1])
+        with next_col1:
+            if st.button(
+                "🌙 다음 날로 가기 ➔ (수동 진행)",
+                key="next_day_action_btn",
+                type="primary",
+                use_container_width=True,
+            ):
+                next_day_market()
+                st.rerun()
+
+        with next_col2:
+            auto_play = st.toggle("🤖 자동 진행 (1.5초)", key="auto_play_toggle")
 
         st.divider()
 
@@ -711,6 +712,12 @@ else:
                 on_click=execute_sell,
                 args=(selected_ticker,),
             )
+
+        # 자동 진행 토글 활성화 시 루프 실행
+        if st.session_state.get("auto_play_toggle", False):
+            time.sleep(1.5)
+            next_day_market()
+            st.rerun()
 
     with tab2:
         st.subheader("💎 사치품 상점")
