@@ -135,7 +135,6 @@ def init_game_session():
     st.session_state.buy_qty = 0.0
     st.session_state.sell_qty = 0.0
 
-    # 초기 화면에서 선택한 설정을 사이드바 위젯 Key로 인계
     st.session_state.sb_language = st.session_state.get("language", "한국어")
     st.session_state.sb_theme = st.session_state.get("theme", "라이트 모드 (기본)")
     st.session_state.sb_chart_type = st.session_state.get("chart_type", "막대 그래프 (Bar)")
@@ -182,6 +181,7 @@ with st.sidebar:
             st.rerun()
     else:
         st.info("💡 메인 화면에서 설정을 마친 뒤 시작하기 버튼을 누르세요.")
+
 
 # ==========================================
 # 4. 트레이딩 & 수량 조절 콜백 함수
@@ -293,8 +293,9 @@ def next_day_market():
                 },
             )
 
+
 # ==========================================
-# 5. 테마 CSS 설정
+# 5. 테마 & 고급 카드 CSS / 뱃지 헬퍼
 # ==========================================
 active_theme = st.session_state.get(
     "sb_theme", st.session_state.get("theme", "라이트 모드 (기본)")
@@ -323,27 +324,80 @@ elif "블루" in active_theme:
     )
 else:
     bg_color, text_color, card_bg, border_color = (
-        "#FFFFFF",
-        "#212529",
         "#F8F9FA",
-        "#DEE2E6",
+        "#212529",
+        "#FFFFFF",
+        "#E9ECEF",
     )
+
+def render_badge(text, bg_c="#E03131", text_c="#FFFFFF"):
+    return f"""<span style="
+        background-color: {bg_c};
+        color: {text_c};
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-left: 6px;
+        display: inline-block;
+        vertical-align: middle;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    ">{text}</span>"""
 
 st.markdown(
     f"""
     <style>
-        .stApp {{ background-color: {bg_color}; color: {text_color}; }}
-        .stMarkdown, .stText, h1, h2, h3, h4, label {{ color: {text_color} !important; }}
+        .stApp {{
+            background-color: {bg_color};
+            color: {text_color};
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }}
+        .stMarkdown, .stText, h1, h2, h3, h4, label {{
+            color: {text_color} !important;
+        }}
+        
+        /* 세련된 메트릭 카드 UI */
         div[data-testid="stMetric"] {{
             background-color: {card_bg};
             border: 1px solid {border_color};
-            padding: 10px;
-            border-radius: 8px;
+            border-radius: 16px !important;
+            padding: 16px !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }}
+        div[data-testid="stMetric"]:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }}
+        
+        /* 버튼 커스텀 */
+        div.stButton > button {{
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            border: none !important;
+            transition: all 0.2s ease !important;
+        }}
+        div.stButton > button:hover {{
+            transform: scale(1.02);
+            opacity: 0.95;
+        }}
+        
+        /* 입력창 커스텀 */
+        div[data-baseweb="input"] {{
+            border-radius: 12px !important;
+        }}
+        
+        /* Tab 바 커스텀 */
+        button[data-baseweb="tab"] {{
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            padding: 10px 18px !important;
         }}
     </style>
     """,
     unsafe_allow_html=True,
 )
+
 
 # ==========================================
 # 6. 메인 화면
@@ -421,7 +475,7 @@ else:
     )
 
     with tab1:
-        # 1. 인기 항목
+        # 1. 인기 항목 (뱃지 적용)
         sorted_stocks = sorted(
             st.session_state.coins.items(),
             key=lambda x: x[1]["change"],
@@ -432,10 +486,10 @@ else:
 
         r1, r2 = st.columns(2)
         r1.info(
-            f"🔥 인기 최고 상승: {g_data['name']} ({g_ticker}) | **{g_data['change']:+.2f}%**"
+            f"🔥 최고 상승: **{g_data['name']}** ({g_ticker}) | **{g_data['change']:+.2f}%**"
         )
         r2.error(
-            f"📉 인기 최고 하락: {l_data['name']} ({l_ticker}) | **{l_data['change']:+.2f}%**"
+            f"📉 최고 하락: **{l_data['name']}** ({l_ticker}) | **{l_data['change']:+.2f}%**"
         )
 
         st.divider()
@@ -475,7 +529,11 @@ else:
         history = coin_data["history"]
 
         with c_graph:
-            st.markdown(f"**📊 {coin_data['name']} 차트**")
+            badge_html = render_badge(coin_data["category"], "#3B82F6")
+            st.markdown(
+                f"### 📊 {coin_data['name']} 차트 {badge_html}",
+                unsafe_allow_html=True,
+            )
             fig = go.Figure()
 
             if st.session_state.day > 1 and len(history) > 1:
@@ -557,7 +615,7 @@ else:
             st.plotly_chart(fig, use_container_width=True)
 
         with c_news:
-            st.markdown(f"**📰 {coin_data['name']} 속보**")
+            st.markdown(f"### 📰 관련 속보")
             ticker_news = [
                 n
                 for n in st.session_state.news_log
@@ -581,7 +639,7 @@ else:
         init_cash = st.session_state.get("initial_cash", 5000000.0)
         roi = ((tot_asset - init_cash) / init_cash) * 100
 
-        st.markdown("**💰 보유 자산 및 수익률**")
+        st.markdown("**💰 보유 자산 및 실시간 수익률**")
         m1, m2, m3, m4, m5 = st.columns(5)
         m1.metric("진행", f"{st.session_state.day}일차")
         m2.metric("보유 현금", f"{st.session_state.cash:,.0f}원")
@@ -623,9 +681,7 @@ else:
             b_row2_2.button("🚀 올인", key="buy_max", on_click=set_buy_max, args=(coin_data["price"],))
             b_row2_3.button("🔄 0으로", key="buy_reset", on_click=reset_buy_qty)
 
-            st.number_input(
-                "매수 수량", min_value=0.0, key="buy_qty"
-            )
+            st.number_input("매수 수량", min_value=0.0, key="buy_qty")
             st.button(
                 "🟢 매수하기",
                 key="buy_execute_btn",
@@ -677,6 +733,7 @@ else:
                         st.session_state.owned_items[k] = (
                             st.session_state.owned_items.get(k, 0) + 1
                         )
+                        st.balloons()
                         st.toast("🎉 구매 성공!", icon="🎁")
                     else:
                         st.toast("❌ 잔액 부족!", icon="⚠️")
