@@ -32,9 +32,9 @@ DIFFICULTY_SETTINGS = {
     },
 }
 
-# 💡 카테고리 > 세부분야(섹터) > 개별 종목 구조 적용
+# 💡 세부분야(섹터) 10개 구성 및 분야별 다중 종목 배치
 DEFAULT_COINS = {
-    # 🇰🇷 한국 주식 - [반도체]
+    # 🇰🇷 [1] 한국 주식 - 반도체
     "K-NEON": {
         "name": "네온체스트",
         "category": "🇰🇷 한국 주식",
@@ -51,7 +51,15 @@ DEFAULT_COINS = {
         "history": [52000.0],
         "change": 0.0,
     },
-    # 🇰🇷 한국 주식 - [바이오]
+    "K-HBM": {
+        "name": "넥스트HBM",
+        "category": "🇰🇷 한국 주식",
+        "sector": "반도체",
+        "price": 112000.0,
+        "history": [112000.0],
+        "change": 0.0,
+    },
+    # 🇰🇷 [2] 한국 주식 - 바이오
     "K-BIO": {
         "name": "한신바이오",
         "category": "🇰🇷 한국 주식",
@@ -68,7 +76,7 @@ DEFAULT_COINS = {
         "history": [28500.0],
         "change": 0.0,
     },
-    # 🇰🇷 한국 주식 - [2차전지]
+    # 🇰🇷 [3] 한국 주식 - 2차전지
     "K-BATTERY": {
         "name": "네오 차세대 배터리",
         "category": "🇰🇷 한국 주식",
@@ -77,7 +85,32 @@ DEFAULT_COINS = {
         "history": [125000.0],
         "change": 0.0,
     },
-    # 🇺🇸 미국 주식 - [AI / 빅테크]
+    "K-ECO": {
+        "name": "에코에너지소재",
+        "category": "🇰🇷 한국 주식",
+        "sector": "2차전지",
+        "price": 64000.0,
+        "history": [64000.0],
+        "change": 0.0,
+    },
+    # 🇰🇷 [4] 한국 주식 - 엔터/게임
+    "K-GAME": {
+        "name": "하이퍼 인터랙티브",
+        "category": "🇰🇷 한국 주식",
+        "sector": "엔터/게임",
+        "price": 34500.0,
+        "history": [34500.0],
+        "change": 0.0,
+    },
+    "K-STAR": {
+        "name": "스타더스트 엔터",
+        "category": "🇰🇷 한국 주식",
+        "sector": "엔터/게임",
+        "price": 19800.0,
+        "history": [19800.0],
+        "change": 0.0,
+    },
+    # 🇺🇸 [5] 미국 주식 - AI / 빅테크
     "US-AI": {
         "name": "실리콘밸리 AI",
         "category": "🇺🇸 미국 주식",
@@ -94,7 +127,7 @@ DEFAULT_COINS = {
         "history": [210000.0],
         "change": 0.0,
     },
-    # 🇺🇸 미국 주식 - [우주/항공]
+    # 🇺🇸 [6] 미국 주식 - 우주/항공
     "US-SPACE": {
         "name": "네오에어로 스페이스",
         "category": "🇺🇸 미국 주식",
@@ -111,7 +144,41 @@ DEFAULT_COINS = {
         "history": [95000.0],
         "change": 0.0,
     },
-    # 🪙 가상자산 - [메인넷]
+    # 🇺🇸 [7] 미국 주식 - 친환경/전기차
+    "US-EV": {
+        "name": "글로벌 모빌리티 EV",
+        "category": "🇺🇸 미국 주식",
+        "sector": "친환경/전기차",
+        "price": 245000.0,
+        "history": [245000.0],
+        "change": 0.0,
+    },
+    "US-SOLAR": {
+        "name": "썬파워 그리드",
+        "category": "🇺🇸 미국 주식",
+        "sector": "친환경/전기차",
+        "price": 68000.0,
+        "history": [68000.0],
+        "change": 0.0,
+    },
+    # 🇺🇸 [8] 미국 주식 - 클라우드/보안
+    "US-CLOUD": {
+        "name": "오로라 클라우드",
+        "category": "🇺🇸 미국 주식",
+        "sector": "클라우드/보안",
+        "price": 420000.0,
+        "history": [420000.0],
+        "change": 0.0,
+    },
+    "US-CYBER": {
+        "name": "센티널 사이버보안",
+        "category": "🇺🇸 미국 주식",
+        "sector": "클라우드/보안",
+        "price": 155000.0,
+        "history": [155000.0],
+        "change": 0.0,
+    },
+    # 🪙 [9] 가상자산 - 메인넷
     "CRYPTO-X": {
         "name": "하이퍼체인",
         "category": "🪙 가상자산",
@@ -128,13 +195,29 @@ DEFAULT_COINS = {
         "history": [3500000.0],
         "change": 0.0,
     },
-    # 🪙 가상자산 - [디파이]
+    "CRYPTO-SOL": {
+        "name": "솔라리스 체인",
+        "category": "🪙 가상자산",
+        "sector": "메인넷",
+        "price": 240000.0,
+        "history": [240000.0],
+        "change": 0.0,
+    },
+    # 🪙 [10] 가상자산 - 디파이/RWA
     "CRYPTO-Y": {
         "name": "덱스파이 코인",
         "category": "🪙 가상자산",
-        "sector": "디파이",
+        "sector": "디파이/RWA",
         "price": 1250000.0,
         "history": [1250000.0],
+        "change": 0.0,
+    },
+    "CRYPTO-RWA": {
+        "name": "리얼에셋 토큰",
+        "category": "🪙 가상자산",
+        "sector": "디파이/RWA",
+        "price": 450000.0,
+        "history": [450000.0],
         "change": 0.0,
     },
 }
@@ -566,7 +649,7 @@ else:
 
         st.divider()
 
-        # 2. 카테고리 & 세부분야(섹터) 2단계 필터
+        # 2. 카테고리 & 세부분야(섹터) 필터
         c_filter1, c_filter2, c_filter3 = st.columns(3)
         
         with c_filter1:
@@ -576,7 +659,6 @@ else:
                 key="cat_filter",
             )
 
-        # 선택한 카테고리에 맞는 세부분야 목록 추출
         if selected_cat == "전체":
             available_sectors = ["전체"] + sorted(list({v.get("sector", "기타") for v in st.session_state.coins.values()}))
         else:
@@ -584,12 +666,11 @@ else:
 
         with c_filter2:
             selected_sector = st.selectbox(
-                "🏷️ 세부 분야 (섹터)",
+                "🏷️ 세부분야 (10개 섹터)",
                 available_sectors,
                 key="sector_filter",
             )
 
-        # 필터링된 종목 선택 목록 생성
         filtered_tickers = []
         for k, v in st.session_state.coins.items():
             cat_match = (selected_cat == "전체") or (v["category"] == selected_cat)
