@@ -211,36 +211,42 @@ DEFAULT_COINS = {
     },
 }
 
+# 💡 [사치품 가격별 차등 효과 설정] 가격이 비쌀수록 주가 상승 보너스가 커집니다.
 LUXURY_SHOP = {
     "ITEM_1": {
         "name": "입문용 전기 자전거",
         "price": 1500000,
         "icon": "🚲",
-        "desc": "출퇴근길 호재 버프! [전 종목 상승률 +1.0%p]",
+        "buff": 0.005,  # +0.5%p
+        "desc": "출퇴근길 소소한 정보력 [전 종목 상승률 +0.5%p]",
     },
     "ITEM_2": {
         "name": "최신형 스마트폰 & 태블릿",
         "price": 3500000,
         "icon": "📱",
-        "desc": "초고속 정보 수집 버프! [전 종목 상승률 +1.0%p]",
+        "buff": 0.010,  # +1.0%p
+        "desc": "초고속 실시간 대응 [전 종목 상승률 +1.0%p]",
     },
     "ITEM_3": {
         "name": "신형 국산 세단",
         "price": 45000000,
         "icon": "🚗",
-        "desc": "VIP 네트워킹 호재 버프! [전 종목 상승률 +1.0%p]",
+        "buff": 0.020,  # +2.0%p
+        "desc": "VIP 인맥 네트워킹 [전 종목 상승률 +2.0%p]",
     },
     "ITEM_4": {
         "name": "럭셔리 워치",
         "price": 120000000,
         "icon": "⌚",
-        "desc": "성공한 트레이더 신뢰 버프! [전 종목 상승률 +1.0%p]",
+        "buff": 0.035,  # +3.5%p
+        "desc": "고위급 단독 정보망 [전 종목 상승률 +3.5%p]",
     },
     "ITEM_5": {
         "name": "한강뷰 고급 아파트",
         "price": 2500000000,
         "icon": "🏙️",
-        "desc": "랜드마크 자산가 호재 버프! [전 종목 상승률 +1.0%p]",
+        "buff": 0.050,  # +5.0%p
+        "desc": "메가 자산가 시장 영향력 [전 종목 상승률 +5.0%p]",
     },
 }
 
@@ -272,7 +278,7 @@ def init_game_session():
     st.session_state.portfolio = {
         ticker: {"qty": 0.0, "avg_price": 0.0} for ticker in DEFAULT_COINS
     }
-    st.session_state.owned_items = {}  # 보유 사치품 관리 (종목 키: True)
+    st.session_state.owned_items = {}  # 보유 사치품 관리
     st.session_state.news_log = []
     st.session_state.buy_qty = 0.0
     st.session_state.sell_qty = 0.0
@@ -280,8 +286,8 @@ def init_game_session():
     st.session_state.sb_language = st.session_state.get("language", "한국어")
     st.session_state.sb_theme = st.session_state.get("theme", "라이트 모드 (기본)")
     st.session_state.sb_chart_type = st.session_state.get("chart_type", "막대 그래프 (Bar)")
-    st.session_state.sb_up_color = st.session_state.get("up_color", "#E03131")    # 빨강
-    st.session_state.sb_down_color = st.session_state.get("down_color", "#1971C2")  # 파랑
+    st.session_state.sb_up_color = st.session_state.get("up_color", "#E03131")
+    st.session_state.sb_down_color = st.session_state.get("down_color", "#1971C2")
 
 
 # ==========================================
@@ -406,19 +412,24 @@ def next_day_market():
     volatility = st.session_state.volatility
     time_str = f"Day {st.session_state.day}"
 
-    # 💡 [사치품 호재 효과 적용] 보유 사치품 1개당 매일 상승률 +1.0%p 보너스
-    owned_luxury_count = len(st.session_state.owned_items)
-    luxury_buff = owned_luxury_count * 0.01  # 개당 +1% 상승향 버프
+    # 💡 [가격대별 차등 사치품 버프 합산 적용]
+    total_luxury_buff = sum(
+        LUXURY_SHOP[k]["buff"]
+        for k in st.session_state.owned_items
+        if k in LUXURY_SHOP
+    )
 
     has_news = False
 
     for ticker, data in st.session_state.coins.items():
-        # 기본 무작위 변동에 사치품 호재 버프(luxury_buff)가 추가됨
-        change_rate = random.uniform(-volatility + luxury_buff, volatility + luxury_buff)
-        
-        # 호재 버프가 많을수록 급등 확률 상승
-        if random.random() < (0.15 + owned_luxury_count * 0.03):
-            change_rate = random.choice([0.15, 0.25, -0.15, -0.20]) + luxury_buff
+        # 기본 변동성에 보유한 사치품들의 합산 상승 버프 적용
+        change_rate = random.uniform(
+            -volatility + total_luxury_buff, volatility + total_luxury_buff
+        )
+
+        # 높은 버프일수록 급등 확률 향상
+        if random.random() < (0.15 + total_luxury_buff * 2.0):
+            change_rate = random.choice([0.15, 0.25, -0.15, -0.20]) + total_luxury_buff
 
         new_price = max(1.0, round(data["price"] * (1 + change_rate), 2))
         data["change"] = change_rate * 100
@@ -745,7 +756,6 @@ else:
                 y_bottom = max(0, min_p - p_margin)
                 y_top = max_p + p_margin
 
-                # 전일 대비 상승 시 빨강, 하락 시 파랑
                 bar_colors = [
                     active_up_color if (i == 0 or history[i] >= history[i - 1]) else active_down_color
                     for i in range(len(history))
@@ -923,13 +933,19 @@ else:
             next_day_market()
             st.rerun()
 
-    # 💡 [2] 사치품 상점 : 1회 한정 구매 & 호재 효과 설명 안내
+    # 💡 [2] 사치품 상점 : 가격 비례 호재 보너스 적용 UI
     with tab2:
         st.subheader("💎 사치품 상점 (종목당 1회 한정 구매)")
-        owned_cnt = len(st.session_state.owned_items)
+        
+        current_total_buff = sum(
+            LUXURY_SHOP[k]["buff"]
+            for k in st.session_state.owned_items
+            if k in LUXURY_SHOP
+        )
+        
         st.info(
-            f"💡 **사치품 호재 버프 시스템**: 현재 **{owned_cnt}개** 보유 중! "
-            f"(사치품 1개당 매일 모든 종목에 **+1.0%p 주가 상승 호재 보너스** 부여 중)"
+            f"💡 **차등 사치품 버프 시스템**: 사치품 가격이 비쌀수록 호재 보너스가 커집니다! "
+            f"(현재 총 **{current_total_buff * 100:.1f}%p** 상승 보너스 적용 중)"
         )
         
         g_cols = st.columns(2)
@@ -941,7 +957,7 @@ else:
                 is_owned = k in st.session_state.owned_items
                 if is_owned:
                     st.button(
-                        f"✅ 보유 중 (구매 완료)",
+                        f"✅ 보유 중 (버프 +{item['buff']*100:.1f}%p 적용 중)",
                         key=f"buy_luxury_{k}",
                         disabled=True,
                         use_container_width=True,
@@ -956,7 +972,10 @@ else:
                             st.session_state.cash -= item["price"]
                             st.session_state.owned_items[k] = True
                             st.balloons()
-                            st.toast(f"🎉 {item['name']} 구매 완료! 전 종목 호재 버프가 강화됩니다!", icon="🎁")
+                            st.toast(
+                                f"🎉 {item['name']} 구매 완료! 전 종목 상승 보너스 +{item['buff']*100:.1f}%p 적용!",
+                                icon="🎁",
+                            )
                             st.rerun()
                         else:
                             st.toast("❌ 잔액이 부족합니다!", icon="⚠️")
