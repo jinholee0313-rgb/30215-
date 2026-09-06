@@ -93,7 +93,6 @@ DEFAULT_COINS = {
     },
 }
 
-# 구매 가능한 플렉스(Flex) 아이템 목록
 LUXURY_SHOP = {
     "ITEM_1": {
         "name": "입문용 전기 자전거",
@@ -114,7 +113,7 @@ LUXURY_SHOP = {
         "desc": "첫 투자 수익으로 마련한 승차감 좋은 데일리 드라이브 카",
     },
     "ITEM_4": {
-        "name": "럭셔리 럭셔리 워치",
+        "name": "럭셔리 워치",
         "price": 120000000,
         "icon": "⌚",
         "desc": "손목 위에서 빛나는 성공한 트레이더의 상징",
@@ -328,9 +327,9 @@ if "theme" not in st.session_state:
 if "chart_type" not in st.session_state:
     st.session_state.chart_type = "꺾은선 그래프 (Line)"
 if "up_color" not in st.session_state:
-    st.session_state.up_color = "#E03131"  # 빨강
+    st.session_state.up_color = "#E03131"
 if "down_color" not in st.session_state:
-    st.session_state.down_color = "#1971C2"  # 파랑
+    st.session_state.down_color = "#1971C2"
 if "custom_bg" not in st.session_state:
     st.session_state.custom_bg = "#FFFFFF"
 if "custom_text" not in st.session_state:
@@ -517,17 +516,14 @@ def next_day_market():
     ticker_changes = {}
     delisted_tickers = []
 
-    # 1. 시세 변동 및 상장폐지 체크
     for ticker, data in list(st.session_state.coins.items()):
         change_rate = random.uniform(-volatility, volatility)
 
-        # 15% 확률로 큰 폭 변동
         if random.random() < 0.15:
             change_rate = random.choice([0.18, 0.28, -0.22, -0.35])
 
         new_price = round(data["price"] * (1 + change_rate), 2)
 
-        # 상장 폐지 조건: 주가가 1,000원 미만으로 락인되거나 극단적 하락 시
         if new_price < 500.0 and random.random() < 0.4:
             delisted_tickers.append(ticker)
             continue
@@ -537,12 +533,10 @@ def next_day_market():
         data["history"].append(new_price)
         ticker_changes[ticker] = change_rate
 
-    # 상장폐지 종목 처리
     for ticker in delisted_tickers:
         del_name = st.session_state.coins[ticker]["name"]
         del st.session_state.coins[ticker]
 
-        # 보유 중이던 수량 및 자산 소멸
         if ticker in st.session_state.portfolio:
             st.session_state.portfolio[ticker] = {"qty": 0.0, "avg_price": 0.0}
 
@@ -557,7 +551,6 @@ def next_day_market():
             },
         )
 
-    # 2. 속보 생성
     if st.session_state.coins:
         has_news_today = random.random() < 0.75
         if has_news_today:
@@ -600,7 +593,6 @@ def next_day_market():
                     },
                 )
 
-    # 3. 게임 오버 조건 검사 (총 자산이 10만 원 미만)
     total_stock_val = sum(
         st.session_state.portfolio.get(t, {"qty": 0.0})["qty"]
         * st.session_state.coins[t]["price"]
@@ -759,15 +751,7 @@ elif st.session_state.game_over:
 # 8. 화면 3: 메인 트레이딩 게임 화면
 # ==========================================
 else:
-    col_title, col_btn = st.columns([4, 1])
-    with col_title:
-        st.title(txt["title"])
-    with col_btn:
-        if st.button(
-            txt["reset_game"], key="reset_btn_top", use_container_width=True
-        ):
-            st.session_state.game_started = False
-            st.rerun()
+    st.title(txt["title"])
 
     if st.session_state.coins:
         sorted_stocks = sorted(
@@ -866,38 +850,31 @@ else:
                 st.subheader(txt["chart_title"])
                 col_chart, col_news = st.columns([1.3, 1])
 
+                # [수정] 1일차에는 차트를 표시하지 않고 2일차 시세 변동 후부터 생성
                 with col_chart:
-                    fig = go.Figure()
                     history = coin_data["history"]
                     up_c = st.session_state.up_color
                     down_c = st.session_state.down_color
 
-                    if st.session_state.chart_type in [
-                        "막대 그래프 (Bar)",
-                        "Bar Chart",
-                    ]:
-                        bar_colors = [
-                            up_c
-                            if i == 0 or history[i] >= history[i - 1]
-                            else down_c
-                            for i in range(len(history))
-                        ]
-                        fig.add_trace(
-                            go.Bar(
-                                y=history,
-                                name=selected_ticker,
-                                marker_color=bar_colors,
-                            )
-                        )
+                    if len(history) <= 1:
+                        st.info("🌙 아래의 '다음 날로 ➔' 버튼을 눌러 시세 변동이 시작되면 차트가 표시됩니다.")
                     else:
-                        if len(history) == 1:
+                        fig = go.Figure()
+
+                        if st.session_state.chart_type in [
+                            "막대 그래프 (Bar)",
+                            "Bar Chart",
+                        ]:
+                            bar_colors = [
+                                up_c if history[i] >= history[i - 1] else down_c
+                                for i in range(1, len(history))
+                            ]
                             fig.add_trace(
-                                go.Scatter(
-                                    x=[0],
-                                    y=history,
-                                    mode="markers",
-                                    marker=dict(color=up_c, size=8),
-                                    showlegend=False,
+                                go.Bar(
+                                    x=list(range(2, len(history) + 1)),
+                                    y=history[1:],
+                                    name=selected_ticker,
+                                    marker_color=bar_colors,
                                 )
                             )
                         else:
@@ -918,16 +895,16 @@ else:
                                     )
                                 )
 
-                    fig.update_layout(
-                        paper_bgcolor=card_bg,
-                        plot_bgcolor=card_bg,
-                        font=dict(color=text_color),
-                        margin=dict(l=10, r=10, t=10, b=10),
-                        height=250,
-                        xaxis=dict(gridcolor=border_color),
-                        yaxis=dict(gridcolor=border_color),
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
+                        fig.update_layout(
+                            paper_bgcolor=card_bg,
+                            plot_bgcolor=card_bg,
+                            font=dict(color=text_color),
+                            margin=dict(l=10, r=10, t=10, b=10),
+                            height=250,
+                            xaxis=dict(gridcolor=border_color),
+                            yaxis=dict(gridcolor=border_color),
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
 
                 with col_news:
                     st.markdown(
@@ -982,6 +959,25 @@ else:
                     f"{stock_roi:+.2f} %" if my_qty > 0 else "미보유 (0.00 %)"
                 )
                 p_col4.metric(txt["stock_roi"], roi_display)
+
+                # [수정] 매수/매도 섹션 바로 위로 이동된 컨트롤 버튼들
+                st.divider()
+                c_btn1, c_btn2 = st.columns(2)
+                with c_btn1:
+                    if st.button(
+                        txt["next_day"],
+                        key="btn_next_day_above_trade",
+                        type="primary",
+                        use_container_width=True,
+                    ):
+                        next_day_market()
+                        st.rerun()
+                with c_btn2:
+                    if st.button(
+                        txt["reset_game"], key="reset_btn_above_trade", use_container_width=True
+                    ):
+                        st.session_state.game_started = False
+                        st.rerun()
 
                 st.divider()
 
@@ -1076,7 +1072,6 @@ else:
                         args=(selected_ticker,),
                     )
 
-    # 신규 추가 탭: 부동산 & 사치품 구매 (Flex Shop)
     with tab2:
         st.subheader("💎 자산 플렉스(Flex) & 사치품 상점")
         st.caption(
@@ -1151,7 +1146,6 @@ else:
     with tab4:
         st.subheader(txt["port_header"])
 
-        # 1. 주식/코인 보유 현황
         portfolio_data = []
         for ticker, data in st.session_state.portfolio.items():
             qty = data["qty"]
@@ -1188,7 +1182,6 @@ else:
 
         st.divider()
 
-        # 2. 실물 자산 및 소장품 현황
         st.subheader("🏙️ 보유 부동산 및 플렉스 자산")
         owned_any_item = False
         for k, cnt in st.session_state.owned_items.items():
@@ -1209,28 +1202,9 @@ else:
                 f"- **[{news['time']}] {news['name']} ({news['tag']})**: {news['msg']}"
             )
 
-    # 하단 진행 controls
-    st.divider()
-    c_btn1, c_btn2 = st.columns(2)
-    with c_btn1:
-        if st.button(
-            txt["next_day"],
-            key="btn_next_day_control",
-            type="primary",
-            use_container_width=True,
-        ):
-            next_day_market()
-            st.rerun()
-    with c_btn2:
-        if st.button(
-            txt["reset_game"], key="reset_btn_bottom", use_container_width=True
-        ):
-            st.session_state.game_started = False
-            st.rerun()
-
     st.divider()
 
-    # 상단 요약 대시보드 메트릭
+    # 상단/하단 요약 대시보드 메트릭
     initial_start_cash = st.session_state.get("initial_cash", 5000000.0)
     total_coin_val = sum(
         st.session_state.portfolio.get(t, {"qty": 0.0})["qty"]
