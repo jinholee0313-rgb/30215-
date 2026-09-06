@@ -15,67 +15,112 @@ st.set_page_config(
 
 # 난이도 옵션 설정
 DIFFICULTY_SETTINGS = {
-    "쉬움": {"cash": 10000000, "volatility": 0.03},
-    "보통": {"cash": 5000000, "volatility": 0.05},
-    "어려움": {"cash": 2000000, "volatility": 0.08},
+    "쉬움": {
+        "cash": 10000000,
+        "volatility": 0.03,
+        "desc_ko": "💰 **시작 자금**: 1,000만 원\n📊 **일일 변동성**: ±3% (낮은 위험)\n\n🌱 넉넉한 시작 자금과 낮은 시세 변동성으로 초보자가 안정적으로 투자 감각을 익히기 좋습니다.",
+        "desc_en": "💰 **Starting Cash**: 10,000,000 KRW\n📊 **Daily Volatility**: ±3% (Low Risk)\n\n🌱 Generous capital and low market volatility, perfect for beginners.",
+    },
+    "보통": {
+        "cash": 5000000,
+        "volatility": 0.05,
+        "desc_ko": "💰 **시작 자금**: 500만 원\n📊 **일일 변동성**: ±5% (표준 위험)\n\n⚖️ 적절한 시작 자금과 표준 변동성으로 균형 잡힌 실전 트레이딩을 즐길 수 있습니다.",
+        "desc_en": "💰 **Starting Cash**: 5,000,000 KRW\n📊 **Daily Volatility**: ±5% (Standard Risk)\n\n⚖️ Balanced initial capital and standard volatility for realistic trading.",
+    },
+    "어려움": {
+        "cash": 2000000,
+        "volatility": 0.08,
+        "desc_ko": "💰 **시작 자금**: 200만 원\n📊 **일일 변동성**: ±8% (높은 위험)\n\n🔥 적은 시작 자금과 급격한 시세 변동성으로 파산 위험이 매우 높은 하이리스크 모드입니다.",
+        "desc_en": "💰 **Starting Cash**: 2,000,000 KRW\n📊 **Daily Volatility**: ±8% (High Risk)\n\n🔥 High risk mode with small capital and aggressive market fluctuations.",
+    },
 }
 
+# 현실에 없는 가상의 종목 라인업 (8종)
 DEFAULT_COINS = {
-    "HYUNDAI": {
-        "name": "현대자동차",
-        "category": "🇰🇷 한국 - 자동차",
-        "price": 240000.0,
-        "history": [240000.0],
+    "NEOBOT": {
+        "name": "네오로보틱스",
+        "category": "🤖 로봇/AI",
+        "price": 45000.0,
+        "history": [45000.0],
         "change": 0.0,
     },
-    "SAMSUNG": {
-        "name": "삼성전자",
-        "category": "🇰🇷 한국 - 반도체/IT",
-        "price": 75000.0,
-        "history": [75000.0],
-        "change": 0.0,
-    },
-    "NVDA": {
-        "name": "엔비디아",
-        "category": "🇺🇸 미국 - 빅테크",
+    "GALAXIA": {
+        "name": "은하우주항공",
+        "category": "🌌 우주/항공",
         "price": 120000.0,
         "history": [120000.0],
         "change": 0.0,
     },
-    "BTC": {
-        "name": "비트코인",
+    "CYBERBIO": {
+        "name": "사이버바이오",
+        "category": "🧬 바이오/메디컬",
+        "price": 85000.0,
+        "history": [85000.0],
+        "change": 0.0,
+    },
+    "SOLARX": {
+        "name": "솔라엑스에너지",
+        "category": "⚡ 친환경/에너지",
+        "price": 32000.0,
+        "history": [32000.0],
+        "change": 0.0,
+    },
+    "QUANTUM": {
+        "name": "퀀텀코어",
+        "category": "💻 양자컴퓨팅",
+        "price": 210000.0,
+        "history": [210000.0],
+        "change": 0.0,
+    },
+    "METACORE": {
+        "name": "메타코어엔터",
+        "category": "🎮 엔터/메타버스",
+        "price": 15000.0,
+        "history": [15000.0],
+        "change": 0.0,
+    },
+    "HYPERCOIN": {
+        "name": "하이퍼코인",
         "category": "🪙 가상화폐",
-        "price": 85000000.0,
-        "history": [85000000.0],
+        "price": 65000000.0,
+        "history": [65000000.0],
+        "change": 0.0,
+    },
+    "STARCOIN": {
+        "name": "스타링크코인",
+        "category": "🪙 가상화폐",
+        "price": 4200.0,
+        "history": [4200.0],
         "change": 0.0,
     },
 }
 
 BULL_NEWS = [
-    "기관 투자자 대규모 자금 유입 발표로 매수세 유입",
-    "현물 ETF 순유입액 신고가 달성하며 강한 반등",
-    "글로벌 규제 완화 호재 발표로 시장 관심 집중",
-    "기술적 핵심 지지선 사수에 성공하며 투자 심리 회복",
+    "대규모 수주 계약 체결 발표로 강한 매수세 유입",
+    "혁신 기술 특허 등록 완료 소식에 주가 급등",
+    "글로벌 시장 진출 호재 발표로 매수 잔량 급증",
+    "기술적 핵심 지지선 사수에 성공하며 강한 반등",
 ]
 
 BEAR_NEWS = [
-    "금리 인상 가능성 제기되며 투자 심리 급냉",
-    "장기 보유자의 차익 실현 물량이 쏟아지며 하락세",
-    "글로벌 거래소 규제 이슈 악재로 인한 하방 압력",
-    "주요 저항선 돌파 실패 후 매도 물량 증가",
+    "실적 발표 우려감 제기되며 매도 물량 쏟아짐",
+    "주요 임원진의 보유 지분 매도 소식으로 투자 심리 위축",
+    "글로벌 공급망 차질 이슈 악재로 하방 압력 심화",
+    "주요 저항선 돌파 실패 후 차익 실현 물량 출회",
 ]
 
 FLAT_NEWS = [
-    "주요 경제 지표 발표를 앞두고 뚜렷한 관망세",
-    "거래량이 줄어들며 박스권 안에서 횡보 흐름 유지",
-    "시장 모멘텀 부족으로 보합권 내 소폭 등락 지속",
+    "주요 사업 정책 발표를 앞두고 관망세 짙어짐",
+    "거래량이 소폭 감소하며 박스권 내 보합세 유지",
+    "시장 뚜렷한 모멘텀 없이 미미한 등락 반복",
 ]
 
 TEXT_PACK = {
     "한국어": {
         "title": "📈 모의 주식 & 가상화폐 트레이딩 시뮬레이터",
-        "setting_header": "게임 초기 설정",
+        "setting_header": "🎮 게임 초기 설정",
         "diff_select": "난이도 선택",
+        "diff_info_title": "ℹ️ 선택한 난이도 정보",
         "lang_select": "언어 선택 (Language)",
         "theme_select": "화면 테마 설정",
         "theme_light": "라이트 모드 (기본)",
@@ -86,13 +131,13 @@ TEXT_PACK = {
         "custom_bg": "배경색",
         "custom_text": "글자색",
         "custom_card": "카드/테이블 배경색",
-        "chart_header": "차트 커스텀 설정",
+        "chart_header": "🎨 차트 커스텀 설정",
         "chart_type": "차트 형태 선택",
         "chart_line": "꺾은선 그래프 (Line)",
         "chart_bar": "막대 그래프 (Bar)",
         "up_color": "상승(양봉) 색상",
         "down_color": "하락(음봉) 색상",
-        "start_game": "게임 시작하기",
+        "start_game": "🚀 게임 시작하기",
         "reset_game": "🔄 다시하기 (시작 화면으로)",
         "top_gainer": "🚀 최고 상승:",
         "top_loser": "📉 최고 하락:",
@@ -150,8 +195,9 @@ TEXT_PACK = {
     },
     "English": {
         "title": "📈 Stock & Crypto Trading Simulator",
-        "setting_header": "Initial Game Settings",
+        "setting_header": "🎮 Initial Game Settings",
         "diff_select": "Select Difficulty",
+        "diff_info_title": "ℹ️ Difficulty Details",
         "lang_select": "Select Language",
         "theme_select": "Theme Settings",
         "theme_light": "Light Mode (Default)",
@@ -162,13 +208,13 @@ TEXT_PACK = {
         "custom_bg": "Background Color",
         "custom_text": "Text Color",
         "custom_card": "Card Background",
-        "chart_header": "Chart Customization",
+        "chart_header": "🎨 Chart Customization",
         "chart_type": "Select Chart Type",
         "chart_line": "Line Chart",
         "chart_bar": "Bar Chart",
         "up_color": "Bullish Color",
         "down_color": "Bearish Color",
-        "start_game": "Start Game",
+        "start_game": "🚀 Start Game",
         "reset_game": "🔄 Reset (Back to Start)",
         "top_gainer": "🚀 Top Gainer:",
         "top_loser": "📉 Top Loser:",
@@ -375,6 +421,8 @@ def next_day_market():
     volatility = st.session_state.volatility
     time_str = f"Day {st.session_state.day}"
 
+    # 1) 주가 개별 업데이트
+    ticker_changes = {}
     for ticker, data in st.session_state.coins.items():
         change_rate = random.uniform(-volatility, volatility)
 
@@ -388,27 +436,54 @@ def next_day_market():
         data["change"] = change_rate * 100
         data["price"] = new_price
         data["history"].append(new_price)
+        ticker_changes[ticker] = change_rate
 
-        if change_rate > 0.05:
-            news_txt = random.choice(BULL_NEWS)
-            status_tag = "🚀 호재"
-        elif change_rate < -0.05:
-            news_txt = random.choice(BEAR_NEWS)
-            status_tag = "📉 악재"
+    # 2) 개편된 뉴스 발생 로직
+    # - 70% 확률로 뉴스가 발생하는 날 결정 (매일 무조건 뜨지 않게 조절)
+    has_news_today = random.random() < 0.7
+
+    if has_news_today:
+        # 큰 변동(±3% 이상)이 생긴 종목들 수집
+        significant_tickers = [
+            t for t, change in ticker_changes.items() if abs(change) >= 0.03
+        ]
+
+        # 큰 변동 종목이 2개 이상이면 그 종목들 뉴스 발생
+        # 부족할 경우 무작위로 2~4개 종목을 뽑아 무조건 '최소 2개 이상' 종목에 뉴스가 발생하도록 설정
+        if len(significant_tickers) >= 2:
+            selected_news_tickers = significant_tickers
         else:
-            news_txt = random.choice(FLAT_NEWS)
-            status_tag = "☀️ 보합"
+            num_to_pick = random.randint(
+                2, min(4, len(st.session_state.coins))
+            )
+            selected_news_tickers = random.sample(
+                list(st.session_state.coins.keys()), num_to_pick
+            )
 
-        st.session_state.news_log.insert(
-            0,
-            {
-                "time": time_str,
-                "ticker": ticker,
-                "name": data["name"],
-                "tag": status_tag,
-                "msg": news_txt,
-            },
-        )
+        for ticker in selected_news_tickers:
+            data = st.session_state.coins[ticker]
+            change_rate = ticker_changes[ticker]
+
+            if change_rate > 0.03:
+                news_txt = random.choice(BULL_NEWS)
+                status_tag = "🚀 호재"
+            elif change_rate < -0.03:
+                news_txt = random.choice(BEAR_NEWS)
+                status_tag = "📉 악재"
+            else:
+                news_txt = random.choice(FLAT_NEWS)
+                status_tag = "☀️ 보합"
+
+            st.session_state.news_log.insert(
+                0,
+                {
+                    "time": time_str,
+                    "ticker": ticker,
+                    "name": data["name"],
+                    "tag": status_tag,
+                    "msg": news_txt,
+                },
+            )
 
 
 # ==========================================
@@ -480,17 +555,29 @@ st.markdown(
 )
 
 # ==========================================
-# 6. 화면 1: 게임 설정 / 시작 화면 (난이도 선택 포함)
+# 6. 화면 1: 게임 설정 / 시작 화면
 # ==========================================
 if not st.session_state.game_started:
     st.title(txt["title"])
     st.subheader(txt["setting_header"])
 
-    selected_diff = st.selectbox(
-        txt["diff_select"],
-        list(DIFFICULTY_SETTINGS.keys()),
-        index=1,
-    )
+    diff_col1, diff_col2 = st.columns([1, 1.2])
+
+    with diff_col1:
+        selected_diff = st.selectbox(
+            txt["diff_select"],
+            list(DIFFICULTY_SETTINGS.keys()),
+            index=1,
+        )
+
+    with diff_col2:
+        diff_info = DIFFICULTY_SETTINGS[selected_diff]
+        info_text = (
+            diff_info["desc_ko"] if lang == "한국어" else diff_info["desc_en"]
+        )
+        st.info(info_text)
+
+    st.divider()
 
     row1_col1, row1_col2 = st.columns(2)
     with row1_col1:
@@ -532,7 +619,7 @@ if not st.session_state.game_started:
         st.rerun()
 
 # ==========================================
-# 7. 화면 2: 메인 트레이딩 게임 화면 (다시하기 시 시작창으로 이동)
+# 7. 화면 2: 메인 트레이딩 게임 화면
 # ==========================================
 else:
     col_title, col_btn = st.columns([4, 1])
@@ -824,9 +911,12 @@ else:
             new_category = st.selectbox(
                 txt["select_category"],
                 [
-                    "🇰🇷 한국 - 자동차",
-                    "🇰🇷 한국 - 반도체/IT",
-                    "🇺🇸 미국 - 빅테크",
+                    "🤖 로봇/AI",
+                    "🌌 우주/항공",
+                    "🧬 바이오/메디컬",
+                    "⚡ 친환경/에너지",
+                    "💻 양자컴퓨팅",
+                    "🎮 엔터/메타버스",
                     "🪙 가상화폐",
                     "✨ 커스텀/기타",
                 ],
