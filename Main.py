@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ==========================================
-# 1. 페이지 기본 설정 및 기본 데이터
+# 1. 페이지 기본 설정 및 데이터
 # ==========================================
 st.set_page_config(
     page_title="주식 & 가상화폐 트레이딩 시뮬레이터",
@@ -120,6 +120,8 @@ if "theme" not in st.session_state:
     st.session_state.theme = "라이트 모드 (기본)"
 if "chart_type" not in st.session_state:
     st.session_state.chart_type = "막대 그래프 (Bar)"
+if "difficulty" not in st.session_state:
+    st.session_state.difficulty = "보통"
 if "up_color" not in st.session_state:
     st.session_state.up_color = "#E03131"
 if "down_color" not in st.session_state:
@@ -128,12 +130,10 @@ if "game_started" not in st.session_state:
     st.session_state.game_started = False
 
 
-def init_game_session(selected_diff="보통", player_name="트레이더"):
+def init_game_session():
     diff_config = DIFFICULTY_SETTINGS.get(
-        selected_diff, DIFFICULTY_SETTINGS["보통"]
+        st.session_state.difficulty, DIFFICULTY_SETTINGS["보통"]
     )
-    st.session_state.player_name = player_name
-    st.session_state.difficulty = selected_diff
     st.session_state.initial_cash = float(diff_config["cash"])
     st.session_state.cash = float(diff_config["cash"])
     st.session_state.volatility = diff_config["volatility"]
@@ -150,44 +150,49 @@ def init_game_session(selected_diff="보통", player_name="트레이더"):
 
 
 # ==========================================
-# 3. 사이드바 - 상시 설정창
+# 3. 사이드바 (게임 진행 중 사용)
 # ==========================================
 with st.sidebar:
-    st.header("⚙️ 게임 & 화면 설정")
-
-    st.selectbox("언어 선택", ["한국어", "English"], key="language")
-    theme_options = [
-        "라이트 모드 (기본)",
-        "다크 모드",
-        "올블랙 모드",
-        "블루 모드",
-    ]
-    st.selectbox("화면 테마 설정", theme_options, key="theme")
-    st.selectbox(
-        "기본 차트 형태",
-        ["막대 그래프 (Bar)", "꺾은선 그래프 (Line)"],
-        key="chart_type",
-    )
-
-    col_u, col_d = st.columns(2)
-    with col_u:
-        st.color_picker("상승 색상", key="up_color")
-    with col_d:
-        st.color_picker("하락 색상", key="down_color")
-
-    st.divider()
+    st.header("⚙️ 실시간 설정")
     if st.session_state.game_started:
+        st.selectbox(
+            "🌐 언어 선택", ["한국어", "English"], key="sb_language"
+        )
+        st.selectbox(
+            "🎨 화면 테마 설정",
+            [
+                "라이트 모드 (기본)",
+                "다크 모드",
+                "올블랙 모드",
+                "블루 모드",
+            ],
+            key="sb_theme",
+        )
+        st.selectbox(
+            "📊 그래프 형태",
+            ["막대 그래프 (Bar)", "꺾은선 그래프 (Line)"],
+            key="sb_chart_type",
+        )
+        col_u, col_d = st.columns(2)
+        with col_u:
+            st.color_picker("상승 색상", key="sb_up_color")
+        with col_d:
+            st.color_picker("하락 색상", key="sb_down_color")
+
+        st.divider()
         if st.button(
-            "🔄 처음 시작 화면으로",
+            "🔄 설정 화면으로 돌아가기",
             key="sidebar_reset_btn",
             type="secondary",
             use_container_width=True,
         ):
             st.session_state.game_started = False
             st.rerun()
+    else:
+        st.info("💡 메인 화면에서 설정을 마친 뒤 시작하기 버튼을 누르세요.")
 
 # ==========================================
-# 4. 트레이딩 logic 함수 (주문 종류 포함)
+# 4. 트레이딩 함수
 # ==========================================
 def add_buy_qty(val):
     st.session_state.buy_qty += val
@@ -340,7 +345,6 @@ def next_day_market():
                 },
             )
 
-    # 미체결 지정가 주문 처리
     remaining_orders = []
     for order in st.session_state.pending_orders:
         t = order["ticker"]
@@ -381,22 +385,27 @@ def next_day_market():
 # ==========================================
 # 5. 테마 CSS 설정
 # ==========================================
-theme_choice = st.session_state.theme
-if "다크" in theme_choice:
+active_theme = (
+    st.session_state.sb_theme
+    if st.session_state.game_started and "sb_theme" in st.session_state
+    else st.session_state.theme
+)
+
+if "다크" in active_theme:
     bg_color, text_color, card_bg, border_color = (
         "#121212",
         "#E0E0E0",
         "#1E1E1E",
         "#333333",
     )
-elif "올블랙" in theme_choice:
+elif "올블랙" in active_theme:
     bg_color, text_color, card_bg, border_color = (
         "#000000",
         "#FFFFFF",
         "#111111",
         "#222222",
     )
-elif "블루" in theme_choice:
+elif "블루" in active_theme:
     bg_color, text_color, card_bg, border_color = (
         "#0F172A",
         "#F8FAFC",
@@ -428,47 +437,80 @@ st.markdown(
 )
 
 # ==========================================
-# 6. 메인 게임 화면
+# 6. 메인 화면
 # ==========================================
 
-# A. 복구된 [시작 창] (Game Initialization Screen)
+# A. 요구사항에 맞춘 [기본 창 / 초기 화면]
 if not st.session_state.game_started:
-    st.title("📈 글로벌 트레이딩 시뮬레이터")
-    st.subheader("🚀 게임 시작 설정")
+    st.title("📈 글로벌 모의 주식 & 가상자산 트레이딩 시뮬레이터")
+    st.divider()
 
-    col_s1, col_s2 = st.columns(2)
-    with col_s1:
-        p_name = st.text_input(
-            "👤 트레이더 닉네임", value="버핏", key="init_player_name"
+    # 요청대로 4가지 설정을 기본 창 중앙에 노출
+    col_main1, col_main2 = st.columns(2)
+
+    with col_main1:
+        st.selectbox(
+            "🌐 언어 선택", ["한국어", "English"], key="language"
         )
-        selected_diff = st.selectbox(
+        st.selectbox(
             "🎯 난이도 선택",
             list(DIFFICULTY_SETTINGS.keys()),
             index=1,
-            key="init_diff_select",
+            key="difficulty",
         )
-    with col_s2:
-        diff_info = DIFFICULTY_SETTINGS[selected_diff]
-        st.info(f"**[{selected_diff} 모드 정보]**\n\n{diff_info['desc']}")
+
+    with col_main2:
+        st.selectbox(
+            "🎨 화면 테마 설정",
+            [
+                "라이트 모드 (기본)",
+                "다크 모드",
+                "올블랙 모드",
+                "블루 모드",
+            ],
+            key="theme",
+        )
+        st.selectbox(
+            "📊 그래프 형태",
+            ["막대 그래프 (Bar)", "꺾은선 그래프 (Line)"],
+            key="chart_type",
+        )
+
+    col_color1, col_color2 = st.columns(2)
+    with col_color1:
+        st.color_picker("🔴 상승 색상", key="up_color")
+    with col_color2:
+        st.color_picker("🔵 하락 색상", key="down_color")
+
+    # 난이도 안내 설명
+    diff_info = DIFFICULTY_SETTINGS[st.session_state.difficulty]
+    st.info(f"**[{st.session_state.difficulty} 모드 선택됨]** — {diff_info['desc']}")
 
     st.divider()
     if st.button(
-        "🚀 시뮬레이션 시작하기",
-        key="main_start_game_btn",
+        "🚀 게임 시작하기",
+        key="main_start_btn",
         type="primary",
         use_container_width=True,
     ):
-        init_game_session(selected_diff, p_name)
+        init_game_session()
         st.session_state.game_started = True
         st.rerun()
 
-# B. 본 트레이딩 게임 화면
+# B. 게임 실행 화면
 else:
-    st.title(
-        f"📈 {st.session_state.player_name}님의 트레이딩 대시보드"
+    st.title("📈 트레이딩 대시보드")
+
+    active_chart_type = st.session_state.get(
+        "sb_chart_type", st.session_state.chart_type
+    )
+    active_up_color = st.session_state.get(
+        "sb_up_color", st.session_state.up_color
+    )
+    active_down_color = st.session_state.get(
+        "sb_down_color", st.session_state.down_color
     )
 
-    # 상단 요약
     sorted_stocks = sorted(
         st.session_state.coins.items(),
         key=lambda x: x[1]["change"],
@@ -485,7 +527,6 @@ else:
         f"📉 최고 하락: {l_data['name']} ({l_ticker}) | **{l_data['change']:+.2f}%**"
     )
 
-    # 복구된 5개 탭
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
         [
             "📊 거래소",
@@ -507,18 +548,14 @@ else:
             )
         with c2:
             current_chart_type = st.radio(
-                "📊 차트 종류",
-                [st.session_state.chart_type, "기타 차트"],
+                "📊 현재 선택된 차트",
+                [active_chart_type],
                 key="exchange_chart_type_radio",
-                horizontal=True,
             )
 
         coin_data = st.session_state.coins[selected_ticker]
         history = coin_data["history"]
-        up_c = st.session_state.up_color
-        down_c = st.session_state.down_color
 
-        # 차트 그리기
         fig = go.Figure()
         x_days = [f"{d}일" for d in range(1, len(history) + 1)]
 
@@ -528,9 +565,11 @@ else:
         y_bottom = max(0, min_p - p_margin)
         y_top = max_p + p_margin
 
-        if "막대" in st.session_state.chart_type or "Bar" in st.session_state.chart_type:
+        if "막대" in active_chart_type or "Bar" in active_chart_type:
             bar_colors = [
-                up_c if history[i] >= history[max(0, i - 1)] else down_c
+                active_up_color
+                if history[i] >= history[max(0, i - 1)]
+                else active_down_color
                 for i in range(len(history))
             ]
             bar_heights = [p - y_bottom for p in history]
@@ -548,7 +587,11 @@ else:
                 )
             )
         else:
-            line_c = up_c if history[-1] >= history[0] else down_c
+            line_c = (
+                active_up_color
+                if history[-1] >= history[0]
+                else active_down_color
+            )
             fig.add_trace(
                 go.Scatter(
                     x=x_days,
@@ -574,7 +617,6 @@ else:
 
         st.divider()
 
-        # 복구된 매수 / 매도 주문 종류 선택 (시장가 vs 지정가)
         order_type = st.radio(
             "⚡ 주문 방식 선택",
             ["시장가 (즉시 체결)", "지정가 (목표가 체결)"],
@@ -725,7 +767,6 @@ else:
         else:
             st.write("보유 중인 주식이 없습니다.")
 
-    # 복구된 [신규 종목 상장] 탭
     with tab4:
         st.subheader("🪙 신규 종목 상장 (Mint Asset)")
         m_col1, m_col2 = st.columns(2)
@@ -775,7 +816,6 @@ else:
         for log in st.session_state.news_log:
             st.write(f"- `{log['time']}` **[{log['name']}]** {log['msg']}")
 
-    # 하단 자산 대시보드
     st.divider()
     tot_val = sum(
         st.session_state.portfolio[t]["qty"]
