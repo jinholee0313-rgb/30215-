@@ -35,62 +35,62 @@ DIFFICULTY_SETTINGS = {
     },
 }
 
-# 현실에 없는 가상의 종목 라인업 (8종)
+# 현실적인 카테고리 + 실제 기업 같은 가상 종목 라인업
 DEFAULT_COINS = {
-    "NEOBOT": {
-        "name": "네오로보틱스",
-        "category": "🤖 로봇/AI",
-        "price": 45000.0,
-        "history": [45000.0],
+    "K-SEMI": {
+        "name": "한국반도체 스타플랜트",
+        "category": "🇰🇷 한국 주식",
+        "price": 78500.0,
+        "history": [78500.0],
         "change": 0.0,
     },
-    "GALAXIA": {
-        "name": "은하우주항공",
-        "category": "🌌 우주/항공",
-        "price": 120000.0,
-        "history": [120000.0],
+    "K-BIO": {
+        "name": "한신바이오 제노믹스",
+        "category": "🇰🇷 한국 주식",
+        "price": 42000.0,
+        "history": [42000.0],
         "change": 0.0,
     },
-    "CYBERBIO": {
-        "name": "사이버바이오",
-        "category": "🧬 바이오/메디컬",
-        "price": 85000.0,
-        "history": [85000.0],
+    "US-AI": {
+        "name": "실리콘밸리 AI솔루션",
+        "category": "🇺🇸 미국 주식",
+        "price": 185000.0,
+        "history": [185000.0],
         "change": 0.0,
     },
-    "SOLARX": {
-        "name": "솔라엑스에너지",
-        "category": "⚡ 친환경/에너지",
-        "price": 32000.0,
-        "history": [32000.0],
+    "US-SPACE": {
+        "name": "네오에어로 스페이스",
+        "category": "🇺🇸 미국 주식",
+        "price": 310000.0,
+        "history": [310000.0],
         "change": 0.0,
     },
-    "QUANTUM": {
-        "name": "퀀텀코어",
-        "category": "💻 양자컴퓨팅",
-        "price": 210000.0,
-        "history": [210000.0],
+    "JP-AUTO": {
+        "name": "도쿄모빌리티 넥스트",
+        "category": "🇯🇵 일본/아시아 주식",
+        "price": 28500.0,
+        "history": [28500.0],
         "change": 0.0,
     },
-    "METACORE": {
-        "name": "메타코어엔터",
-        "category": "🎮 엔터/메타버스",
-        "price": 15000.0,
-        "history": [15000.0],
+    "EU-GREEN": {
+        "name": "유로파 클린에너지",
+        "category": "🇪🇺 유럽 주식",
+        "price": 54000.0,
+        "history": [54000.0],
         "change": 0.0,
     },
-    "HYPERCOIN": {
-        "name": "하이퍼코인",
-        "category": "🪙 가상화폐",
-        "price": 65000000.0,
-        "history": [65000000.0],
+    "CRYPTO-X": {
+        "name": "하이퍼체인 메인넷",
+        "category": "🪙 가상자산",
+        "price": 48000000.0,
+        "history": [48000000.0],
         "change": 0.0,
     },
-    "STARCOIN": {
-        "name": "스타링크코인",
-        "category": "🪙 가상화폐",
-        "price": 4200.0,
-        "history": [4200.0],
+    "NODE-PAY": {
+        "name": "글로벌노드 페이",
+        "category": "🪙 가상자산",
+        "price": 3400.0,
+        "history": [3400.0],
         "change": 0.0,
     },
 }
@@ -117,7 +117,7 @@ FLAT_NEWS = [
 
 TEXT_PACK = {
     "한국어": {
-        "title": "📈 모의 주식 & 가상화폐 트레이딩 시뮬레이터",
+        "title": "📈 글로벌 모의 주식 & 가상자산 트레이딩 시뮬레이터",
         "setting_header": "🎮 게임 초기 설정",
         "diff_select": "난이도 선택",
         "diff_info_title": "ℹ️ 선택한 난이도 정보",
@@ -194,7 +194,7 @@ TEXT_PACK = {
         "all_news_header": "📰 전체 속보 및 뉴스 기록",
     },
     "English": {
-        "title": "📈 Stock & Crypto Trading Simulator",
+        "title": "📈 Global Stock & Crypto Trading Simulator",
         "setting_header": "🎮 Initial Game Settings",
         "diff_select": "Select Difficulty",
         "diff_info_title": "ℹ️ Difficulty Details",
@@ -438,18 +438,14 @@ def next_day_market():
         data["history"].append(new_price)
         ticker_changes[ticker] = change_rate
 
-    # 2) 개편된 뉴스 발생 로직
-    # - 70% 확률로 뉴스가 발생하는 날 결정 (매일 무조건 뜨지 않게 조절)
+    # 2) 개편된 뉴스 발생 로직 (70% 확률로 발생, 발생 시 2개 이상 종목에 동시 발생)
     has_news_today = random.random() < 0.7
 
     if has_news_today:
-        # 큰 변동(±3% 이상)이 생긴 종목들 수집
         significant_tickers = [
             t for t, change in ticker_changes.items() if abs(change) >= 0.03
         ]
 
-        # 큰 변동 종목이 2개 이상이면 그 종목들 뉴스 발생
-        # 부족할 경우 무작위로 2~4개 종목을 뽑아 무조건 '최소 2개 이상' 종목에 뉴스가 발생하도록 설정
         if len(significant_tickers) >= 2:
             selected_news_tickers = significant_tickers
         else:
@@ -911,14 +907,12 @@ else:
             new_category = st.selectbox(
                 txt["select_category"],
                 [
-                    "🤖 로봇/AI",
-                    "🌌 우주/항공",
-                    "🧬 바이오/메디컬",
-                    "⚡ 친환경/에너지",
-                    "💻 양자컴퓨팅",
-                    "🎮 엔터/메타버스",
-                    "🪙 가상화폐",
-                    "✨ 커스텀/기타",
+                    "🇰🇷 한국 주식",
+                    "🇺🇸 미국 주식",
+                    "🇯🇵 일본/아시아 주식",
+                    "🇪🇺 유럽 주식",
+                    "🪙 가상자산",
+                    "✨ 기타/커스텀",
                 ],
             )
             start_price = st.number_input(
