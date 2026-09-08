@@ -14,7 +14,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 세션 기본값 선행 초기화 (첫 실행 시 테마 미반영 버그 방지)
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
 if "opening_done" not in st.session_state:
@@ -61,7 +60,7 @@ DIFFICULTIES = {
 GAME_MODES = {
     "🌱 캐주얼 모드": {
         "cash": 30000000,
-        "target_asset": 100000000,  # 목표: 1억 원
+        "target_asset": 100000000,
         "volatility": 0.03,
         "event_prob": 0.10,
         "desc": "📊 낮은 변동성 | 🎯 100일 내 목표 자산: 1억 원",
@@ -75,7 +74,7 @@ GAME_MODES = {
     },
     "⚔️ 라이벌 경쟁 모드": {
         "cash": 10000000,
-        "target_asset": 1000000000,  # 목표: 10억 원
+        "target_asset": 1000000000,
         "volatility": 0.05,
         "event_prob": 0.25,
         "desc": "⚔️ AI 트레이더들과 실시간 순위 다툼 | 🎯 100일 내 목표 자산: 10억 원",
@@ -89,7 +88,7 @@ GAME_MODES = {
     },
     "🌪️ 핫불&하락장 (이벤트 모드)": {
         "cash": 5000000,
-        "target_asset": 500000000,  # 목표: 5억 원
+        "target_asset": 500000000,
         "volatility": 0.09,
         "event_prob": 0.45,
         "desc": "🚨 대형 시장 쇼크 빈발 | 🎯 100일 내 목표 자산: 5억 원",
@@ -223,25 +222,21 @@ def check_game_status(tot_asset):
 
     min_stock_price = min(coin["price"] for coin in st.session_state.coins.values())
     
-    # 1. 완전 파산 (보유 자산이 최소 매수 가능 주가 미만)
     if tot_asset < min_stock_price:
         st.session_state.game_over = True
         st.session_state.ending_type = "BANKRUPT"
         return
 
-    # 2. 사치품 Master 클리어
     if len(st.session_state.owned_items) >= 10:
         st.session_state.game_cleared = True
         st.session_state.ending_type = "LUXURY_MASTER"
         return
 
-    # 3. 목표 자산 달성 클리어
     if tot_asset >= st.session_state.target_asset:
         st.session_state.game_cleared = True
         st.session_state.ending_type = "GOAL_REACHED"
         return
 
-    # 4. 기간 만료 (100일 도달했으나 목표 자산 미달)
     if st.session_state.day >= st.session_state.max_days:
         st.session_state.game_over = True
         st.session_state.ending_type = "TIME_OUT"
@@ -287,6 +282,7 @@ def execute_sell(ticker):
     st.session_state.sell_qty = 0.0
     st.toast(f"🔵 {st.session_state.coins[ticker]['name']} {qty:,.2f}주 매도 완료!", icon="✅")
 
+# [수정된 시장 진행 로직] 하락/악재 수치가 정상 반영되도록 조정
 def next_day_market():
     st.session_state.day += 1
     time_str = f"Day {st.session_state.day}"
@@ -323,20 +319,28 @@ def next_day_market():
         r_info["cash"] = max(100000, round(r_info["cash"] * (1 + r_rate)))
 
     for ticker, data in st.session_state.coins.items():
+        # 1. 기본 변동성 (양방향)
         change_rate = random.uniform(-st.session_state.volatility + rate_buff, st.session_state.volatility + rate_buff)
 
+        # 2. 시장 및 섹터 돌발 이벤트 누적 반영
         if st.session_state.current_event:
             ev = st.session_state.current_event
             if "category" in ev and data.get("category") == ev["category"]: change_rate += ev["impact"]
             elif "sector" in ev and data.get("sector") == ev["sector"]: change_rate += ev["impact"]
             elif "category" not in ev and "sector" not in ev: change_rate += ev["impact"]
 
-        if random.random() < (0.15 + bull_prob_bonus):
-            change_rate = random.choice([0.15, 0.25, 0.30]) + rate_buff
+        # 3. 개별 종목 확률형 급등/급락 이벤트 (상쇄/누적)
+        rand_val = random.random()
+        if rand_val < (0.10 + bull_prob_bonus):
+            change_rate += random.choice([0.15, 0.25, 0.30])
+        elif rand_val > 0.85:
+            change_rate -= random.choice([0.12, 0.20, 0.25])
 
+        # 4. 방어 및 손실 제한 보정
         if loss_cap is not None and change_rate < loss_cap: change_rate = loss_cap
         if change_rate < 0 and shield_prob > 0 and random.random() < shield_prob: change_rate = abs(change_rate)
 
+        # 5. 최종 가격 및 히스토리 업데이트
         new_price = max(1.0, round(data["price"] * (1 + change_rate), 2))
         data["change"] = change_rate * 100
         data["price"] = new_price
@@ -364,7 +368,7 @@ elif "올블랙" in active_theme:
     bg_color, sidebar_bg, text_color, card_bg, border_color = "#000000", "#0B0B0B", "#FFFFFF", "#121212", "#282828"
 elif "블루" in active_theme:
     bg_color, sidebar_bg, text_color, card_bg, border_color = "#0F172A", "#1E293B", "#F8FAFC", "#334155", "#475569"
-else: # 다크 모드
+else:
     bg_color, sidebar_bg, text_color, card_bg, border_color = "#121212", "#1A1A1A", "#E0E0E0", "#242424", "#3A3A3A"
 
 st.markdown(
@@ -477,10 +481,8 @@ else:
     if tot_asset >= 100000000: check_achievement("CASUAL_100M")
     if tot_asset >= 50000000: check_achievement("EVENT_50M")
 
-    # 게임 상태 평가 (파산, 클리어, 시간 초과)
     check_game_status(tot_asset)
 
-    # === [결과 처리: 게임 오버 모달 연출] ===
     if st.session_state.get("game_over", False):
         st.error("🚨 **GAME OVER - 플레이 종료**")
         if st.session_state.ending_type == "BANKRUPT":
@@ -499,9 +501,8 @@ else:
             st.session_state.game_over = False
             st.session_state.game_cleared = False
             st.rerun()
-        st.stop()  # 이하 거래 기능 비활성화
+        st.stop()
 
-    # === [결과 처리: 클리어 승리 모달 연출] ===
     if st.session_state.get("game_cleared", False):
         st.balloons()
         if st.session_state.ending_type == "LUXURY_MASTER":
@@ -518,8 +519,8 @@ else:
             st.session_state.game_over = False
             st.session_state.game_cleared = False
             st.rerun()
-        st.divider()
 
+    st.divider()
     st.title("📈 트레이딩 대시보드")
     if st.session_state.current_event:
         st.warning(f"🚨 **돌발 이슈 발동**: {st.session_state.current_event['title']} ({st.session_state.current_event['msg']})")
@@ -567,7 +568,7 @@ else:
                 fig.add_trace(go.Scatter(y=history, mode="lines+markers", line=dict(color=active_up if coin_data["change"] >= 0 else active_down, width=3)))
 
             fig.update_layout(height=260, paper_bgcolor=card_bg, plot_bgcolor=card_bg, font=dict(color=text_color), margin=dict(l=10, r=10, t=10, b=10))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
         with c_news:
             st.markdown("### 📰 종목 관련 뉴스")
